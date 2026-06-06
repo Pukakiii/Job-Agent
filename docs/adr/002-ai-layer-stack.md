@@ -1,131 +1,14 @@
 # 2. AI Layer Stack
 
-This application's AI layer handles two distinct phases: ingestion and query.
+The application's AI layer handles two distinct phases: ingestion and query. During ingestion, scraped job postings are normalized, embedded, and stored in `pgvector`, building a searchable semantic index — only new or modified jobs are embedded to avoid unnecessary processing. During the query phase, a user's uploaded CV is parsed into a structured candidate profile, embedded, and used to run a similarity search against stored job embeddings. The top results are then passed to a language model for re-ranking, fit explanations, scam-risk analysis, and downstream generation tasks (resume, cover letter, outreach email). The CV fits comfortably within modern context windows, so retrieval is applied to the job corpus rather than the CV. Long-running AI operations execute asynchronously through ARQ workers.
 
-During ingestion, scraped job postings are normalized, embedded, and stored in `pgvector`, building a searchable semantic index. Only new or modified jobs are embedded to avoid unnecessary processing.
+**Decision**: The default AI stack runs entirely on the user's machine via [Ollama](https://ollama.com). `gemma3:4b` serves as the language model and `nomic-embed-text` as the embedding model. Both models are pulled and managed locally — no API key or network call required for inference. The platform additionally supports a bring-your-own-key mode (OpenAI, Anthropic, Google, or any OpenRouter-compatible provider) for users who prefer cloud inference or need higher-capability models. `text-embedding-3-small` is the recommended embedding model in that mode.
 
-During the query phase, a user's uploaded CV is parsed and converted into a structured candidate profile. The CV is embedded and used to perform semantic similarity search against stored job embeddings. The highest-ranked results are then passed to a language model, which performs re-ranking, generates fit explanations, identifies strengths and weaknesses, performs scam-risk analysis, and powers downstream features such as resume generation, cover letter generation, and outreach email generation.
+**Tradeoff**: Local inference imposes a hardware floor — `gemma3:4b` requires a machine capable of running a 4 B-parameter model at acceptable latency, which excludes very low-end hardware. Output quality is lower than frontier cloud models; tasks like nuanced cover letter generation or complex reasoning may produce noticeably weaker results. The benefit is zero marginal inference cost, full data privacy, and no dependency on external API availability or rate limits.
 
-The CV itself is small enough to fit comfortably within modern context windows. Retrieval is therefore applied to the job corpus rather than the CV.
+**Alternatives**:
 
-## Model Providers
-
-The platform supports two AI execution modes:
-
-### Local Models (Ollama)
-
-Models run entirely on the user's machine through Ollama.
-
-Recommended local configuration:
-
-#### Embedding Model
-
-* `nomic-embed-text`
-
-Responsibilities:
-
-* Generate job embeddings
-* Generate CV embeddings
-* Support semantic search through pgvector
-
-#### Language Models
-
-##### Primary Recommendation
-
-* `gemma3:4b`
-
-Responsibilities:
-
-* CV profile extraction
-* Job scoring
-* Match explanations
-* Scam-risk analysis
-* Resume generation
-* Cover letter generation
-* Outreach email generation
-
-##### Lightweight Alternatives
-
-* `qwen3:1.7b`
-* `phi4-mini`
-
-These models provide lower hardware requirements and faster inference while supporting the same feature set.
-
-### API Models (Bring Your Own API Key)
-
-Users may connect their own API keys and choose supported cloud providers.
-
-Supported provider types include:
-
-* OpenAI
-* Anthropic
-* Google
-* OpenRouter-compatible providers
-
-Recommended cloud configuration:
-
-#### Embedding Model
-
-* `text-embedding-3-small`
-
-Responsibilities:
-
-* Generate job embeddings
-* Generate CV embeddings
-* Support semantic search through pgvector
-
-#### Language Model
-
-* `any model connected via API`
-
-Responsibilities:
-
-* CV profile extraction
-* Job scoring
-* Match explanations
-* Scam-risk analysis
-* Resume generation
-* Cover letter generation
-* Outreach email generation
-
-## Retrieval Pipeline
-
-The retrieval pipeline is implemented directly through FastAPI services, SQLAlchemy, and pgvector queries.
-
-Workflow:
-
-Job Ingestion
-
-1. Job collected from external source
-2. Job normalized
-3. Job embedded
-4. Embedding stored in pgvector
-5. AI analysis generated
-6. Results persisted
-
-User Query
-
-1. User uploads CV
-2. CV parsed into structured profile
-3. CV embedded
-4. Similarity search executed against pgvector
-5. Top matching jobs retrieved
-6. Language model performs re-ranking
-7. Fit explanations generated
-8. Results returned to the user
-
-## Background Processing
-
-Long-running AI operations execute asynchronously through ARQ workers.
-
-Background tasks include:
-
-* Job embedding generation
-* CV embedding generation
-* AI job analysis
-* Scam-risk analysis
-* Resume generation
-* Cover letter generation
-* Email generation
-
-PostgreSQL with pgvector serves as the system's semantic retrieval layer and source of truth for all stored embeddings.
+- *Cloud-first stack (gpt-4o-mini + text-embedding-3-small)* — the original design, prioritizing output quality and eliminating the hardware requirement. Rejected as the default because it requires an API key, incurs per-token costs that accumulate across a full pipeline run, and sends CV and job data to a third party. Retained as an opt-in mode for users who supply their own key.
+- *Larger local models (llama3:8b, mistral, etc.)* — higher quality than `gemma3:4b` but meaningfully higher RAM and compute requirements, reducing the addressable user base. `gemma3:4b` was chosen as the primary recommendation because it balances quality and accessibility. Lightweight alternatives (`qwen3:1.7b`, `phi4-mini`) are documented for users on constrained hardware.
+- *Dedicated vector search service (Pinecone, Weaviate, Qdrant)* — purpose-built for ANN search with advanced filtering and horizontal scalability. Rejected for MVP because `pgvector` co-locates embeddings with the existing PostgreSQL instance, eliminating a separate service to operate. Sufficient for the job-corpus scale targeted here.
+- *Managed embedding pipeline (LangChain, LlamaIndex)* — would abstract model switching and retrieval orchestration. Rejected in favour of direct FastAPI + SQLAlchemy + pgvector queries to keep the stack thin and dependencies minimal; the retrieval logic is simple enough not to warrant an orchestration layer.
