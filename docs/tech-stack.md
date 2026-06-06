@@ -3,7 +3,7 @@
 
 - Frontend: NextJS
 - Backend: FastAPI
-- Scraping: Playwright + Apify 
+- Scraping: Apify for Indeed/LinkedIn + Official API if exist  
 - AI layer: 
     - Embedding model: text-embedding-3-small
     - LLM: GPT-4o-mini

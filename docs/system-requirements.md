@@ -1,6 +1,6 @@
 # System Requirements and Goals
 
-This file describes how an MVP should look. Every subpoint is part of the system's core business logic and should be implemented initially. Additional functionality should work on top of these predefined features. System is going to scrape only through the Indeed job postings. 
+This file describes how an MVP should look. Every subpoint is part of the system's core business logic and should be implemented initially. Additional functionality should work on top of these predefined features. The application scrapes through Adzuna, Jooble, Careerjet(Official APIs) + LinkedIn/Indeed(best-effort Apify scraping, see [jobs scraping ADR](./adr/004-jobs-scraping.md) for the detailed explanation).
 
 ## Core business logic
 
