@@ -1,0 +1,32 @@
+---
+description: Documentation and ADR conventions
+globs: docs/**
+alwaysApply: false
+---
+
+# Documentation Rules
+
+## When to update docs
+
+| Change | Update |
+|--------|--------|
+| New MVP feature | Check off item in `system-requirements.md` |
+| New approved technology | `tech-stack.md` |
+| Architectural fork | New ADR in `docs/adr/` |
+| Folder layout change | `README.md` Project Structure section |
+
+## ADR format
+
+Number sequentially: `00N-short-title.md`. Each ADR includes:
+
+1. Context / problem
+2. **Decision** (bold)
+3. **Tradeoff**
+4. **Alternatives** with accept/reject rationale
+
+Link related docs: `[system requirements](../system-requirements.md)`, `[queue tool](001-queue-tool.md)`.
+
+## Do not add
+
+- Outdated architecture PNGs — use mermaid in README or prose in ADRs
+- Duplicate tech stack lists — link to `tech-stack.md` instead
