@@ -12,3 +12,9 @@ node_modules/
 
 # OS
 .DS_Store
+
+.CLAUDE 
+.claude/
+.cursor/ 
+.vscode/
+.idea/
