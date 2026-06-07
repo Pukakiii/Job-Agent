@@ -1,0 +1,40 @@
+---
+description: FastAPI backend conventions — layers, async, schemas
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Conventions
+
+Stack: FastAPI, SQLAlchemy, Alembic, Pydantic, fastapi-users (JWT), ARQ, pgvector.
+
+## Layer responsibilities
+
+| Directory | Purpose |
+|-----------|---------|
+| `api/` | Route handlers — thin, delegate to services |
+| `schemas/` | Pydantic request/response models |
+| `models/` | SQLAlchemy ORM models |
+| `services/` | Business logic, AI calls, ingestion |
+| `db/` | Engine, session, base declarative class |
+| `core/` | Settings, auth deps, shared config |
+
+## Patterns
+
+```python
+# ✅ Route delegates to service
+@router.post("/ai/score-job")
+async def score_job(body: ScoreJobRequest, svc: AIService = Depends()):
+    return await svc.score_job(body.job_id)
+
+# ✅ Settings from env via pydantic-settings
+class Settings(BaseSettings):
+    database_url: str
+    redis_url: str
+    model_config = SettingsConfigDict(env_file=".env")
+```
+
+- Use async where libraries support it (ARQ, httpx)
+- Store AI outputs and generated content in PostgreSQL
+- Ingestion sources implement a common interface in `services/ingestion/`
+- Never commit `.env`; use `.env.example` as the template

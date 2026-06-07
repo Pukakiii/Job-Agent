@@ -1,0 +1,35 @@
+[project]
+name = "job-agent-backend"
+version = "0.1.0"
+description = "FastAPI backend for the AI Job Agent Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "alembic",
+    "pydantic",
+    "pydantic-settings",
+    "psycopg2-binary",
+    "pgvector",
+    "arq",
+    "redis",
+    "fastapi-users[sqlalchemy]",
+    "httpx",
+    "boto3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

@@ -1,0 +1,14 @@
+# 3. Apply Automation
+ 
+Initially, one of the MVP requirements was the user's ability to apply to all of the most relevant jobs automatically. The core problem is not simply leaving digital footprints — it is that platforms like LinkedIn and Indeed detect automation primarily through browser fingerprinting (headless flags, missing browser APIs, behavioral tells like instant clicks and no scrolling), not through volume alone. A detectable headless browser can be flagged on the very first application regardless of how few it submits. Volume caps and timing delays help marginally with velocity heuristics but do not address fingerprint detection. Bypassing these signals reliably would require significant and perpetually fragile evasion engineering, with no guarantee of keeping user accounts safe.
+ 
+**Decision**: Replace "Apply to all" with surfacing the most relevant matches as direct links to the original job posting. The user completes the final apply step in their own browser session with their own genuine fingerprint and credentials. Application provides links only to the most relevant searches with a hard cap of maximum 10 relevant. This replaces the original "Apply to all" requirement from [system requirements](../system-requirements.md).
+ 
+**Tradeoff**: The user must click apply themselves rather than having it fully automated. This is a deliberate UX compromise in exchange for zero account risk, a significantly simpler codebase, and application quality — five well-matched applications consistently outperform fifty indiscriminate ones. The pipeline still delivers the hard part: finding, ranking, and explaining the most relevant matches.
+ 
+**Alternatives**:
+ 
+- *Server-side browser automation (Playwright/Puppeteer)* — technically possible but requires defeating automation fingerprint detection. Timing delays and volume caps help with velocity heuristics only; the headless browser signature remains detectable. Fragile by nature — platforms update detection continuously — and risks banning the accounts of users who rely on the tool. Rejected.
+- *Browser extension* — runs inside the user's real browser with their genuine fingerprint, session, and IP, avoiding the headless detection problem entirely. Meaningfully safer than server-side automation, and could pre-fill and queue an Easy Apply form for the user to confirm. More complex to build; deferred as a potential future enhancement rather than an MVP requirement.
+- *Managed apply service (Apify actors, third-party automation APIs)* — outsources the browser automation layer but does not eliminate the underlying fingerprint risk or ToS exposure. Shifts maintenance cost rather than solving the problem. Rejected for the same reasons as direct server-side automation.
+ 
