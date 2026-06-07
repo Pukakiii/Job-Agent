@@ -2,16 +2,20 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
+**Current status:** Early scaffold. Documentation and architectural decisions are in place; application code is minimal (backend health check only, frontend not yet initialized). Active work is tracked in [docs/TODO.md](docs/TODO.md).
+
 ---
 
 ## Table of Contents
 
 * [Overview](#overview)
 * [Documentation](#documentation)
+* [Current State](#current-state)
 * [Core Capabilities](#core-capabilities)
 * [System Architecture](#system-architecture)
 * [Technology Stack](#technology-stack)
 * [Project Structure](#project-structure)
+* [Team & Contributing](#team--contributing)
 * [Data Model](#data-model)
 * [Main Workflows](#main-workflows)
 * [Local Development Setup](#local-development-setup)
@@ -24,7 +28,6 @@ An AI-first job search platform that collects jobs from multiple sources, dedupl
 * [Frontend Overview](#frontend-overview)
 * [Deployment](#deployment)
 * [Roadmap](#roadmap)
-* [Contributing](#contributing)
 * [License](#license)
 
 ---
@@ -44,7 +47,7 @@ The platform helps users manage the full job-seeking workflow:
 9. Track application status and outcomes
 10. Compute job-search statistics from stored records
 
-The architecture is intentionally simple enough for an MVP, but structured enough to grow into a production-grade system. Detailed requirements and architectural decisions live in [docs/](docs/).
+The architecture is intentionally simple enough for an MVP, but structured enough to grow into a production-grade system.
 
 ---
 
@@ -54,6 +57,11 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 |----------|-------------|
 | [System Requirements](docs/system-requirements.md) | MVP feature checklist and business logic |
 | [Tech Stack](docs/tech-stack.md) | Approved technologies |
+| [Code Architecture](docs/code-architecture.md) | Layered backend design, AI layer, testing strategy |
+| [Data Layer](docs/data-layer.md) | ORM models, pgvector, repositories, migrations |
+| [Docker Orchestration](docs/docker-orchestration.md) | Compose topology, healthchecks, volumes |
+| [Contributing Rules](docs/contributing-rules.md) | Branch naming, commits, PR workflow |
+| [TODO](docs/TODO.md) | Active tasks by assignee |
 | [ADR 001: Queue Tool](docs/adr/001-queue-tool.md) | ARQ + Redis for async workers |
 | [ADR 002: AI Layer](docs/adr/002-ai-layer-stack.md) | Embeddings, pgvector, local/API models |
 | [ADR 003: Apply Automation](docs/adr/003-apply-automation.md) | Direct-apply links instead of browser automation |
@@ -61,7 +69,28 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 
 ---
 
+## Current State
+
+What exists today versus what the docs describe as the target:
+
+| Area | Status |
+|------|--------|
+| Documentation | Complete — requirements, architecture, data layer, Docker plan, ADRs |
+| Backend | `GET /health` only; `pyproject.toml` lists target dependencies |
+| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md) |
+| Auth | Planned — `fastapi-users` + JWT |
+| ARQ workers | Planned — ingestion, embedding, email tasks |
+| Frontend | Scaffold `package.json` only — Next.js not initialized |
+| Docker / infra | Documented — Compose files not yet added |
+| Tests | Not started |
+
+Next steps: see [docs/TODO.md](docs/TODO.md).
+
+---
+
 ## Core Capabilities
+
+Target MVP capabilities (from [system-requirements.md](docs/system-requirements.md)):
 
 * User authentication and account management (JWT)
 * CV upload, storage, and active-CV selection
@@ -110,7 +139,9 @@ flowchart LR
   API --> S3
 ```
 
-Jobs are ingested asynchronously by ARQ workers, normalized, embedded, and stored in PostgreSQL with pgvector. When a user uploads a CV, the system performs semantic similarity search, re-ranks results with a language model, and surfaces the best matches with explanations. Resume, cover letter, and email generation run through the same AI layer. Users complete the final apply step in their own browser via direct links to original postings — see [ADR 003](docs/adr/003-apply-automation.md).
+Jobs are ingested asynchronously by ARQ workers, normalized, embedded, and stored in PostgreSQL with pgvector. When a user uploads a CV, the system performs semantic similarity search, re-ranks results with a language model, and surfaces the best matches with explanations. Users complete the final apply step in their own browser via direct links to original postings — see [ADR 003](docs/adr/003-apply-automation.md).
+
+Backend layering (router → service → repository → ORM) is documented in [code-architecture.md](docs/code-architecture.md).
 
 ---
 
@@ -135,30 +166,33 @@ Full details: [tech-stack.md](docs/tech-stack.md).
 
 ## Project Structure
 
-Monorepo layout. Scaffold directories exist; application code is still early-stage.
+Monorepo layout. Target structure from [code-architecture.md](docs/code-architecture.md); **bold** = not yet created.
 
 ```text
 job-agent/
 ├── backend/
 │   ├── alembic/                 # migrations (scaffold)
 │   ├── app/
-│   │   ├── api/                 # route handlers
-│   │   ├── core/                # config, security, dependencies
-│   │   ├── db/                  # session, base models
-│   │   ├── models/              # SQLAlchemy models
-│   │   ├── schemas/             # Pydantic schemas
-│   │   ├── services/            # business logic, AI, ingestion
-│   │   └── main.py              # FastAPI entry (health check)
-│   ├── tests/
+│   │   ├── api/                 # ** route handlers + v1 router **
+│   │   ├── core/                # ** config, db, security **
+│   │   ├── integrations/        # ** S3, Apify, AI clients, job sources **
+│   │   ├── models/              # ** SQLAlchemy ORM **
+│   │   ├── repositories/        # ** data access layer **
+│   │   ├── schemas/             # ** Pydantic DTOs **
+│   │   ├── services/            # ** business logic **
+│   │   ├── workers/             # ** ARQ tasks **
+│   │   └── main.py              # FastAPI entry (health check today)
+│   ├── tests/                   # ** pytest **
 │   └── pyproject.toml
 ├── docs/
-│   ├── adr/
-│   │   ├── 001-queue-tool.md
-│   │   ├── 002-ai-layer-stack.md
-│   │   ├── 003-apply-automation.md
-│   │   └── 004-jobs-scraping.md
+│   ├── adr/                     # architectural decision records
+│   ├── code-architecture.md
+│   ├── contributing-rules.md
+│   ├── data-layer.md
+│   ├── docker-orchestration.md
 │   ├── system-requirements.md
-│   └── tech-stack.md
+│   ├── tech-stack.md
+│   └── TODO.md                  # active tasks
 ├── frontend/                    # scaffold — Next.js not yet initialized
 │   ├── app/
 │   ├── components/
@@ -166,19 +200,39 @@ job-agent/
 │   ├── styles/
 │   └── package.json
 ├── infra/
-│   ├── docker/
-│   └── deployment/
+│   └── docker/                  # ** Compose + Dockerfile (planned) **
 ├── .cursor/rules/               # agent rules for collaborators
 ├── .env.example
-├── README.md
-└── .gitignore
+└── README.md
 ```
+
+---
+
+## Team & Contributing
+
+**Core developers:** Pukakiii, Kyryll
+
+Work is split in [docs/TODO.md](docs/TODO.md):
+
+* **Assigned to Pukakiii** — data models, Docker infra, frontend init, UI/UX shell
+* **Assigned to Kyryll** — backend scaffolding, auth, API routes, repositories
+* **Joint Tasks** — workers, tests, ingestion adapters; open to any contributor
+
+Before opening a PR, read [contributing-rules.md](docs/contributing-rules.md) (branch naming, commit prefixes, rebase with `main`).
+
+Guidelines:
+
+* Keep services focused; business logic lives in `services/`, not route handlers
+* Long-running work goes through ARQ workers, not request handlers
+* Add Alembic migrations for every schema change
+* Record significant architecture changes as ADRs in `docs/adr/`
+* Do not introduce technologies rejected in ADRs (e.g. Playwright for apply automation)
 
 ---
 
 ## Data Model
 
-Entity relationships and persistence rules are defined in [System Requirements](docs/system-requirements.md). Core domains include jobs, CVs, embeddings, AI analysis outputs, applications, and emails.
+Five core tables: `users`, `cvs`, `jobs`, `searches`, `search_results`. Jobs are shared corpus entities; per-user relevance lives on the search-result join. Full ERD, indexes, and repository patterns: [data-layer.md](docs/data-layer.md).
 
 ---
 
@@ -190,21 +244,11 @@ Entity relationships and persistence rules are defined in [System Requirements](
 Official APIs / Apify → ARQ workers → normalize → deduplicate → jobs
 ```
 
-* Workers collect jobs from pluggable sources (see [ADR 004](docs/adr/004-jobs-scraping.md)).
-* Each source normalizes into a unified internal format.
-* The system checks whether the job URL already exists.
-* New postings are inserted; repeated postings update `last_seen_at`.
-* Missing postings can later be marked inactive.
-
 ### 2. Embedding and indexing
 
 ```text
 New job → embed → pgvector → AI analysis → persisted results
 ```
-
-* Only new or modified jobs are embedded.
-* Embeddings are stored in pgvector for semantic search.
-* AI analysis (scoring, categorization, scam check) runs asynchronously via workers.
 
 ### 3. Semantic matching
 
@@ -212,20 +256,11 @@ New job → embed → pgvector → AI analysis → persisted results
 CV upload → parse profile → embed → similarity search → LLM re-rank → ranked jobs
 ```
 
-* User uploads a CV stored in S3.
-* CV is parsed into a structured profile and embedded.
-* Similarity search retrieves top matches from pgvector.
-* A language model re-ranks results and generates fit explanations.
-
 ### 4. Resume, cover letter, and email generation
 
 ```text
 Job + CV → AI generation → stored snapshot
 ```
-
-* Tailored resume and cover letter snapshots are created for the target job.
-* Outreach emails are drafted and sent via Postmark or Gmail API.
-* All outputs are persisted for reuse and auditing.
 
 ### 5. Apply and track
 
@@ -233,10 +268,7 @@ Job + CV → AI generation → stored snapshot
 Top matches → direct apply links → user applies → application record → status pipeline
 ```
 
-* The system surfaces up to 10 relevant jobs with links to original postings.
-* The user completes the apply step in their own browser (see [ADR 003](docs/adr/003-apply-automation.md)).
-* Application records track status: `saved`, `applied`, `interview`, `offer`, `rejected`.
-* Statistics are computed from the existing tables.
+Application statuses: `saved`, `applied`, `interview`, `offer`, `rejected`.
 
 ---
 
@@ -246,22 +278,24 @@ Top matches → direct apply links → user applies → application record → s
 
 * Python 3.11+
 * Node.js 18+
-* PostgreSQL 15+ (with pgvector extension)
+* PostgreSQL 15+ with pgvector (or use Docker Compose once added)
 * Redis
 * Docker (recommended)
 * Git
 
-### Backend setup
+### Backend (today)
 
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
 
-### Frontend setup
+Health check: `GET http://localhost:8000/health`
+
+### Frontend (after Next.js init)
 
 ```bash
 cd frontend
@@ -269,316 +303,140 @@ npm install
 npm run dev
 ```
 
-> The `frontend/` directory is scaffolded; run `npx create-next-app` or add Next.js dependencies before `npm run dev`.
+### Docker (planned)
 
-### Database setup
+Once `infra/docker/` is in place:
 
-1. Create a PostgreSQL database with the pgvector extension enabled.
-2. Configure the backend connection string.
-3. Run Alembic migrations.
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d
+docker compose -f infra/docker/docker-compose.yml run --rm api alembic upgrade head
+```
+
+See [docker-orchestration.md](docs/docker-orchestration.md).
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the backend directory. Some variables are planned for upcoming implementation.
+Copy `.env.example` to `backend/.env` and adjust values.
 
 ```env
 DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/job_agent
 SECRET_KEY=change-me
 ENVIRONMENT=development
-
 REDIS_URL=redis://localhost:6379
-
-# AI — local
 OLLAMA_BASE_URL=http://localhost:11434
-
-# AI — API / BYOK (optional)
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-
-# Scraping
-APIFY_API_TOKEN=
-
-# CV storage (planned)
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-S3_BUCKET_NAME=
-S3_REGION=
-
-# Email — choose Postmark or Gmail
-POSTMARK_API_TOKEN=
-POSTMARK_SENDER_EMAIL=
-
-GMAIL_CLIENT_ID=
-GMAIL_CLIENT_SECRET=
-GMAIL_REFRESH_TOKEN=
-GMAIL_SENDER_EMAIL=
-
-FRONTEND_URL=http://localhost:3000
-BACKEND_URL=http://localhost:8000
+# ... see .env.example for scraping, S3, email, and API keys
 ```
-
-A committed `.env.example` is recommended once the backend configuration stabilizes.
 
 ---
 
 ## Database Migrations
 
-Use Alembic for all schema changes.
+Use Alembic for all schema changes. Migrations run as a one-off command — not on app startup.
 
 ```bash
-alembic revision --autogenerate -m "init core tables"
+cd backend
+alembic revision --autogenerate -m "describe change"
 alembic upgrade head
 ```
 
-Rules:
-
-* Never edit production schema directly.
-* Always generate migrations for model changes.
-* Keep migrations small and readable.
-* Test migrations locally before deployment.
+Rules: never edit production schema directly; keep migrations small; test locally before deploy.
 
 ---
 
 ## API Overview
 
-The backend exposes a REST API. Endpoints below are the target surface; only `GET /health` is implemented today.
+Target REST surface under `/api/v1`. **Implemented today:** `GET /health` only.
 
-### Health
+| Domain | Planned endpoints |
+|--------|-------------------|
+| Auth | register, login, JWT refresh (`fastapi-users`) |
+| CVs | upload, list, presigned download |
+| Searches | trigger match, list past searches |
+| Jobs | list, detail (with direct apply URL) |
+| Applications | CRUD + status transitions |
+| AI | score, generate resume/cover letter, scam check |
+| Email | send, list |
+| Ingestion | trigger scrape (returns `202`, work via ARQ) |
 
-* `GET /health`
-
-### Jobs
-
-* `GET /jobs`
-* `GET /jobs/{id}`
-* `POST /jobs`
-* `PATCH /jobs/{id}`
-
-### Applications
-
-* `GET /applications`
-* `POST /applications`
-* `PATCH /applications/{id}`
-
-### AI
-
-* `POST /ai/score-job`
-* `POST /ai/generate-resume`
-* `POST /ai/generate-cover-letter`
-* `POST /ai/scam-check`
-* `POST /ai/match-jobs`
-
-### Email
-
-* `POST /emails/send`
-* `GET /emails`
-
-### Ingestion
-
-* `POST /ingest/jobs`
-* `POST /ingest/run`
-
-These endpoints can evolve, but the separation should stay clear.
+Conventions: plural resource nouns, paginated lists, consistent error envelope — [code-architecture.md](docs/code-architecture.md).
 
 ---
 
 ## AI Layer
 
-The AI layer handles two distinct phases: ingestion and query. See [ADR 002](docs/adr/002-ai-layer-stack.md) for full detail.
+Two phases per [ADR 002](docs/adr/002-ai-layer-stack.md):
 
-### Ingestion phase
+**Ingestion** — embed job corpus (`nomic-embed-text` / `text-embedding-3-small`), store in pgvector, run analysis workers.
 
-* Normalize scraped jobs
-* Generate embeddings (`nomic-embed-text` locally or `text-embedding-3-small` via API)
-* Store vectors in pgvector
-* Run AI analysis (scoring, categorization, scam check)
+**Query** — parse CV → embed with `search_query:` prefix → cosine similarity → LLM re-rank → fit explanations.
 
-### Query phase
-
-* Parse uploaded CV into a structured profile
-* Embed CV and perform similarity search against job embeddings
-* Re-rank top results with a language model
-* Generate fit explanations, strengths, and weaknesses
-
-### Generation tasks
-
-* Resume generation
-* Cover letter generation
-* Outreach email generation
-
-### Example AI outputs
-
-* `score` — numeric fit score
-* `summary` — short explanation of fit
-* `strengths` — matching skills or reasons to apply
-* `weaknesses` — missing requirements or risks
-* `risk_score` — scam-risk measure
-* `flags` — suspicious patterns or red flags
-
-### Design rules
-
-* Use structured outputs whenever possible.
-* Store results in the database.
-* Keep generation predictable and auditable.
-* Long-running tasks run through ARQ workers.
+Local default: Ollama (`gemma3:4b` + `nomic-embed-text`, 768-dim vectors). BYOK API providers optional.
 
 ---
 
 ## Scraping and Ingestion
 
-Ingestion uses a pluggable source interface. Official APIs (Adzuna, Jooble, Careerjet, and regional sources) form the backbone; Apify actors supplement boards without sanctioned APIs (Indeed, optionally LinkedIn). See [ADR 004](docs/adr/004-jobs-scraping.md).
-
-### Ingestion goals
-
-* Normalize raw job data from heterogeneous sources
-* Detect duplicates across sources (API source wins over scraped duplicate)
-* Avoid repeated inserts
-* Update `last_seen_at` for known jobs
-* Mark old postings inactive when appropriate
-* Run ingestion asynchronously via ARQ workers
-
-### Important rule
-
-Ingestion feeds the backend — it is not the core system. The backend owns business logic, persistence, and the semantic index.
+Pluggable `JobSource` interface. Official APIs are primary; Apify supplements boards without sanctioned APIs. API source wins on duplicate. All ingestion runs via ARQ — [ADR 004](docs/adr/004-jobs-scraping.md).
 
 ---
 
 ## Email Automation
 
-The platform supports AI-assisted email drafting and sending through Postmark or Gmail API.
-
-### Email behavior
-
-* Generate subject and body automatically
-* Send through the configured provider
-* Save each message in `emails`
-* Track status such as `draft`, `sent`, or `failed`
-
-### Why email is separate from application tracking
-
-A job can have:
-
-* no email yet
-* one outreach email
-* multiple follow-up emails
-* one tracked application record
-
-These are related but not identical objects.
+AI-assisted drafting via Postmark or Gmail API. Emails are separate from application records (one job can have multiple outreach messages). Statuses: `draft`, `sent`, `failed`.
 
 ---
 
 ## Frontend Overview
 
-The frontend is built with Next.js and focuses on visibility, control, and workflow management.
-
-### Suggested screens
-
-* Jobs dashboard with semantic match rankings
-* Job detail page with AI analysis and scam flags
-* CV management and upload
-* Resume and cover letter generation views
-* Email generation view
-* Applications Kanban board
-* Statistics overview
-* Settings (AI provider, email, account)
-
-### Frontend responsibilities
-
-* Display backend data
-* Trigger actions (match, generate, send)
-* Show job scores, explanations, and scam flags
-* Present direct apply links for top matches
-* Show application pipeline
-* Support fast browsing and filtering
+Next.js App Router dashboard: job matches with scores and scam flags, CV management, document generation, applications Kanban, statistics, settings. Fetches from FastAPI only — no direct DB access. Surfaces direct apply links; no server-side browser automation — [ADR 003](docs/adr/003-apply-automation.md).
 
 ---
 
 ## Deployment
 
-A production deployment uses:
+Target topology (Docker): API + worker containers, managed PostgreSQL/pgvector, Redis, Next.js frontend, S3 for CVs, Ollama or BYOK AI, external Apify/Postmark. Full plan: [docker-orchestration.md](docs/docker-orchestration.md).
 
-* Docker containers
-* Managed PostgreSQL with pgvector
-* Redis for ARQ queue and caching
-* FastAPI API server + ARQ worker processes
-* Next.js frontend host
-* S3-compatible object storage for CVs
-* Secure secret management
-* Apify credentials for scraped sources
-* Postmark or Gmail OAuth credentials
-* Scheduled ingestion jobs via ARQ cron
-
-### Recommended deployment order
-
-1. Database (PostgreSQL + pgvector) and Redis
-2. Backend API
-3. ARQ workers
-4. Frontend
-5. S3 bucket for CV storage
-6. AI service configuration (local Ollama or API keys)
-7. Email and scraping service configuration
+Recommended order: database + Redis → migrations → API → workers → frontend → S3 → AI/email/scraping credentials.
 
 ---
 
 ## Roadmap
 
-### Phase 1: Foundation
+### Phase 1: Foundation *(in progress)*
 
-* Backend skeleton with FastAPI and PostgreSQL
-* User authentication (JWT via fastapi-users)
+* Backend skeleton, config, layered structure
 * Core tables and Alembic migrations
-* Basic CRUD endpoints
+* Docker Compose local stack
+* User authentication (JWT)
+* Next.js init + app shell
 
 ### Phase 2: Ingestion and embeddings
 
-* Pluggable job sources (official APIs + Apify)
+* Pluggable job sources
 * ARQ workers for async ingestion
-* Job normalization, caching, and deduplication
-* pgvector embeddings and semantic index
+* pgvector index and embedding pipeline
 
 ### Phase 3: AI matching and analysis
 
 * CV upload and S3 storage
-* Semantic similarity search and LLM re-ranking
-* AI scoring, explanations, and scam checks
+* Semantic search and LLM re-ranking
+* Scoring, explanations, scam checks
 
 ### Phase 4: Generation and outreach
 
 * Resume and cover letter generation
 * Email generation and sending
-* Direct apply link surfacing
 
 ### Phase 5: UI and tracking
 
-* Next.js dashboard
-* Job detail views and Kanban board
-* Application status tracking and statistics
+* Dashboard, job detail, Kanban board
+* Application pipeline and statistics
 
 ### Phase 6: Hardening
 
-* Validation and error handling
-* Logging and monitoring
-* Rate limiting
-* Test coverage
-* Deployment polishing
-
----
-
-## Contributing
-
-This project should stay readable and modular.
-
-### Contribution guidelines
-
-* Keep services focused and small.
-* Prefer explicit schemas and typed responses.
-* Do not introduce unnecessary abstractions.
-* Add migrations for schema changes.
-* Document new endpoints and workflows in `docs/`.
-* Record significant architectural decisions as ADRs in `docs/adr/`.
-* Keep automation safe, traceable, and debuggable.
+* Validation, logging, rate limiting, test coverage, production deploy polish
 
 ---
 

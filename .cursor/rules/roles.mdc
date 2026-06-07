@@ -1,0 +1,54 @@
+---
+description: Team roles and responsibilities
+alwaysApply: true
+---
+
+# Team Roles
+
+## Frontend Developer
+Assigned Developers:
+- Developer Pukakiii
+
+Responsibilities:
+- UI development
+- React components
+- Responsive design
+- Accessibility
+
+---
+
+## Backend Developer
+Assigned Developers:
+- Developer Pukakiii
+- Developer Kyryll
+
+Responsibilities:
+- API integration
+- Authentication
+- State management
+- Backend logic
+
+---
+
+## UI/UX Designer
+Assigned Developers:
+- Developer Pukakiii
+
+Responsibilities:
+- UI/UX design
+- Layout structure
+- Design system consistency
+- User experience improvements
+
+---
+
+## QA & Documentation
+Assigned Developers:
+- Developer Pukakiii
+- Developer Kyryll
+
+Responsibilities:
+- Testing
+- Bug reporting
+- Documentation
+- Code review support
