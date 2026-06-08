@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, Index, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -23,4 +23,14 @@ class Job(Base):
     posted_at:     Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ingested_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (UniqueConstraint("source", "source_job_id", name="uq_job_origin"),)
+    __table_args__ = (
+        UniqueConstraint("source", "source_job_id", name="uq_job_origin"),
+        # HNSW approximate-NN index for cosine similarity. The extension itself
+        # is created by hand in the migration (it can't be modeled).
+        Index(
+            "ix_jobs_embedding",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
