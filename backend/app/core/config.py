@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
 
+    # Auth 
+    SECRET_KEY: str 
+    ACCESS_TOKEN_LIFETIME_SECONDS: int = 60 * 60 * 24 * 7 # 7 days - persistent sessions
+    COOKIE_NAME: str = "jobagent_auth" 
+    COOKIE_SECURE: bool = False # set True in production (HTTPS-only cookie)
+    FRONTEND_URL: str = "http://localhost:3000" # CORS origin allowed to send the auth cookie
+
     MINIO_ROOT_USER: str
     MINIO_ROOT_PASSWORD: str
     MINIO_PORT: int = 9000
