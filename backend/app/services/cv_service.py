@@ -40,6 +40,9 @@ class CVService:
             await self.s3.delete_objects([s3_key]) # delete the orphan  
             raise
 
+    async def list(self, user_id: UUID, limit: int = 20, offset: int = 0) -> list[CV]:
+        return await self.repo.list_by_user(user_id, limit=limit, offset=offset)
+
     async def get_download_url(self, user_id: UUID, cv_id: UUID) -> tuple[str, int]: 
         cv = await self.repo.get_by_id(cv_id)
         if cv is None or cv.user_id != user_id:
@@ -54,4 +57,4 @@ class CVService:
             raise CVNotFound("CV not found.") 
         await self.s3.delete_objects([cv.s3_key])
         await self.repo.delete(cv)
-        
+
