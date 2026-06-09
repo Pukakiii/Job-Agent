@@ -19,6 +19,7 @@ dependencies = [
     "httpx",
     "boto3",
     "python-multipart",
+    "filetype", 
 ]
 
 [project.optional-dependencies]
