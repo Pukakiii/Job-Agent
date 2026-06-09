@@ -29,7 +29,7 @@ async def get_user_manager(user_db=Depends(get_user_db)):
 cookie_transport = CookieTransport(
     cookie_name=settings.COOKIE_NAME,
     cookie_max_age=settings.ACCESS_TOKEN_LIFETIME_SECONDS, 
-    cookier_secure=settings.COOKIE_SECURE, 
+    cookie_secure=settings.COOKIE_SECURE,
     cookie_httponly=True, 
     cookie_samesite="lax", 
 )
