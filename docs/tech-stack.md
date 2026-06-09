@@ -1,6 +1,6 @@
 # Tech Stack 
 
-- Frontend: NextJS
+- Frontend: Next.js (App Router, `src/` directory), TypeScript, Tailwind CSS — feature-based layout under `frontend/src/` (see [code-architecture.md](code-architecture.md#frontend-folder-structure))
 - Backend: FastAPI
 - Scraping: Apify for Indeed/LinkedIn + Official API if exist / other scrapping tools
 - AI layer: 

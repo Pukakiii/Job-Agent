@@ -4,6 +4,8 @@ This file provides a full documentation of the code architecture in this project
 
 ## Folder Structure
 
+### Backend
+
 ```
 backend/
 ├── app/
@@ -54,6 +56,92 @@ backend/
 ```
  
 The split between `services/` and `workers/` matters here: ingestion logic lives in `ingestion_service.py` so it can be called from a cron-triggered worker *and* tested directly. `workers/tasks.py` is just the thin ARQ entry point that delegates into it.
+
+### Frontend folder structure
+
+Next.js App Router with a `src/` directory. Route groups `(auth)` and `(dashboard)` separate public auth pages from the authenticated shell without affecting URLs. **Bold** = planned file, not yet created.
+
+```
+frontend/
+├── public/
+│
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   │
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/
+│   │   │   ├── jobs/
+│   │   │   ├── cvs/
+│   │   │   ├── applications/
+│   │   │   ├── documents/
+│   │   │   ├── outreach/
+│   │   │   └── settings/
+│   │   │
+│   │   ├── **layout.tsx**
+│   │   ├── **page.tsx**
+│   │   ├── **globals.css**
+│   │   └── **not-found.tsx**
+│   │
+│   ├── components/              # shared, domain-agnostic UI
+│   │   ├── ui/
+│   │   ├── layout/
+│   │   └── forms/
+│   │
+│   ├── features/                # vertical slices — components, hooks, helpers per domain
+│   │   ├── auth/
+│   │   ├── jobs/
+│   │   ├── cvs/
+│   │   ├── applications/
+│   │   ├── analysis/            # AI scores, fit explanations, scam flags
+│   │   ├── documents/           # resume & cover letter generation
+│   │   ├── outreach/
+│   │   ├── dashboard/
+│   │   └── settings/
+│   │
+│   ├── hooks/                   # shared React hooks
+│   │
+│   ├── lib/
+│   │   ├── api/                 # typed fetch wrappers — one file per API resource
+│   │   │   ├── **client.ts**    # base URL, auth header, error envelope
+│   │   │   ├── **auth.ts**
+│   │   │   ├── **jobs.ts**
+│   │   │   ├── **cvs.ts**
+│   │   │   ├── **searches.ts**  # semantic match trigger & history
+│   │   │   ├── **applications.ts**
+│   │   │   ├── **documents.ts**
+│   │   │   └── **outreach.ts**
+│   │   │
+│   │   ├── utils/
+│   │   └── constants/
+│   │
+│   ├── types/                   # shared TypeScript types mirroring API schemas
+│   │   ├── **api.ts**           # error envelope, pagination
+│   │   ├── **auth.ts**
+│   │   ├── **jobs.ts**
+│   │   ├── **cvs.ts**
+│   │   ├── **applications.ts**
+│   │   ├── **analysis.ts**
+│   │   ├── **documents.ts**
+│   │   ├── **outreach.ts**
+│   │   └── **dashboard.ts**
+│   │
+│   ├── mocks/                   # MSW handlers / fixture data for local dev
+│   │
+│   └── styles/
+│
+├── **.env.local**
+├── **next.config.ts**
+├── package.json
+├── **tsconfig.json**
+└── **eslint.config.mjs**
+```
+
+**Layering.** `app/` pages stay thin: layout, data fetching at the route boundary, compose from `features/`. `features/<domain>/` owns domain UI and local state; it calls `lib/api/<resource>.ts` and imports types from `types/`. `components/` holds reusable primitives only — if a component is used by one domain, it belongs in that feature folder.
+
+**API client.** `lib/api/client.ts` centralises the backend base URL, JWT attachment, and the `{"error": {"code", "message"}}` envelope from the backend error-handling section. Domain modules (`jobs.ts`, `cvs.ts`, …) expose typed functions; pages and features never call `fetch` directly.
 
 ## The layers
  

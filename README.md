@@ -80,7 +80,7 @@ What exists today versus what the docs describe as the target:
 | Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md) |
 | Auth | Planned — `fastapi-users` + JWT |
 | ARQ workers | Planned — ingestion, embedding, email tasks |
-| Frontend | Scaffold `package.json` only — Next.js not initialized |
+| Frontend | Folder structure scaffolded (`src/app`, features, lib/api); Next.js not yet initialized |
 | Docker / infra | Documented — Compose files not yet added |
 | Tests | Not started |
 
@@ -193,11 +193,17 @@ job-agent/
 │   ├── system-requirements.md
 │   ├── tech-stack.md
 │   └── TODO.md                  # active tasks
-├── frontend/                    # scaffold — Next.js not yet initialized
-│   ├── app/
-│   ├── components/
-│   ├── lib/
-│   ├── styles/
+├── frontend/                    # folder scaffold — Next.js not yet initialized
+│   ├── public/
+│   ├── src/
+│   │   ├── app/                 # App Router (route groups: auth, dashboard)
+│   │   ├── components/          # shared UI, layout, forms
+│   │   ├── features/            # domain modules (auth, jobs, cvs, …)
+│   │   ├── hooks/
+│   │   ├── lib/                 # api client, utils, constants
+│   │   ├── types/
+│   │   ├── mocks/
+│   │   └── styles/
 │   └── package.json
 ├── infra/
 │   └── docker/                  # ** Compose + Dockerfile (planned) **
@@ -400,7 +406,13 @@ AI-assisted drafting via Postmark or Gmail API. Emails are separate from applica
 
 ## Frontend Overview
 
-Next.js App Router dashboard: job matches with scores and scam flags, CV management, document generation, applications Kanban, statistics, settings. Fetches from FastAPI only — no direct DB access. Surfaces direct apply links; no server-side browser automation — [ADR 003](docs/adr/003-apply-automation.md).
+Next.js App Router (`src/` directory) with route groups for unauthenticated (`(auth)`) and authenticated (`(dashboard)`) areas. Domain logic lives in `src/features/`; shared primitives in `src/components/`; API calls in `src/lib/api/` (one module per backend resource). Pages are thin — they compose feature components and call typed API helpers.
+
+**Routes (planned):** login, register, dashboard, jobs, CVs, applications, documents, outreach, settings.
+
+**Conventions:** job matches with scores and scam flags, CV management, document generation, applications Kanban, statistics. Fetches from FastAPI only — no direct DB access. Surfaces direct apply links; no server-side browser automation — [ADR 003](docs/adr/003-apply-automation.md).
+
+Full folder layout: [code-architecture.md](docs/code-architecture.md#frontend-folder-structure).
 
 ---
 

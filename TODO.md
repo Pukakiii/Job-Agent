@@ -12,8 +12,8 @@ See [contributing-rules.md](contributing-rules.md) for branch naming and PR conv
 
 (docker-orchestration.md)
 
-- [ ] **Initialize Next.js frontend** — Run `create-next-app` in `frontend/` (TypeScript, Tailwind, App Router); add `lib/api-client.ts` typed against backend base URL
-- [ ] **App shell UI** — Layout, navigation, design tokens, and placeholder pages (jobs dashboard, CV upload, applications) matching [system-requirements.md](system-requirements.md) screen list
+- [ ] **Initialize Next.js frontend** — Run `create-next-app` in `frontend/` with `--src-dir` (TypeScript, Tailwind, App Router); wire config into the existing folder scaffold per [code-architecture.md](code-architecture.md#frontend-folder-structure); add `src/lib/api/client.ts` typed against backend base URL
+- [ ] **App shell UI** — Layout, navigation, design tokens, and pages under `src/app/(dashboard)/` (jobs, CVs, applications, documents, outreach, settings) matching [system-requirements.md](system-requirements.md) screen list
 
 ---
 
