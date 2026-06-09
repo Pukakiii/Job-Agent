@@ -60,3 +60,40 @@ def s3() -> S3:
         )
         boto3.client("s3", region_name=cfg.S3_REGION).create_bucket(Bucket=cfg.S3_BUCKET_NAME)
         yield S3(cfg.S3_BUCKET_NAME, cfg)
+
+
+@pytest_asyncio.fixture
+async def auth_client(pg_url):
+    """httpx client bound to the app, with get_db overridden to a committing
+    session on the test container. Fresh schema per test for isolation.
+    httpx's cookie jar carries the auth cookie across requests automatically.
+    """
+    from httpx import ASGITransport, AsyncClient
+
+    from app.api.deps import get_db
+    from app.main import app
+
+    engine = create_async_engine(pg_url)
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    app.dependency_overrides[get_db] = override_get_db
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+
+    app.dependency_overrides.clear()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
