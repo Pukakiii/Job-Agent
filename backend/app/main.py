@@ -7,6 +7,7 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.logger import configure_logging, get_logger
+from app.api.errors import register_error_handlers
 
 logger = get_logger("app.main")
 
@@ -22,6 +23,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+register_error_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
