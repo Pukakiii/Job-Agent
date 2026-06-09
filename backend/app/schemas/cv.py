@@ -19,3 +19,14 @@ class CVUploadResponse(BaseModel):        # never exposes s3_key
     id: UUID
     original_filename: str
     created_at: datetime
+
+class CVRead(BaseModel):                  # list item - never exposes s3_key
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    original_filename: str
+    content_type: str 
+    created_at: datetime
+
+class CVDownloadResponse(BaseModel): 
+    url: str
+    expires_in: int  
