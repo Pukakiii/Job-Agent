@@ -10,7 +10,9 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (foundation):** Backend core (`config`, `db`, app factory, CORS), SQLAlchemy models + Alembic initial migration (pgvector HNSW), JWT auth (`fastapi-users`), repositories (`job_repo`, `search_repo`, `cv_repo`), S3 integration, and repository-layer tests (Testcontainers + moto).
 
-**Not started / in progress:** API routes beyond auth, service layer, ARQ workers, Docker Compose, job-source adapters, AI integrations, and the Next.js frontend (folder scaffold only).
+**Not started / in progress:** API routes beyond auth, service layer, ARQ workers, Docker Compose, job-source adapters, AI integrations, and frontend feature pages (route groups, layouts, dashboard shell).
+
+**Done (frontend foundation):** Next.js 16 initialized via `create-next-app` (App Router, TypeScript, Tailwind CSS v4, ESLint) with default `layout.tsx`, `page.tsx`, and `globals.css`.
 
 ---
 
@@ -18,7 +20,7 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 *Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules.*
 
-- [ ] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
+- [x] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
 - [ ] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
 - [ ] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
 - [ ] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
