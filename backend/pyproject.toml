@@ -18,6 +18,7 @@ dependencies = [
     "fastapi-users[sqlalchemy]",
     "httpx",
     "boto3",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
