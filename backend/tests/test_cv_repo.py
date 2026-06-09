@@ -83,3 +83,21 @@ async def test_s3_keys_for_user_returns_all_keys(db):
     keys = await repo.s3_keys_for_user(user.id)
 
     assert sorted(keys) == ["cvs/a.pdf", "cvs/b.pdf"]
+
+async def test_delete_removes_row(db):
+    user = await _make_user(db)
+    repo = CVRepository(db)
+    cv = await repo.create(user.id, "cvs/k.pdf", "resume.pdf", "application/pdf")
+    await repo.delete(cv)
+    assert await repo.get_by_id(cv.id) is None
+
+
+async def test_list_by_user_pagination(db):
+    user = await _make_user(db)
+    repo = CVRepository(db)
+    for i in range(3):
+        await repo.create(user.id, f"cvs/{i}.pdf", f"f{i}.pdf", "application/pdf")
+    page = await repo.list_by_user(user.id, limit=2, offset=0)
+    assert len(page) == 2
+    page2 = await repo.list_by_user(user.id, limit=2, offset=2)
+    assert len(page2) == 1
