@@ -8,19 +8,21 @@ See [contributing-rules.md](contributing-rules.md) for branch naming and PR conv
 
 ## Assigned to Pukakiii
 
-_Frontend, UI/UX, infra, and data-layer setup._
+*Frontend, UI/UX, infra, and data-layer setup.*
 
-- [ ] **Data models + initial migration** — Add SQLAlchemy models (`User`, `CV`, `Job`, `Search`, `SearchResult`) with pgvector `Vector(768)`, repositories skeleton, and Alembic `init` migration (`CREATE EXTENSION vector`, HNSW index) per [data-layer.md](data-layer.md)
-- [ ] **Docker local stack** — Add `infra/docker/docker-compose.yml` (postgres/pgvector, Redis, Ollama with model pull + healthcheck, `api`, `worker`) and a multi-stage Dockerfile shared by both entrypoints (`uvicorn` vs `arq`) per [docker-orchestration.md](docker-orchestration.md)
+(docker-orchestration.md)
+
 - [ ] **Initialize Next.js frontend** — Run `create-next-app` in `frontend/` (TypeScript, Tailwind, App Router); add `lib/api-client.ts` typed against backend base URL
 - [ ] **App shell UI** — Layout, navigation, design tokens, and placeholder pages (jobs dashboard, CV upload, applications) matching [system-requirements.md](system-requirements.md) screen list
 
 ---
 
-## Assigned to Kyryll 
+## Assigned to Kyryll
 
-_Backend API, auth, and data-access layer._
+*Backend API, auth, and data-access layer.*
 
+- [ ] **Docker local stack** — Add `infra/docker/docker-compose.yml` (postgres/pgvector, Redis, Ollama with model pull + healthcheck, `api`, `worker`) and a multi-stage Dockerfile shared by both entrypoints (`uvicorn` vs `arq`) per [docker-orchestration.md]
+- [ ] **Data models + initial migration** — Add SQLAlchemy models (`User`, `CV`, `Job`, `Search`, `SearchResult`) with pgvector `Vector(768)`, repositories skeleton, and Alembic `init` migration (`CREATE EXTENSION vector`, HNSW index) per [data-layer.md](data-layer.md)
 - [ ] **Backend core scaffolding** — Implement `core/config.py`, `core/db.py`, app factory with async lifespan (Redis pool, DB engine), versioned router at `/api/v1`, and domain error envelope per [code-architecture.md](code-architecture.md)
 - [ ] **JWT authentication** — Integrate `fastapi-users` (register, login, JWT refresh), `api/deps.py` (`get_db`, `current_active_user`), and `api/v1/routes/auth.py` per [code-architecture.md](code-architecture.md)
 - [ ] **API route scaffolding** — Add thin v1 routes and Pydantic schemas for CV upload, job read, and search trigger (`schemas/`, `api/v1/routes/`) delegating to placeholder services
@@ -30,7 +32,7 @@ _Backend API, auth, and data-access layer._
 
 ## Joint Tasks
 
-_Open to Pukakiii, Kyryll, or external contributors._
+*Open to Pukakiii, Kyryll, or external contributors.*
 
 - [ ] **ARQ worker skeleton** — Add `workers/settings.py` and `workers/tasks.py` with `scrape_board` and `embed_jobs` stubs wired to `IngestionService` placeholder ([ADR 001](adr/001-queue-tool.md))
 - [ ] **Test harness** — `tests/conftest.py` with `httpx.AsyncClient`, dependency overrides, and a passing health-check test per [code-architecture.md](code-architecture.md)
