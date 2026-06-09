@@ -1,39 +1,79 @@
 # Project TODO
 
-First-wave tasks for MVP foundation. Pick work from your section; **Joint Tasks** are open to any contributor (including new joiners via PR).
+Second-wave tasks for MVP foundation. Pick work from your section; **Joint Tasks** are open to any contributor (including new joiners via PR).
 
-See [contributing-rules.md](contributing-rules.md) for branch naming and PR conventions.
+Each item is scoped to **one commit** — small, reviewable, and modular. See [contributing-rules.md](docs/contributing-rules.md) for branch naming and PR conventions. Assignees are grouped by [team roles](.cursor/rules/roles.mdc) — check that file when picking or adding tasks.
+
+---
+
+## Current stage
+
+**Done (foundation):** Backend core (`config`, `db`, app factory, CORS), SQLAlchemy models + Alembic initial migration (pgvector HNSW), JWT auth (`fastapi-users`), repositories (`job_repo`, `search_repo`, `cv_repo`), S3 integration, and repository-layer tests (Testcontainers + moto).
+
+**Not started / in progress:** API routes beyond auth, service layer, ARQ workers, Docker Compose, job-source adapters, AI integrations, and the Next.js frontend (folder scaffold only).
 
 ---
 
 ## Assigned to Pukakiii
 
-*Frontend, UI/UX, infra, and data-layer setup.*
+*Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules.*
 
-(docker-orchestration.md)
-
-- [ ] **Initialize Next.js frontend** — Run `create-next-app` in `frontend/` with `--src-dir` (TypeScript, Tailwind, App Router); wire config into the existing folder scaffold per [code-architecture.md](code-architecture.md#frontend-folder-structure); add `src/lib/api/client.ts` typed against backend base URL
-- [ ] **App shell UI** — Layout, navigation, design tokens, and pages under `src/app/(dashboard)/` (jobs, CVs, applications, documents, outreach, settings) matching [system-requirements.md](system-requirements.md) screen list
+- [ ] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
+- [ ] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
+- [ ] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
+- [ ] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
+- [ ] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, and error display
+- [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
+- [ ] **Auth session hook** — Add `src/features/auth/useAuth.ts` for current user state, loading, and cookie-backed session persistence
+- [ ] **Route protection middleware** — Add `src/middleware.ts` to redirect unauthenticated users away from `(dashboard)` routes
+- [ ] **Shared UI primitives** — Add `Button`, `Input`, `Label`, and `Card` under `src/components/ui/`
+- [ ] **Dashboard shell layout** — Add `(dashboard)/layout.tsx` with sidebar nav linking jobs, CVs, applications, documents, outreach, and settings
+- [ ] **Jobs page scaffold** — Add `(dashboard)/jobs/page.tsx` with empty state and list container ready for API data
+- [ ] **CVs page scaffold** — Add `(dashboard)/cvs/page.tsx` with upload dropzone placeholder and active-CV selector UI
+- [ ] **Applications page scaffold** — Add `(dashboard)/applications/page.tsx` with Kanban column layout (saved / applied / interview / offer / rejected)
+- [ ] **Documents page scaffold** — Add `(dashboard)/documents/page.tsx` for resume and cover-letter generation placeholders
+- [ ] **Outreach page scaffold** — Add `(dashboard)/outreach/page.tsx` with email list and compose panel placeholders
+- [ ] **Settings page scaffold** — Add `(dashboard)/settings/page.tsx` with account info and AI-instruction fields
+- [ ] **Jobs API module** — Add `src/lib/api/jobs.ts` with `getJob` and list helpers mirroring backend schemas
+- [ ] **CVs API module** — Add `src/lib/api/cvs.ts` with upload, list, and set-active helpers
+- [ ] **Searches API module** — Add `src/lib/api/searches.ts` with `triggerSearch` and `getSearchHistory` helpers
+- [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
 
 ---
 
 ## Assigned to Kyryll
 
-*Backend API, auth, and data-access layer.*
+*Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra.*
 
-- [ ] **Docker local stack** — Add `infra/docker/docker-compose.yml` (postgres/pgvector, Redis, Ollama with model pull + healthcheck, `api`, `worker`) and a multi-stage Dockerfile shared by both entrypoints (`uvicorn` vs `arq`) per [docker-orchestration.md]
-- [ ] **Data models + initial migration** — Add SQLAlchemy models (`User`, `CV`, `Job`, `Search`, `SearchResult`) with pgvector `Vector(768)`, repositories skeleton, and Alembic `init` migration (`CREATE EXTENSION vector`, HNSW index) per [data-layer.md](data-layer.md)
-- [ ] **Backend core scaffolding** — Implement `core/config.py`, `core/db.py`, app factory with async lifespan (Redis pool, DB engine), versioned router at `/api/v1`, and domain error envelope per [code-architecture.md](code-architecture.md)
-- [ ] **JWT authentication** — Integrate `fastapi-users` (register, login, JWT refresh), `api/deps.py` (`get_db`, `current_active_user`), and `api/v1/routes/auth.py` per [code-architecture.md](code-architecture.md)
-- [ ] **API route scaffolding** — Add thin v1 routes and Pydantic schemas for CV upload, job read, and search trigger (`schemas/`, `api/v1/routes/`) delegating to placeholder services
-- [ ] **Repository layer** — Implement `job_repo.py` (vector search, idempotent upsert) and `search_repo.py` (`save_search`, `get_with_results`) per [data-layer.md](data-layer.md)
+- [ ] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
+- [ ] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
+- [ ] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
+- [ ] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
+- [ ] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
+- [ ] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [ ] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
+- [ ] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
+- [ ] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
+- [ ] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
 
 ---
 
 ## Joint Tasks
 
-*Open to Pukakiii, Kyryll, or external contributors.*
+*Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit.*
 
-- [ ] **ARQ worker skeleton** — Add `workers/settings.py` and `workers/tasks.py` with `scrape_board` and `embed_jobs` stubs wired to `IngestionService` placeholder ([ADR 001](adr/001-queue-tool.md))
-- [ ] **Test harness** — `tests/conftest.py` with `httpx.AsyncClient`, dependency overrides, and a passing health-check test per [code-architecture.md](code-architecture.md)
-- [ ] **First job source adapter** — Implement pluggable `JobSource` protocol and one official API source (e.g. Adzuna) in `integrations/sources/` per [ADR 004](adr/004-jobs-scraping.md)
+- [ ] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
+- [ ] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
+- [ ] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
+- [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
+- [ ] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
+- [ ] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
+- [ ] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
+- [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
+- [ ] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
+- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
+- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
+- [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
+- [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
+- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` once backend route exists
+- [ ] **CI workflow** — Add GitHub Actions job running backend `pytest` and frontend `lint` on pull requests
