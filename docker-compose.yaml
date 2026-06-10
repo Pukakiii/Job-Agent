@@ -5,30 +5,31 @@ services:
       - job-agent-network
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      # TODO: update it into separate env files.
+      - infra/secret/.env.backend
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      # $$ → literal $ at runtime; shell inside the container expands it
+      # using the env vars injected by env_file above.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-  minio: 
+
+  minio:
     image: minio/minio:latest
     networks:
       - job-agent-network
     ports:
       - "${MINIO_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
-    volumes: 
+    volumes:
       - minio_data:/data
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    env_file:
+      - infra/secret/.env.backend
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -37,8 +38,87 @@ services:
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:7-alpine
+    networks:
+      - job-agent-network
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ─────────────────────────────────────────────────────────
+  # Backend services — api and worker share the same image.
+  # What differs is the entrypoint command.
+  # ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/backend/Dockerfile.backend
+    image: job-agent-backend:latest
+    networks:
+      - job-agent-network
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - infra/secret/.env.backend
+    environment:
+      # Override localhost values from .env.backend → Compose service hostnames
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432   # internal Docker port; .env.backend has 5433 (host-side mapping)
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT_URL: http://minio:9000         # server-side (boto3 inside container)
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000  # presigned URLs (browser-reachable)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # worker:
+  #   # Reuses the same image built by the api service — no separate build needed.
+  #   # entrypoint is overridden to run the ARQ background worker instead of uvicorn.
+  #   image: job-agent-backend:latest
+  #   networks:
+  #     - job-agent-network
+  #   env_file:
+  #     - infra/secret/.env.backend
+  #   environment:
+  #     # Same overrides as api
+  #     POSTGRES_HOST: postgres
+  #     POSTGRES_PORT: 5432
+  #     REDIS_URL: redis://redis:6379
+  #     S3_ENDPOINT_URL: http://minio:9000
+  #     S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+  #   command: ["arq", "app.workers.settings.WorkerSettings"]
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+
 networks:
-  job-agent-network:  
+  job-agent-network:
+
 volumes:
   postgres_data:
   minio_data:
+  redis_data:
