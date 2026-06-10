@@ -1,0 +1,73 @@
+# ═══════════════════════════════════════════════════════════
+# Backend Service — Production Dockerfile (Multi-stage)
+# ═══════════════════════════════════════════════════════════
+
+# --- Build Stage ---
+FROM python:3.11-slim AS builder
+
+# Set build-time environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /build
+
+# Install compiler/build tools for C extensions (e.g. asyncpg, pgvector)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment to isolate dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install python dependencies
+# Note: Assumes build context is the project root directory
+COPY infra/docker/backend/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+
+# --- Run Stage ---
+FROM python:3.11-slim AS runner
+
+# Set runtime environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+# Install system runtime dependencies if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user for security
+RUN groupadd -g 10001 appgroup && \
+    useradd -u 10001 -g appgroup -d /app -s /sbin/nologin -c "App User" appuser
+
+# Copy virtual environment from builder stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy backend source code and configurations
+# Note: Assumes build context is the project root directory
+COPY backend/app /app/app
+COPY backend/alembic /app/alembic
+COPY backend/alembic.ini /app/alembic.ini
+COPY backend/pyproject.toml /app/pyproject.toml
+
+# Set secure permissions
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user
+USER appuser
+
+# Expose port for the API service
+EXPOSE 8000
+
+# Default entrypoint/command to run the API service.
+# For the background worker, override this command with:
+# arq app.workers.settings.WorkerSettings
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
