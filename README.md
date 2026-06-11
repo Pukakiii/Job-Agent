@@ -141,19 +141,69 @@ flowchart LR
 
 ## AI Rules
 
-- Source of truth: `ai-agents/global-rules.md` contains the canonical AI rules for the repository.
-- Cursor picks it up via the include in `.cursor/rules/global-rules.mdc` which contains `@include ../../ai-agents/global-rules.md`.
-- Copilot and other tooling can read the full copy in `.github/instructions/global-rules.instructions.md` (this file is a straight copy of the rules with frontmatter).
-- To update rules: edit only `ai-agents/global-rules.md`. The pre-commit hook will copy the body into `.github/instructions/global-rules.instructions.md` while preserving the frontmatter.
-- One-time setup: run:
+Overview
+
+This repository uses a single source-of-truth file for AI rules that automatically propagates to all supported AI tools on commit. Any contributor using a supported AI editor will receive the same rules without extra configuration, ensuring consistent guidance across the team.
+
+How it works
 
 ```
-npm run setup
+ai-agents/*.md  ──(pre-commit hook)──▶  .github/instructions/*.instructions.md  (Copilot, Claude, Gemini, Hermes, Windsurf)
+                ──(native @include)──▶  .cursor/rules/  (Cursor)
 ```
 
-Jobs are ingested asynchronously by ARQ workers, normalized, embedded, and stored in PostgreSQL with pgvector. When a user uploads a CV, the system performs semantic similarity search, re-ranks results with a language model, and surfaces the best matches with explanations. Users complete the final apply step in their own browser via direct links to original postings — see [ADR 003](docs/adr/003-apply-automation.md).
+The repository pre-commit hook scans `ai-agents/` for Markdown files, strips the leading frontmatter from each, and writes generated instruction files into `.github/instructions/`, staging them for commit. The Cursor client reads rules directly using a native `@include` directive that references files in `ai-agents/`, so Cursor consumers get the rules without creating copies.
 
-Backend layering (router → service → repository → ORM) is documented in [code-architecture.md](docs/code-architecture.md).
+Supported tools and where they read rules from
+
+| Tool                             | Reads from                               | How                                                          |
+| -------------------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| Cursor                           | `.cursor/rules/global-rules.mdc`         | `@include` directive, reads `ai-agents/` directly, zero-copy |
+| GitHub Copilot                   | `.github/instructions/*.instructions.md` | native instructions folder, auto-applied to all files        |
+| Claude (claude.ai / Claude Code) | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Gemini                           | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Hermes                           | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Windsurf                         | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+
+How to add or update rules
+
+1. Edit or add a `.md` file inside `ai-agents/` — this is the only place you should ever edit rules
+2. Run `git commit` as normal — the pre-commit hook fires automatically
+3. The hook syncs every `ai-agents/*.md` into `.github/instructions/*.instructions.md` and stages the results
+4. Push — CI will verify the sync is correct on your PR
+5. Never edit `.github/instructions/` files directly — they are generated and will be overwritten
+
+Where to put rules for your specific tool
+
+If you use Copilot / Claude / Gemini / Hermes / Windsurf — where do I put my rules?
+
+Answer: edit `ai-agents/global-rules.md` or add a new `ai-agents/<topic>.md` file. Your tool picks it up automatically via `.github/instructions/`.
+
+If you use Cursor — where do I put my rules?
+
+Answer: same place — `ai-agents/`. Cursor reads it directly via `@include`, no copy needed.
+
+Can I add a tool-specific file?
+
+Answer: yes — add `ai-agents/<toolname>.md` and the hook will create `.github/instructions/<toolname>.instructions.md` automatically on next commit.
+
+One-time setup (for new contributors)
+
+```
+git clone <repo-url>
+cd <repo-name>
+npm install
+```
+
+That's it — npm install activates the pre-commit hook and chmod via the prepare script. No other setup required.
+
+CI enforcement
+
+Every pull request that touches `ai-agents/` or `.github/instructions/` triggers a GitHub Actions workflow that diffs the source and generated files. If any generated instruction file is out of sync with its source, the workflow fails the PR and instructs contributors to run `git commit` locally so the pre-commit hook can update the generated files.
+
+Bypassing the hook (not recommended)
+
+If you use git commit --no-verify, the sync will not run. The CI check will catch this and fail your PR.
 
 ---
 
