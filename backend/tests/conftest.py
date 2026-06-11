@@ -27,10 +27,13 @@ from app.core.config import settings
 from app.integrations.s3 import S3
 from app.models import Base
 
-if sys.platform == "win32":
-    @pytest.fixture(scope="session")
-    def _asyncio_loop_factory():
+@pytest.fixture(scope="session")
+def _asyncio_loop_factory():
+    # psycopg3 requires SelectorEventLoop on Windows; return None elsewhere to let
+    # pytest-asyncio pick the platform default.
+    if sys.platform == "win32":
         return asyncio.SelectorEventLoop
+    return None
 
 
 @pytest.fixture(scope="session")

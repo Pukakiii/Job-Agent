@@ -14,6 +14,11 @@ logger = get_logger("app.workers.settings")
 
 async def startup(ctx) -> None:
     configure_logging()
+    if not settings.OPENAI_API_KEY:
+        raise RuntimeError(
+            "OPENAI_API_KEY is not set — worker cannot embed jobs. "
+            "Add it to infra/secret/.env.backend."
+        )
     client = httpx.AsyncClient()
     ctx["http_client"] = client
     ctx["sources"] = build_sources(client, settings)
@@ -26,6 +31,8 @@ async def shutdown(ctx) -> None:
 
 
 class WorkerSettings:
+    # nightly_refresh is in functions (not just cron_jobs) so it can be
+    # manually enqueued for an ad-hoc full refresh.
     functions = [scrape_board, nightly_refresh]
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
     cron_jobs = [cron(nightly_refresh, hour=3, minute=0)]
