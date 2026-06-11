@@ -1,4 +1,9 @@
-from typing import Protocol
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from app.integrations.openai_client import OpenAIClient
 
 
 class Embedder(Protocol):
@@ -6,7 +11,12 @@ class Embedder(Protocol):
 
 
 class OpenAIEmbedder:
-    def __init__(self, client, dimensions: int) -> None:
+    """Wraps OpenAIClient to satisfy the Embedder Protocol at 768 dims.
+
+    Pass an OpenAIClient as `client` — do not pass it directly as an Embedder.
+    """
+
+    def __init__(self, client: "OpenAIClient", dimensions: int) -> None:
         self._client = client
         self._dimensions = dimensions
 
