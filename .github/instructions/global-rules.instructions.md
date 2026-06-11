@@ -1,10 +1,7 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
----
-
-## Project overview:
 
 AI Rules - Single Source of Truth
 
