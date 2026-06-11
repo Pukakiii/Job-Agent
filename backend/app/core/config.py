@@ -60,6 +60,31 @@ class Settings(BaseSettings):
     OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
     OPENAI_EMBED_MODEL: str = "text-embedding-3-small"
 
+    # Ingestion / scraping
+    REDIS_URL: str = "redis://localhost:6379"
+    EMBED_DIM: int = 768  # must match jobs.embedding Vector(768)
+    SOURCE_HTTP_TIMEOUT: float = 30.0
+    INGEST_DEFAULT_QUERIES: list[str] = ["python developer"]  # nightly cron queries
+
+    # Adzuna (sanctioned API)
+    ADZUNA_ENABLED: bool = True
+    ADZUNA_APP_ID: str | None = None
+    ADZUNA_APP_KEY: str | None = None
+    ADZUNA_COUNTRY: str = "gb"
+    ADZUNA_BASE_URL: str = "https://api.adzuna.com/v1/api"
+
+    # Jooble (sanctioned API)
+    JOOBLE_ENABLED: bool = True
+    JOOBLE_API_KEY: str | None = None
+    JOOBLE_BASE_URL: str = "https://jooble.org/api"
+
+    # Indeed via Apify (scraped — best-effort, off by default)
+    INDEED_ENABLED: bool = False
+    APIFY_API_TOKEN: str | None = None
+    APIFY_INDEED_ACTOR: str = "misceres~indeed-scraper"
+    APIFY_BASE_URL: str = "https://api.apify.com/v2"
+    APIFY_TIMEOUT: float = 120.0
+
     @property
     def database_url(self) -> str:
         """Async SQLAlchemy URL, assembled from the POSTGRES_* parts."""

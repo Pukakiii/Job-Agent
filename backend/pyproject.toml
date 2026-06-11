@@ -21,6 +21,7 @@ dependencies = [
     "python-multipart",
     "filetype",
     "openai",
+    "tenacity",
 ]
 
 [project.optional-dependencies]
