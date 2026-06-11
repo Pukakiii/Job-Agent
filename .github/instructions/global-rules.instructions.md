@@ -4,9 +4,11 @@ applyTo: "**"
 
 
 ### Project overview
+
 An AI-first job search platform that ingests job data, performs semantic matching, scores opportunities, generates resumes and cover letters, manages outreach, and tracks applications. Early scaffold — health check only today; architecture and docs are the source of truth.
 
 ### Code style
+
 - Follow existing ESLint/Prettier config for TypeScript; follow pyproject.toml tooling for Python
 - Python: PEP8, type hints everywhere, no bare `except`, no `print()` in production code
 - TypeScript: no `any`, no `console.log` in production, strict null checks
@@ -15,6 +17,7 @@ An AI-first job search platform that ingests job data, performs semantic matchin
 - Write tests for every new service method and repository method
 
 ### Architecture
+
 - Backend layers are strict: routes/controllers handle HTTP only, business logic lives in services/, data access lives in repositories/, ORM models live in models/
 - Never access the database directly from route handlers or workers — go through repositories
 - Long-running work (ingestion, embedding, email) goes through ARQ workers, never inside request handlers
@@ -24,6 +27,7 @@ An AI-first job search platform that ingests job data, performs semantic matchin
 - Do not use Playwright or any browser automation for job apply — use direct apply links only (ADR 003)
 
 ### Security
+
 - Never log secrets, API keys, tokens, or passwords — not to console, files, or telemetry
 - Sanitize and validate all external inputs — assume all user-provided and scraped data is untrusted
 - Use parameterized queries or SQLAlchemy ORM — never raw string SQL with user input
@@ -32,12 +36,14 @@ An AI-first job search platform that ingests job data, performs semantic matchin
 - JWT handling must go through fastapi-users — do not roll custom auth
 
 ### Data and migrations
+
 - Every schema change requires an Alembic migration — never edit the DB schema directly
 - Migrations must be small, reversible where possible, and tested locally before push
 - Never run migrations on app startup — migrations are a separate explicit step
 - Jobs are a shared corpus — per-user relevance lives on search_results, not on the jobs table
 
 ### What NOT to do
+
 - Do not put business logic in route handlers
 - Do not put DB queries in services — that belongs in repositories
 - Do not introduce new top-level dependencies without an ADR or team sign-off
@@ -48,7 +54,8 @@ An AI-first job search platform that ingests job data, performs semantic matchin
 - Do not use git commit --no-verify — CI will catch it and fail your PR
 
 ### Change process
-- Edit only ai-agents/*.md to update these rules — the pre-commit hook syncs everything else
+
+- Edit only ai-agents/\*.md to update these rules — the pre-commit hook syncs everything else
 - Document significant architecture decisions as ADRs in docs/adr/
 - Keep PRs focused — one concern per PR
 - Rebase on main before opening a PR
