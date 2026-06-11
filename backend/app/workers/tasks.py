@@ -36,6 +36,6 @@ async def enqueue_scrape(
     query: str,
     location: str | None = None,
     sources: list[str] | None = None,
-):
-    """Enqueue an on-demand scrape job."""
-    return await redis.enqueue_job("scrape_board", query, location, sources)
+) -> str:
+    """Enqueue an on-demand scrape job. Returns the ARQ job id."""
+    return await redis.enqueue_job("scrape_board", query, location=location, sources=sources)
