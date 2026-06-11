@@ -19,7 +19,8 @@ dependencies = [
     "httpx",
     "boto3",
     "python-multipart",
-    "filetype", 
+    "filetype",
+    "openai",
 ]
 
 [project.optional-dependencies]
