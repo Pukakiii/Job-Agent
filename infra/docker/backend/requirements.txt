@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+alembic
+anyio
+pydantic
+pydantic-settings
+asyncpg
+pgvector
+arq
+redis
+fastapi-users[sqlalchemy]
+httpx
+boto3
+python-multipart
+filetype
+openai
