@@ -184,6 +184,7 @@ class OpenAIClient:
         texts: list[str],
         *,
         model: str | None = None,
+        dimensions: int | None = None,
     ) -> list[list[float]] | None:
         """Embed a list of strings in a single API call.
 
@@ -191,8 +192,9 @@ class OpenAIClient:
         so the returned list always matches the order of `texts`.
 
         Args:
-            texts: Strings to embed. Empty list returns [] without an API call.
-            model: Override the default embedding model for this call.
+            texts:      Strings to embed. Empty list returns [] without an API call.
+            model:      Override the default embedding model for this call.
+            dimensions: Reduced output dimensions (Matryoshka — text-embedding-3-* only).
 
         Returns:
             An ordered list of embedding vectors, or None on failure.
@@ -200,12 +202,10 @@ class OpenAIClient:
         if not texts:
             return []
         try:
-            response = await self._client.embeddings.create(
-                model=model or settings.OPENAI_EMBED_MODEL,
-                input=texts,
-                encoding_format="float",
-            )
-            # Sort by index to guarantee order matches the input list
+            kwargs = dict(model=model or settings.OPENAI_EMBED_MODEL, input=texts, encoding_format="float")
+            if dimensions is not None:
+                kwargs["dimensions"] = dimensions  # Matryoshka: text-embedding-3-* support reduced dims
+            response = await self._client.embeddings.create(**kwargs)
             return [d.embedding for d in sorted(response.data, key=lambda d: d.index)]
         except Exception:
             logger.exception("[OPENAI] embed_batch() failed (%d texts)", len(texts))
