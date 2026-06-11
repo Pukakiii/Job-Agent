@@ -13,3 +13,7 @@ To keep our codebase clean and manageable, please adhere to the following rules 
     - `chore` for chore tasks(config files, makefiles, etc.)
     - `docs` for documentation related
 - **Pull requests (PRs)**: After finishing your work, open a pull request, ensure your branch is reabsed with the latest `main` branch and all tests pass. Provide an explicit description and a title for every PR opened. Every pull request is going to be review by the main contributors. 
+
+## PR Template
+
+Please use the project pull request template; include a concise description, type of change, checklist, and notes for reviewers. The template is available at `.github/pull_request_template.md` and should be filled out for every PR.
