@@ -1,0 +1,54 @@
+name: Verify AI rules sync
+
+on:
+  pull_request:
+    paths:
+      - 'ai-agents/**'
+      - '.github/instructions/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check instructions files match ai-agents source
+        run: |
+          set -euo pipefail
+
+          FAIL=0
+          AWK_SCRIPT='BEGIN{inblock=0}
+          { if (NR==1 && $0=="---") { inblock=1; next }
+            if (inblock==1 && $0=="---") { inblock=0; next }
+            if (inblock==1) next
+            print
+          }'
+
+          for SRC in ai-agents/*.md; do
+            [ -f "$SRC" ] || continue
+            FILENAME="$(basename "$SRC" .md).instructions.md"
+            DST=".github/instructions/$FILENAME"
+
+            if [ ! -f "$DST" ]; then
+              echo "MISSING: $DST (expected from $SRC)"
+              FAIL=1
+              continue
+            fi
+
+            EXPECTED_BODY=$(awk "$AWK_SCRIPT" "$SRC")
+            ACTUAL_BODY=$(tail -n +5 "$DST")
+
+            if [ "$EXPECTED_BODY" != "$ACTUAL_BODY" ]; then
+              echo "OUT OF SYNC: $DST does not match $SRC"
+              diff <(echo "$EXPECTED_BODY") <(echo "$ACTUAL_BODY")
+              FAIL=1
+            else
+              echo "OK: $DST"
+            fi
+          done
+
+          if [ "$FAIL" -eq 1 ]; then
+            echo ""
+            echo "Run 'git commit' locally to trigger the pre-commit hook and sync the files, then push again."
+            exit 1
+          fi

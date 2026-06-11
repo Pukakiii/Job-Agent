@@ -97,3 +97,53 @@ async def auth_client(pg_url):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
+@pytest_asyncio.fixture
+async def cv_client(pg_url):
+    """Authenticated httpx client with a per-test DB (committing) and a moto-backed
+    S3 override, plus a registered+logged-in user (cookie set)."""
+    from httpx import ASGITransport, AsyncClient
+
+    from app.api.deps import get_db, get_s3
+    from app.main import app
+
+    engine = create_async_engine(pg_url)
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_db():
+        async with factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    with mock_aws():
+        cfg = settings.model_copy(
+            update={"S3_ENDPOINT_URL": None, "S3_PUBLIC_ENDPOINT_URL": None, "S3_SSE": None}
+        )
+        boto3.client("s3", region_name=cfg.S3_REGION).create_bucket(Bucket=cfg.S3_BUCKET_NAME)
+        test_s3 = S3(cfg.S3_BUCKET_NAME, cfg)
+
+        app.dependency_overrides[get_db] = override_get_db
+        app.dependency_overrides[get_s3] = lambda: test_s3
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            creds = {"email": "cv@test.io", "password": "supersecret123"}
+            await client.post("/api/v1/auth/register", json=creds)
+            await client.post(
+                "/api/v1/auth/jwt/login",
+                data={"username": creds["email"], "password": creds["password"]},
+            )
+            yield client
+
+        app.dependency_overrides.clear()
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()

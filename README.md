@@ -8,27 +8,27 @@ An AI-first job search platform that collects jobs from multiple sources, dedupl
 
 ## Table of Contents
 
-* [Overview](#overview)
-* [Documentation](#documentation)
-* [Current State](#current-state)
-* [Core Capabilities](#core-capabilities)
-* [System Architecture](#system-architecture)
-* [Technology Stack](#technology-stack)
-* [Project Structure](#project-structure)
-* [Team & Contributing](#team--contributing)
-* [Data Model](#data-model)
-* [Main Workflows](#main-workflows)
-* [Local Development Setup](#local-development-setup)
-* [Environment Variables](#environment-variables)
-* [Database Migrations](#database-migrations)
-* [API Overview](#api-overview)
-* [AI Layer](#ai-layer)
-* [Scraping and Ingestion](#scraping-and-ingestion)
-* [Email Automation](#email-automation)
-* [Frontend Overview](#frontend-overview)
-* [Deployment](#deployment)
-* [Roadmap](#roadmap)
-* [License](#license)
+- [Overview](#overview)
+- [Documentation](#documentation)
+- [Current State](#current-state)
+- [Core Capabilities](#core-capabilities)
+- [System Architecture](#system-architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Team & Contributing](#team--contributing)
+- [Data Model](#data-model)
+- [Main Workflows](#main-workflows)
+- [Local Development Setup](#local-development-setup)
+- [Environment Variables](#environment-variables)
+- [Database Migrations](#database-migrations)
+- [API Overview](#api-overview)
+- [AI Layer](#ai-layer)
+- [Scraping and Ingestion](#scraping-and-ingestion)
+- [Email Automation](#email-automation)
+- [Frontend Overview](#frontend-overview)
+- [Deployment](#deployment)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ---
 
@@ -53,19 +53,19 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [System Requirements](docs/system-requirements.md) | MVP feature checklist and business logic |
-| [Tech Stack](docs/tech-stack.md) | Approved technologies |
-| [Code Architecture](docs/code-architecture.md) | Layered backend design, AI layer, testing strategy |
-| [Data Layer](docs/data-layer.md) | ORM models, pgvector, repositories, migrations |
-| [Docker Orchestration](docs/docker-orchestration.md) | Compose topology, healthchecks, volumes |
-| [Contributing Rules](docs/contributing-rules.md) | Branch naming, commits, PR workflow |
-| [TODO](docs/TODO.md) | Active tasks by assignee |
-| [ADR 001: Queue Tool](docs/adr/001-queue-tool.md) | ARQ + Redis for async workers |
-| [ADR 002: AI Layer](docs/adr/002-ai-layer-stack.md) | Embeddings, pgvector, local/API models |
-| [ADR 003: Apply Automation](docs/adr/003-apply-automation.md) | Direct-apply links instead of browser automation |
-| [ADR 004: Jobs Scraping](docs/adr/004-jobs-scraping.md) | Apify + official APIs, pluggable sources |
+| Document                                                      | Description                                        |
+| ------------------------------------------------------------- | -------------------------------------------------- |
+| [System Requirements](docs/system-requirements.md)            | MVP feature checklist and business logic           |
+| [Tech Stack](docs/tech-stack.md)                              | Approved technologies                              |
+| [Code Architecture](docs/code-architecture.md)                | Layered backend design, AI layer, testing strategy |
+| [Data Layer](docs/data-layer.md)                              | ORM models, pgvector, repositories, migrations     |
+| [Docker Orchestration](docs/docker-orchestration.md)          | Compose topology, healthchecks, volumes            |
+| [Contributing Rules](docs/contributing-rules.md)              | Branch naming, commits, PR workflow                |
+| [TODO](docs/TODO.md)                                          | Active tasks by assignee                           |
+| [ADR 001: Queue Tool](docs/adr/001-queue-tool.md)             | ARQ + Redis for async workers                      |
+| [ADR 002: AI Layer](docs/adr/002-ai-layer-stack.md)           | Embeddings, pgvector, local/API models             |
+| [ADR 003: Apply Automation](docs/adr/003-apply-automation.md) | Direct-apply links instead of browser automation   |
+| [ADR 004: Jobs Scraping](docs/adr/004-jobs-scraping.md)       | Apify + official APIs, pluggable sources           |
 
 ---
 
@@ -73,16 +73,16 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 
 What exists today versus what the docs describe as the target:
 
-| Area | Status |
-|------|--------|
-| Documentation | Complete — requirements, architecture, data layer, Docker plan, ADRs |
-| Backend | `GET /health` only; `pyproject.toml` lists target dependencies |
-| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md) |
-| Auth | Planned — `fastapi-users` + JWT |
-| ARQ workers | Planned — ingestion, embedding, email tasks |
-| Frontend | Next.js 16 initialized (App Router, TypeScript, Tailwind CSS v4, ESLint); domain folders scaffolded; route groups and feature pages not yet built |
-| Docker / infra | Documented — Compose files not yet added |
-| Tests | Not started |
+| Area              | Status                                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Documentation     | Complete — requirements, architecture, data layer, Docker plan, ADRs                                                                              |
+| Backend           | `GET /health` only; `pyproject.toml` lists target dependencies                                                                                    |
+| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md)                                                                           |
+| Auth              | Planned — `fastapi-users` + JWT                                                                                                                   |
+| ARQ workers       | Planned — ingestion, embedding, email tasks                                                                                                       |
+| Frontend          | Next.js 16 initialized (App Router, TypeScript, Tailwind CSS v4, ESLint); domain folders scaffolded; route groups and feature pages not yet built |
+| Docker / infra    | Documented — Compose files not yet added                                                                                                          |
+| Tests             | Not started                                                                                                                                       |
 
 Next steps: see [docs/TODO.md](docs/TODO.md).
 
@@ -92,19 +92,19 @@ Next steps: see [docs/TODO.md](docs/TODO.md).
 
 Target MVP capabilities (from [system-requirements.md](docs/system-requirements.md)):
 
-* User authentication and account management (JWT)
-* CV upload, storage, and active-CV selection
-* Job collection from official APIs and Apify-backed sources
-* Normalization, deduplication, and caching of repeated postings
-* Semantic matching via pgvector embeddings
-* AI-based job scoring, explanations, and categorization
-* Scam and risk detection with stored flags
-* Tailored resume and cover letter generation
-* Outreach email drafting and sending (Postmark or Gmail API)
-* Application tracking with status pipeline
-* Direct apply links for top matches (up to 10 relevant jobs)
-* Background processing through ARQ workers
-* Dashboard for jobs, applications, outreach, and statistics
+- User authentication and account management (JWT)
+- CV upload, storage, and active-CV selection
+- Job collection from official APIs and Apify-backed sources
+- Normalization, deduplication, and caching of repeated postings
+- Semantic matching via pgvector embeddings
+- AI-based job scoring, explanations, and categorization
+- Scam and risk detection with stored flags
+- Tailored resume and cover letter generation
+- Outreach email drafting and sending (Postmark or Gmail API)
+- Application tracking with status pipeline
+- Direct apply links for top matches (up to 10 relevant jobs)
+- Background processing through ARQ workers
+- Dashboard for jobs, applications, outreach, and statistics
 
 ---
 
@@ -139,26 +139,88 @@ flowchart LR
   API --> S3
 ```
 
-Jobs are ingested asynchronously by ARQ workers, normalized, embedded, and stored in PostgreSQL with pgvector. When a user uploads a CV, the system performs semantic similarity search, re-ranks results with a language model, and surfaces the best matches with explanations. Users complete the final apply step in their own browser via direct links to original postings — see [ADR 003](docs/adr/003-apply-automation.md).
+## AI Rules
 
-Backend layering (router → service → repository → ORM) is documented in [code-architecture.md](docs/code-architecture.md).
+Overview
+
+This repository uses a single source-of-truth file for AI rules that automatically propagates to all supported AI tools on commit. Any contributor using a supported AI editor will receive the same rules without extra configuration, ensuring consistent guidance across the team.
+
+How it works
+
+```
+ai-agents/*.md  ──(pre-commit hook)──▶  .github/instructions/*.instructions.md  (Copilot, Claude, Gemini, Hermes, Windsurf)
+                ──(native @include)──▶  .cursor/rules/  (Cursor)
+```
+
+The repository pre-commit hook scans `ai-agents/` for Markdown files, strips the leading frontmatter from each, and writes generated instruction files into `.github/instructions/`, staging them for commit. The Cursor client reads rules directly using a native `@include` directive that references files in `ai-agents/`, so Cursor consumers get the rules without creating copies.
+
+Supported tools and where they read rules from
+
+| Tool                             | Reads from                               | How                                                          |
+| -------------------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| Cursor                           | `.cursor/rules/global-rules.mdc`         | `@include` directive, reads `ai-agents/` directly, zero-copy |
+| GitHub Copilot                   | `.github/instructions/*.instructions.md` | native instructions folder, auto-applied to all files        |
+| Claude (claude.ai / Claude Code) | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Gemini                           | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Hermes                           | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+| Windsurf                         | `.github/instructions/*.instructions.md` | same as Copilot                                              |
+
+How to add or update rules
+
+1. Edit or add a `.md` file inside `ai-agents/` — this is the only place you should ever edit rules
+2. Run `git commit` as normal — the pre-commit hook fires automatically
+3. The hook syncs every `ai-agents/*.md` into `.github/instructions/*.instructions.md` and stages the results
+4. Push — CI will verify the sync is correct on your PR
+5. Never edit `.github/instructions/` files directly — they are generated and will be overwritten
+
+Where to put rules for your specific tool
+
+If you use Copilot / Claude / Gemini / Hermes / Windsurf — where do I put my rules?
+
+Answer: edit `ai-agents/global-rules.md` or add a new `ai-agents/<topic>.md` file. Your tool picks it up automatically via `.github/instructions/`.
+
+If you use Cursor — where do I put my rules?
+
+Answer: same place — `ai-agents/`. Cursor reads it directly via `@include`, no copy needed.
+
+Can I add a tool-specific file?
+
+Answer: yes — add `ai-agents/<toolname>.md` and the hook will create `.github/instructions/<toolname>.instructions.md` automatically on next commit.
+
+One-time setup (for new contributors)
+
+```
+git clone <repo-url>
+cd <repo-name>
+npm install
+```
+
+That's it — npm install activates the pre-commit hook and chmod via the prepare script. No other setup required.
+
+CI enforcement
+
+Every pull request that touches `ai-agents/` or `.github/instructions/` triggers a GitHub Actions workflow that diffs the source and generated files. If any generated instruction file is out of sync with its source, the workflow fails the PR and instructs contributors to run `git commit` locally so the pre-commit hook can update the generated files.
+
+Bypassing the hook (not recommended)
+
+If you use git commit --no-verify, the sync will not run. The CI check will catch this and fail your PR.
 
 ---
 
 ## Technology Stack
 
-| Layer | Technologies |
-|-------|-------------|
-| Frontend | Next.js, TypeScript, Tailwind CSS |
-| Backend | FastAPI, Python, Pydantic, SQLAlchemy, Alembic, fastapi-users (JWT) |
-| Database | PostgreSQL + pgvector |
-| Queue / cache | ARQ, Redis |
-| Scraping | Apify (Indeed, LinkedIn) + official APIs (Adzuna, Jooble, Careerjet, regional) |
-| AI (local) | Ollama — `nomic-embed-text`, `gemma3:4b` |
+| Layer           | Technologies                                                                    |
+| --------------- | ------------------------------------------------------------------------------- |
+| Frontend        | Next.js, TypeScript, Tailwind CSS                                               |
+| Backend         | FastAPI, Python, Pydantic, SQLAlchemy, Alembic, fastapi-users (JWT)             |
+| Database        | PostgreSQL + pgvector                                                           |
+| Queue / cache   | ARQ, Redis                                                                      |
+| Scraping        | Apify (Indeed, LinkedIn) + official APIs (Adzuna, Jooble, Careerjet, regional)  |
+| AI (local)      | Ollama — `nomic-embed-text`, `gemma3:4b`                                        |
 | AI (API / BYOK) | `text-embedding-3-small` + provider LLM (OpenAI, Anthropic, Google, OpenRouter) |
-| Email | Postmark or Gmail API |
-| CV storage | S3 |
-| Infra | Docker |
+| Email           | Postmark or Gmail API                                                           |
+| CV storage      | S3                                                                              |
+| Infra           | Docker                                                                          |
 
 Full details: [tech-stack.md](docs/tech-stack.md).
 
@@ -218,7 +280,7 @@ job-agent/
 
 ---
 
-## Team & Contributing 
+## Team & Contributing
 
 **Core developers:** Pukakiii, Kyryll
 
@@ -228,15 +290,15 @@ Before opening a PR, read [contributing-rules.md](docs/contributing-rules.md) (b
 
 Guidelines:
 
-* Keep services focused; business logic lives in `services/`, not route handlers
-* Long-running work goes through ARQ workers, not request handlers
-* Add Alembic migrations for every schema change
-* Record significant architecture changes as ADRs in `docs/adr/`
-* Do not introduce technologies rejected in ADRs (e.g. Playwright for apply automation)
+- Keep services focused; business logic lives in `services/`, not route handlers
+- Long-running work goes through ARQ workers, not request handlers
+- Add Alembic migrations for every schema change
+- Record significant architecture changes as ADRs in `docs/adr/`
+- Do not introduce technologies rejected in ADRs (e.g. Playwright for apply automation)
 
 ### Terms of joining the team
 
-This project is for people who want **real experience working on a team** and **building a production-shaped product** — reading specs, following architecture, writing reviewable code, and shipping incrementally. If you are a *vibecoder* (copy-paste without understanding docs, skip conventions, or treat the repo as a playground for unrelated experiments), this is not the right fit. **Please note that all contributor roles are voluntary. The project does not currently offer financial compensation, salaries, or contractor payments.**
+This project is for people who want **real experience working on a team** and **building a production-shaped product** — reading specs, following architecture, writing reviewable code, and shipping incrementally. If you are a _vibecoder_ (copy-paste without understanding docs, skip conventions, or treat the repo as a playground for unrelated experiments), this is not the right fit. **Please note that all contributor roles are voluntary. The project does not currently offer financial compensation, salaries, or contractor payments.**
 
 **How to join**
 
@@ -296,12 +358,12 @@ Application statuses: `saved`, `applied`, `interview`, `offer`, `rejected`.
 
 ### Prerequisites
 
-* Python 3.11+
-* Node.js 18+
-* PostgreSQL 15+ with pgvector (or use Docker Compose once added)
-* Redis
-* Docker (recommended)
-* Git
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL 15+ with pgvector (or use Docker Compose once added)
+- Redis
+- Docker (recommended)
+- Git
 
 ### Backend (today)
 
@@ -371,16 +433,16 @@ Rules: never edit production schema directly; keep migrations small; test locall
 
 Target REST surface under `/api/v1`. **Implemented today:** `GET /health` only.
 
-| Domain | Planned endpoints |
-|--------|-------------------|
-| Auth | register, login, JWT refresh (`fastapi-users`) |
-| CVs | upload, list, presigned download |
-| Searches | trigger match, list past searches |
-| Jobs | list, detail (with direct apply URL) |
-| Applications | CRUD + status transitions |
-| AI | score, generate resume/cover letter, scam check |
-| Email | send, list |
-| Ingestion | trigger scrape (returns `202`, work via ARQ) |
+| Domain       | Planned endpoints                               |
+| ------------ | ----------------------------------------------- |
+| Auth         | register, login, JWT refresh (`fastapi-users`)  |
+| CVs          | upload, list, presigned download                |
+| Searches     | trigger match, list past searches               |
+| Jobs         | list, detail (with direct apply URL)            |
+| Applications | CRUD + status transitions                       |
+| AI           | score, generate resume/cover letter, scam check |
+| Email        | send, list                                      |
+| Ingestion    | trigger scrape (returns `202`, work via ARQ)    |
 
 Conventions: plural resource nouns, paginated lists, consistent error envelope — [code-architecture.md](docs/code-architecture.md).
 
@@ -432,39 +494,39 @@ Recommended order: database + Redis → migrations → API → workers → front
 
 ## Roadmap
 
-### Phase 1: Foundation *(in progress)*
+### Phase 1: Foundation _(in progress)_
 
-* Backend skeleton, config, layered structure
-* Core tables and Alembic migrations
-* Docker Compose local stack
-* User authentication (JWT)
-* ~~Next.js init~~ — done; app shell (route groups, layouts, auth pages)
+- Backend skeleton, config, layered structure
+- Core tables and Alembic migrations
+- Docker Compose local stack
+- User authentication (JWT)
+- ~~Next.js init~~ — done; app shell (route groups, layouts, auth pages)
 
 ### Phase 2: Ingestion and embeddings
 
-* Pluggable job sources
-* ARQ workers for async ingestion
-* pgvector index and embedding pipeline
+- Pluggable job sources
+- ARQ workers for async ingestion
+- pgvector index and embedding pipeline
 
 ### Phase 3: AI matching and analysis
 
-* CV upload and S3 storage
-* Semantic search and LLM re-ranking
-* Scoring, explanations, scam checks
+- CV upload and S3 storage
+- Semantic search and LLM re-ranking
+- Scoring, explanations, scam checks
 
 ### Phase 4: Generation and outreach
 
-* Resume and cover letter generation
-* Email generation and sending
+- Resume and cover letter generation
+- Email generation and sending
 
 ### Phase 5: UI and tracking
 
-* Dashboard, job detail, Kanban board
-* Application pipeline and statistics
+- Dashboard, job detail, Kanban board
+- Application pipeline and statistics
 
 ### Phase 6: Hardening
 
-* Validation, logging, rate limiting, test coverage, production deploy polish
+- Validation, logging, rate limiting, test coverage, production deploy polish
 
 ---
 

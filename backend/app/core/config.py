@@ -47,6 +47,19 @@ class Settings(BaseSettings):
     # for local MinIO without a KMS; set to "AES256" against real AWS S3.
     S3_SSE: str | None = None
 
+    # CV upload
+    CV_MAX_BYTES: int = 10 * 1024 * 1024  # 10 MB hard cap
+    CV_ALLOWED_MIME: set[str] = {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # docx
+    }
+    CV_DOWNLOAD_URL_TTL_SECONDS: int = 300  # presigned GET lifetime
+
+    # AI — OpenAI (optional; leave OPENAI_API_KEY unset to disable)
+    OPENAI_API_KEY: str | None = None
+    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
+    OPENAI_EMBED_MODEL: str = "text-embedding-3-small"
+
     @property
     def database_url(self) -> str:
         """Async SQLAlchemy URL, assembled from the POSTGRES_* parts."""

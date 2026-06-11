@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SRC_DIR="$REPO_ROOT/ai-agents"
+DST_DIR="$REPO_ROOT/.github/instructions"
+
+if [ ! -d "$SRC_DIR" ]; then
+  echo "ERROR: ai-agents/ folder not found at $SRC_DIR" >&2
+  exit 1
+fi
+
+mkdir -p "$DST_DIR"
+
+AWK_SCRIPT='BEGIN{inblock=0}
+{ if (NR==1 && $0=="---") { inblock=1; next }
+  if (inblock==1 && $0=="---") { inblock=0; next }
+  if (inblock==1) next
+  print
+}'
+
+synced=0
+for SRC in "$SRC_DIR"/*.md; do
+  [ -f "$SRC" ] || continue
+  FILENAME="$(basename "$SRC" .md).instructions.md"
+  DST="$DST_DIR/$FILENAME"
+  BODY=$(awk "$AWK_SCRIPT" "$SRC")
+  cat > "$DST" <<EOF
+---
+applyTo: "**"
+---
+
+$BODY
+EOF
+  git add "$DST"
+  synced=$((synced + 1))
+done
+
+if [ "$synced" -eq 0 ]; then
+  echo "WARNING: no .md files found in ai-agents/ — nothing synced"
+else
+  echo "AI rules synced: $synced file(s)"
+fi
+
+exit 0
