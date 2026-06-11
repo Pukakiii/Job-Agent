@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** Early scaffold. Documentation and architectural decisions are in place; application code is minimal (backend health check only, frontend not yet initialized). Active work is tracked in [docs/TODO.md](docs/TODO.md).
+**Current status:** Early scaffold. Documentation and architectural decisions are in place; application code is minimal (backend health check only; frontend has Next.js initialized with the default App Router shell). Active work is tracked in [docs/TODO.md](docs/TODO.md).
 
 ---
 
@@ -73,16 +73,16 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 
 What exists today versus what the docs describe as the target:
 
-| Area              | Status                                                                                  |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| Documentation     | Complete — requirements, architecture, data layer, Docker plan, ADRs                    |
-| Backend           | `GET /health` only; `pyproject.toml` lists target dependencies                          |
-| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md)                 |
-| Auth              | Planned — `fastapi-users` + JWT                                                         |
-| ARQ workers       | Planned — ingestion, embedding, email tasks                                             |
-| Frontend          | Folder structure scaffolded (`src/app`, features, lib/api); Next.js not yet initialized |
-| Docker / infra    | Documented — Compose files not yet added                                                |
-| Tests             | Not started                                                                             |
+| Area              | Status                                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Documentation     | Complete — requirements, architecture, data layer, Docker plan, ADRs                                                                              |
+| Backend           | `GET /health` only; `pyproject.toml` lists target dependencies                                                                                    |
+| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md)                                                                           |
+| Auth              | Planned — `fastapi-users` + JWT                                                                                                                   |
+| ARQ workers       | Planned — ingestion, embedding, email tasks                                                                                                       |
+| Frontend          | Next.js 16 initialized (App Router, TypeScript, Tailwind CSS v4, ESLint); domain folders scaffolded; route groups and feature pages not yet built |
+| Docker / infra    | Documented — Compose files not yet added                                                                                                          |
+| Tests             | Not started                                                                                                                                       |
 
 Next steps: see [docs/TODO.md](docs/TODO.md).
 
@@ -255,17 +255,21 @@ job-agent/
 │   ├── system-requirements.md
 │   ├── tech-stack.md
 │   └── TODO.md                  # active tasks
-├── frontend/                    # folder scaffold — Next.js not yet initialized
+├── frontend/                    # Next.js 16 App Router (initialized)
 │   ├── public/
 │   ├── src/
-│   │   ├── app/                 # App Router (route groups: auth, dashboard)
-│   │   ├── components/          # shared UI, layout, forms
-│   │   ├── features/            # domain modules (auth, jobs, cvs, …)
+│   │   ├── app/                 # layout.tsx, page.tsx, globals.css (starter shell)
+│   │   ├── components/          # shared UI, layout, forms (scaffolded)
+│   │   ├── features/            # domain modules (auth, jobs, cvs, …) (scaffolded)
 │   │   ├── hooks/
-│   │   ├── lib/                 # api client, utils, constants
+│   │   ├── lib/                 # api client stubs, utils, constants
 │   │   ├── types/
 │   │   ├── mocks/
 │   │   └── styles/
+│   ├── next.config.ts
+│   ├── tsconfig.json
+│   ├── eslint.config.mjs
+│   ├── postcss.config.mjs       # Tailwind v4
 │   └── package.json
 ├── infra/
 │   └── docker/                  # ** Compose + Dockerfile (planned) **
@@ -373,13 +377,15 @@ uvicorn app.main:app --reload
 
 Health check: `GET http://localhost:8000/health`
 
-### Frontend (after Next.js init)
+### Frontend
 
 ```bash
 cd frontend
-npm install
+npm install   # already done after create-next-app; re-run after pulling dep changes
 npm run dev
 ```
+
+Dev server: `http://localhost:3000`
 
 ### Docker (planned)
 
@@ -468,7 +474,7 @@ AI-assisted drafting via Postmark or Gmail API. Emails are separate from applica
 
 ## Frontend Overview
 
-Next.js App Router (`src/` directory) with route groups for unauthenticated (`(auth)`) and authenticated (`(dashboard)`) areas. Domain logic lives in `src/features/`; shared primitives in `src/components/`; API calls in `src/lib/api/` (one module per backend resource). Pages are thin — they compose feature components and call typed API helpers.
+Next.js 16 App Router (`src/` directory) is initialized with TypeScript, Tailwind CSS v4, and ESLint. The starter shell (`layout.tsx`, `page.tsx`, `globals.css`) runs today; route groups for unauthenticated (`(auth)`) and authenticated (`(dashboard)`) areas are planned next. Domain logic lives in `src/features/`; shared primitives in `src/components/`; API calls in `src/lib/api/` (one module per backend resource). Pages are thin — they compose feature components and call typed API helpers.
 
 **Routes (planned):** login, register, dashboard, jobs, CVs, applications, documents, outreach, settings.
 
@@ -494,7 +500,7 @@ Recommended order: database + Redis → migrations → API → workers → front
 - Core tables and Alembic migrations
 - Docker Compose local stack
 - User authentication (JWT)
-- Next.js init + app shell
+- ~~Next.js init~~ — done; app shell (route groups, layouts, auth pages)
 
 ### Phase 2: Ingestion and embeddings
 

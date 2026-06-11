@@ -80,9 +80,9 @@ frontend/
 │   │   │   ├── outreach/
 │   │   │   └── settings/
 │   │   │
-│   │   ├── **layout.tsx**
-│   │   ├── **page.tsx**
-│   │   ├── **globals.css**
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── globals.css
 │   │   └── **not-found.tsx**
 │   │
 │   ├── components/              # shared, domain-agnostic UI
@@ -105,14 +105,14 @@ frontend/
 │   │
 │   ├── lib/
 │   │   ├── api/                 # typed fetch wrappers — one file per API resource
-│   │   │   ├── **client.ts**    # base URL, auth header, error envelope
-│   │   │   ├── **auth.ts**
-│   │   │   ├── **jobs.ts**
-│   │   │   ├── **cvs.ts**
+│   │   │   ├── client.ts        # base URL, auth header, error envelope (stub)
+│   │   │   ├── auth.ts          # (stub)
+│   │   │   ├── jobs.ts          # (stub)
+│   │   │   ├── cvs.ts           # (stub)
 │   │   │   ├── **searches.ts**  # semantic match trigger & history
-│   │   │   ├── **applications.ts**
-│   │   │   ├── **documents.ts**
-│   │   │   └── **outreach.ts**
+│   │   │   ├── applications.ts  # (stub)
+│   │   │   ├── documents.ts     # (stub)
+│   │   │   └── outreach.ts      # (stub)
 │   │   │
 │   │   ├── utils/
 │   │   └── constants/
@@ -133,10 +133,11 @@ frontend/
 │   └── styles/
 │
 ├── **.env.local**
-├── **next.config.ts**
+├── next.config.ts
 ├── package.json
-├── **tsconfig.json**
-└── **eslint.config.mjs**
+├── tsconfig.json
+├── eslint.config.mjs
+└── postcss.config.mjs           # Tailwind v4
 ```
 
 **Layering.** `app/` pages stay thin: layout, data fetching at the route boundary, compose from `features/`. `features/<domain>/` owns domain UI and local state; it calls `lib/api/<resource>.ts` and imports types from `types/`. `components/` holds reusable primitives only — if a component is used by one domain, it belongs in that feature folder.
