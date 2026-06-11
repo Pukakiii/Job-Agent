@@ -62,7 +62,7 @@ class Settings(BaseSettings):
 
     # Ingestion / scraping
     REDIS_URL: str = "redis://localhost:6379"
-    EMBED_DIM: int = 768  # must match jobs.embedding Vector(768)
+    EMBED_DIM: int = 768  # must match jobs.embedding Vector(768); text-embedding-3-small uses Matryoshka truncation (dimensions=768)
     SOURCE_HTTP_TIMEOUT: float = 30.0
     INGEST_DEFAULT_QUERIES: list[str] = ["python developer"]  # nightly cron queries
 
