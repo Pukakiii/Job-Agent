@@ -1,0 +1,8 @@
+{
+  "name": "job-agent",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "setup": "git config core.hooksPath .githooks"
+  }
+}
