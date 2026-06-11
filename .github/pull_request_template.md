@@ -18,7 +18,7 @@
 - [ ] I did not edit `.github/instructions/` directly — only `ai-agents/` for rule changes
 - [ ] I added or updated tests for new logic
 - [ ] I added an Alembic migration for any schema change
-- [ ] I rebased on `main` before opening this PR
+- [ ] I rebased or merged on `main` before opening this PR
 - [ ] If this is an architecture change, I added or updated an ADR in docs/adr/
 
 ## Notes for reviewers
