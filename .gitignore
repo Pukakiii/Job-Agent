@@ -5,6 +5,7 @@ venv/
 
 # Env
 .env
+.env.backend
 
 # Node
 node_modules/
@@ -13,6 +14,12 @@ node_modules/
 # OS
 .DS_Store
 
-.env.backend
-.env
+# Cursor — ignore local editor state, keep shared rules
+.cursor/*
+!.cursor/rules/
 
+# Other agent folders — not needed, hook handles them via .github/instructions/
+.claude/
+.antigravity/
+.hermes/
+.windsurf/
