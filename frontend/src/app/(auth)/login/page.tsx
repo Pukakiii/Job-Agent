@@ -9,6 +9,7 @@ import { Particles } from "@/components/ui/magic/particles"
 import { ShimmerButton } from "@/components/ui/magic/shimmer-button"
 import { login } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
+import { BrandLogo } from "@/components/auth/brand-logo"
 
 type Field = "email" | "password"
 
@@ -37,19 +38,6 @@ function showFieldError(
   error?: string,
 ): boolean {
   return touched[field] && !!error
-}
-
-function LoginLogo() {
-  return (
-    <div className="mb-8 flex items-center gap-2.5">
-      <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-lg font-semibold text-primary-foreground">
-        J
-      </div>
-      <span className="text-2xl font-semibold tracking-tight text-foreground">
-        Job Agent
-      </span>
-    </div>
-  )
 }
 
 export default function LoginPage() {
@@ -100,7 +88,7 @@ export default function LoginPage() {
   const showEmailError = showFieldError("email", touched, errors.email)
   const showPasswordError = showFieldError("password", touched, errors.password)
 
-  const logo = <LoginLogo />
+  const logo = <BrandLogo className="mb-8" />
 
   const card = (
     <div
