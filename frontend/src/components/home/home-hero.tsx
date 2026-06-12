@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useLayoutEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { BrandLogo } from "@/components/auth/brand-logo"
-import { BlurFade } from "@/components/ui/blur-fade"
+import { FadeIn } from "@/components/home/fade-in"
 import { Particles } from "@/components/ui/particles"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { TypingAnimation } from "@/components/ui/typing-animation"
@@ -19,23 +19,25 @@ const FEATURES = [
 export function HomeHero() {
   const router = useRouter()
   const [particleColor, setParticleColor] = useState("")
+  const [showParticles, setShowParticles] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue("--particle-color")
       .trim()
-    if (color) setParticleColor(color)
+    setParticleColor(color)
+    setShowParticles(true)
   }, [])
 
   return (
-    <main className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
-      {particleColor && (
+    <main className="relative flex min-h-screen min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
+      {showParticles && (
         <Particles
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 h-full w-full"
           quantity={60}
           staticity={80}
           ease={80}
-          size={0.5}
+          size={0.8}
           color={particleColor}
           vx={0.02}
           vy={0.01}
@@ -43,15 +45,15 @@ export function HomeHero() {
       )}
 
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center">
-        <BlurFade delay={0} inView>
+        <FadeIn>
           <BrandLogo className="mb-10" />
-        </BlurFade>
+        </FadeIn>
 
-        <BlurFade delay={0.05} inView>
+        <FadeIn delay={0.05}>
           <p className="mb-6 text-xs font-medium uppercase tracking-widest text-primary">
             AI-powered job search
           </p>
-        </BlurFade>
+        </FadeIn>
 
         <h1 className="max-w-xl text-5xl leading-tight font-semibold tracking-tight text-foreground">
           <TypingAnimation
@@ -65,14 +67,14 @@ export function HomeHero() {
           <span className="text-primary">faster.</span>
         </h1>
 
-        <BlurFade delay={0.15} inView className="mt-6 max-w-md">
+        <FadeIn delay={0.15} className="mt-6 max-w-md">
           <p className="text-base leading-relaxed text-muted-foreground">
             Job Agent collects, scores, and matches opportunities to your CV —
             automatically. No more manual searching.
           </p>
-        </BlurFade>
+        </FadeIn>
 
-        <BlurFade delay={0.25} inView className="mt-10">
+        <FadeIn delay={0.25} className="mt-10">
           <div className="flex flex-wrap justify-center gap-3">
             <ShimmerButton
               type="button"
@@ -92,9 +94,9 @@ export function HomeHero() {
               Sign in
             </Link>
           </div>
-        </BlurFade>
+        </FadeIn>
 
-        <BlurFade delay={0.35} inView className="mt-16">
+        <FadeIn delay={0.35} className="mt-16">
           <div className="flex flex-wrap justify-center gap-8">
             {FEATURES.map((feature) => (
               <div
@@ -106,13 +108,13 @@ export function HomeHero() {
               </div>
             ))}
           </div>
-        </BlurFade>
+        </FadeIn>
 
-        <BlurFade delay={0.45} inView className="mt-12">
+        <FadeIn delay={0.45} className="mt-12">
           <p className="text-xs text-[var(--color-text-faint)]">
             No credit card required · Free to use during beta
           </p>
-        </BlurFade>
+        </FadeIn>
       </div>
     </main>
   )
