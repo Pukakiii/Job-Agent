@@ -12,9 +12,11 @@ type FadeInProps = {
 }
 
 export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
+  const [mounted, setMounted] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
     setReduceMotion(mq.matches)
     const handler = (e: MediaQueryListEvent) => setReduceMotion(e.matches)
@@ -22,7 +24,7 @@ export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
     return () => mq.removeEventListener("change", handler)
   }, [])
 
-  if (reduceMotion) {
+  if (!mounted || reduceMotion) {
     return <div className={className}>{children}</div>
   }
 
@@ -32,6 +34,7 @@ export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: "easeOut" }}
       className={cn(className)}
+      suppressHydrationWarning
     >
       {children}
     </motion.div>

@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { BrandLogo } from "@/components/auth/brand-logo"
+import { ClientMounted } from "@/components/home/client-mounted"
 import { FadeIn } from "@/components/home/fade-in"
 import { Particles } from "@/components/ui/particles"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
@@ -19,23 +20,31 @@ const FEATURES = [
 export function HomeHero() {
   const router = useRouter()
   const [particleColor, setParticleColor] = useState("")
+  const [showParticles, setShowParticles] = useState(false)
+  const [particleKey, setParticleKey] = useState(0)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue("--particle-color")
       .trim()
-    if (color) setParticleColor(color)
+    setParticleColor(color)
+    setShowParticles(true)
+  }, [])
+
+  useEffect(() => {
+    setParticleKey((k) => k + 1)
   }, [])
 
   return (
     <main className="relative flex min-h-screen min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
-      {particleColor && (
+      {showParticles && (
         <Particles
-          className="absolute inset-0 opacity-40"
+          key={particleKey}
+          className="absolute inset-0 h-full w-full"
           quantity={60}
           staticity={80}
           ease={80}
-          size={0.5}
+          size={0.8}
           color={particleColor}
           vx={0.02}
           vy={0.01}
@@ -54,14 +63,16 @@ export function HomeHero() {
         </FadeIn>
 
         <h1 className="max-w-xl text-5xl leading-tight font-semibold tracking-tight text-foreground">
-          <TypingAnimation
-            as="span"
-            className="inline"
-            duration={40}
-            showCursor={false}
-          >
-            Find the right job,
-          </TypingAnimation>{" "}
+          <ClientMounted fallback={<span>Find the right job,</span>}>
+            <TypingAnimation
+              as="span"
+              className="inline"
+              duration={40}
+              showCursor={false}
+            >
+              Find the right job,
+            </TypingAnimation>
+          </ClientMounted>{" "}
           <span className="text-primary">faster.</span>
         </h1>
 
@@ -74,17 +85,28 @@ export function HomeHero() {
 
         <FadeIn delay={0.25} className="mt-10">
           <div className="flex flex-wrap justify-center gap-3">
-            <ShimmerButton
-              type="button"
-              borderRadius="6px"
-              background="var(--primary)"
-              shimmerColor="var(--primary-foreground)"
-              shimmerDuration="4s"
-              className="h-10 rounded-md px-6 text-sm font-medium text-primary-foreground shadow-none"
-              onClick={() => router.push("/login")}
+            <ClientMounted
+              fallback={
+                <Link
+                  href="/login"
+                  className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground"
+                >
+                  Get started
+                </Link>
+              }
             >
-              Get started
-            </ShimmerButton>
+              <ShimmerButton
+                type="button"
+                borderRadius="6px"
+                background="var(--primary)"
+                shimmerColor="var(--primary-foreground)"
+                shimmerDuration="4s"
+                className="h-10 rounded-md px-6 text-sm font-medium text-primary-foreground shadow-none"
+                onClick={() => router.push("/login")}
+              >
+                Get started
+              </ShimmerButton>
+            </ClientMounted>
             <Link
               href="/login"
               className="inline-flex h-10 items-center justify-center rounded-md border border-border px-6 text-sm font-medium text-muted-foreground transition-colors hover:border-[var(--color-border-em)] hover:text-foreground"

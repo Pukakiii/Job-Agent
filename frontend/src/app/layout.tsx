@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Job Agent",
   description: "AI-powered job search platform",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  },
 }
 
 export default function RootLayout({
@@ -26,6 +31,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geist.variable} ${geistMono.variable} antialiased`}
+      style={{ WebkitTextSizeAdjust: "100%" }}
       suppressHydrationWarning
     >
       <body className="min-h-screen min-h-[100dvh] bg-background text-foreground">

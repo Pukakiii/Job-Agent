@@ -90,6 +90,22 @@
   }
 }
 
+@supports not (color: oklch(0 0 0)) {
+  :root {
+    --background: #f7f3ee;
+    --foreground: #1c1410;
+    --card: #fdfcfa;
+    --primary: #6b3d1e;
+    --primary-foreground: #f7f3ee;
+    --border: #ddd6cc;
+    --input: #ddd6cc;
+    --muted: #ede9e3;
+    --muted-foreground: #7a6a5a;
+    --destructive: #8a3a2a;
+    --destructive-foreground: #f7f3ee;
+  }
+}
+
 /* ── LIGHT MODE (default) — hex fallbacks for Safari ──────────────── */
 :root {
   color-scheme: light;
@@ -339,10 +355,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    min-height: 100dvh;
+  }
+  body {
+    background-color: var(--background, #f7f3ee);
+    color: var(--foreground, #1c1410);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
   }
 }
