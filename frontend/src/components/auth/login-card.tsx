@@ -88,7 +88,7 @@ export function LoginCard() {
   )
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12">
+    <div className="flex min-h-screen min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12">
       <BrandLogo className="mb-8" />
 
       <div className="w-full max-w-[400px] rounded-lg border border-border bg-card p-8">
