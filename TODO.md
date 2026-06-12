@@ -18,13 +18,21 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 ## Assigned to Pukakiii
 
-*Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules.*
+_Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
 
 - [x] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
 - [x] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
 - [x] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
 - [x] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
 - [x] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, and error display
+- [ ] **Fix login page layout and styling** — Fix card centering,
+remove premature validation errors, fix input default border
+color, tighten border radius, fix title position outside card,
+and align spacing to DESIGN_REFERENCES.md
+- [ ] **Root layout** — Add `src/app/layout.tsx` with html/body shell,
+Geist font setup, dark color-scheme, and metadata for "Job Agent"
+- [ ] **Homepage** — Add `src/app/page.tsx` landing page with hero
+section, headline, subheadline, and CTA button linking to /login
 - [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
 - [ ] **Auth session hook** — Add `src/features/auth/useAuth.ts` for current user state, loading, and cookie-backed session persistence
 - [ ] **Route protection middleware** — Add `src/middleware.ts` to redirect unauthenticated users away from `(dashboard)` routes
@@ -45,9 +53,9 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 ## Assigned to Kyryll
 
-*Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra.*
+_Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra._
 
-- [X] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
+- [x] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
 - [ ] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
 - [ ] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
 - [ ] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
@@ -62,11 +70,11 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 ## Joint Tasks
 
-*Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit.*
+_Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit._
 
-- [X] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
-- [X] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
-- [X] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
+- [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
+- [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
+- [x] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
 - [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
 - [ ] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
 - [ ] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
