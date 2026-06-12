@@ -64,31 +64,6 @@ function hexToRgb(hex: string): number[] {
   return [red, green, blue]
 }
 
-/** Safari returns rgb() from getComputedStyle even when the token is hex. */
-const PARTICLE_RGB_FALLBACK: [number, number, number] = [122, 74, 40]
-
-function colorToRgb(color: string): number[] {
-  const value = color.trim()
-  if (!value) return PARTICLE_RGB_FALLBACK
-
-  if (value.startsWith("#")) {
-    return hexToRgb(value)
-  }
-
-  const rgbMatch = value.match(
-    /^rgba?\(\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)/
-  )
-  if (rgbMatch) {
-    return [
-      Math.round(Number(rgbMatch[1])),
-      Math.round(Number(rgbMatch[2])),
-      Math.round(Number(rgbMatch[3])),
-    ]
-  }
-
-  return PARTICLE_RGB_FALLBACK
-}
-
 type Circle = {
   x: number
   y: number
@@ -193,7 +168,6 @@ export const Particles: React.FC<ParticlesProps> = ({
       canvasRef.current.height = canvasSize.current.h * dpr
       canvasRef.current.style.width = `${canvasSize.current.w}px`
       canvasRef.current.style.height = `${canvasSize.current.h}px`
-      context.current.setTransform(1, 0, 0, 1, 0, 0)
       context.current.scale(dpr, dpr)
 
       // Clear existing particles and create new ones with exact quantity
@@ -230,7 +204,7 @@ export const Particles: React.FC<ParticlesProps> = ({
     }
   }
 
-  const rgb = colorToRgb(color)
+  const rgb = hexToRgb(color)
 
   const drawCircle = (circle: Circle, update = false) => {
     if (context.current) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -19,25 +19,23 @@ const FEATURES = [
 export function HomeHero() {
   const router = useRouter()
   const [particleColor, setParticleColor] = useState("")
-  const [showParticles, setShowParticles] = useState(false)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue("--particle-color")
       .trim()
-    setParticleColor(color)
-    setShowParticles(true)
+    if (color) setParticleColor(color)
   }, [])
 
   return (
     <main className="relative flex min-h-screen min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
-      {showParticles && (
+      {particleColor && (
         <Particles
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 opacity-40"
           quantity={60}
           staticity={80}
           ease={80}
-          size={0.8}
+          size={0.5}
           color={particleColor}
           vx={0.02}
           vy={0.01}
