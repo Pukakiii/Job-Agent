@@ -1,11 +1,13 @@
 # Design References
 
 ## Project visual identity
+
 Dark productivity platform with a warm brown accent.
 Feels like a premium tool — not a startup marketing site.
 Confident, focused, data-dense where needed, spacious where not.
 
 ## Reference sites
+
 - dub.co — primary dashboard reference. Clean dark UI, excellent data
   table density, sharp link/row components, warm neutral palette,
   confident sans-serif typography. Study the dashboard sidebar,
@@ -16,6 +18,7 @@ Confident, focused, data-dense where needed, spacious where not.
   Keyboard-first, fast, no unnecessary decoration.
 
 ## What we take from each
+
 - From dub.co: data table structure, stat card layout, sidebar nav style,
   how to show status badges without being noisy
 - From tab.co: landing page typography scale, hero section confidence,
@@ -26,53 +29,60 @@ Confident, focused, data-dense where needed, spacious where not.
 ## Color system
 
 ### Backgrounds (darkest to lightest)
-- Page background:      #0c0a09  (very dark warm black, not cold)
-- App shell/sidebar:    #111009  (slightly warm dark)
-- Card surface:         #1a1713  (warm dark brown-tinted surface)
-- Card hover/elevated:  #211e19  (subtle lift)
-- Border default:       #2a2520  (warm very subtle border)
-- Border emphasis:      #3d3830  (visible but not harsh)
+
+- Page background: #0c0a09 (very dark warm black, not cold)
+- App shell/sidebar: #111009 (slightly warm dark)
+- Card surface: #1a1713 (warm dark brown-tinted surface)
+- Card hover/elevated: #211e19 (subtle lift)
+- Border default: #2a2520 (warm very subtle border)
+- Border emphasis: #3d3830 (visible but not harsh)
 
 ### Text
-- Primary:   #f5f0eb  (warm off-white, not stark white)
-- Secondary: #a89b8c  (warm muted, readable)
-- Muted:     #6b5e52  (deemphasized, metadata)
-- Disabled:  #3d3328  (barely visible)
+
+- Primary: #f5f0eb (warm off-white, not stark white)
+- Secondary: #a89b8c (warm muted, readable)
+- Muted: #6b5e52 (deemphasized, metadata)
+- Disabled: #3d3328 (barely visible)
 
 ### Accent — brown
-- Primary accent:  #a0673a  (warm medium brown, main CTA color)
-- Accent hover:    #b8784a  (slightly lighter on hover)
-- Accent muted:    #7a4d2b  (for secondary accent use)
-- Accent subtle:   #2a1a0e  (background tint for accent areas)
-- Accent border:   #5c3820  (border when accent context needed)
+
+- Primary accent: #a0673a (warm medium brown, main CTA color)
+- Accent hover: #b8784a (slightly lighter on hover)
+- Accent muted: #7a4d2b (for secondary accent use)
+- Accent subtle: #2a1a0e (background tint for accent areas)
+- Accent border: #5c3820 (border when accent context needed)
 
 ### Status colors (warm-shifted to not clash with brown)
-- Success:  #4a7c59  (muted green)
-- Warning:  #8a6a2a  (warm amber, close to accent family)
-- Error:    #8a3a2a  (warm red-brown)
-- Info:     #2a5a7a  (cool blue for contrast)
+
+- Success: #4a7c59 (muted green)
+- Warning: #8a6a2a (warm amber, close to accent family)
+- Error: #8a3a2a (warm red-brown)
+- Info: #2a5a7a (cool blue for contrast)
 
 ### Semantic CSS variable names for Tailwind
---color-bg:           #0c0a09
---color-surface:      #1a1713
+
+--color-bg: #0c0a09
+--color-surface: #1a1713
 --color-surface-hover:#211e19
---color-border:       #2a2520
---color-border-em:    #3d3830
---color-text:         #f5f0eb
---color-text-muted:   #a89b8c
---color-text-faint:   #6b5e52
---color-accent:       #a0673a
+--color-border: #2a2520
+--color-border-em: #3d3830
+--color-text: #f5f0eb
+--color-text-muted: #a89b8c
+--color-text-faint: #6b5e52
+--color-accent: #a0673a
 --color-accent-hover: #b8784a
 --color-accent-subtle:#2a1a0e
 
 ## Typography
 
 ### Fonts
+
 - UI font: Geist (already in Nova preset) — clean, confident, modern
 - Mono font: Geist Mono — for job IDs, scores, technical metadata
 - No serif fonts anywhere
 
 ### Scale (follow Nova preset defaults, override where noted)
+
 - Page title (h1): 24px, weight 600, tracking -0.02em
 - Section title (h2): 18px, weight 500, tracking -0.01em
 - Card title: 14px, weight 500, tracking 0
@@ -84,6 +94,7 @@ Confident, focused, data-dense where needed, spacious where not.
 ## Spacing and layout
 
 ### Page structure
+
 - Sidebar width: 220px (collapsed: 48px)
 - Main content max-width: 1200px
 - Page padding: 24px horizontal, 20px vertical
@@ -91,6 +102,7 @@ Confident, focused, data-dense where needed, spacious where not.
 - Card padding: 16px
 
 ### Border radius (Nova preset — keep tight)
+
 - Cards: 8px
 - Buttons: 6px
 - Badges: 4px
@@ -101,6 +113,7 @@ Confident, focused, data-dense where needed, spacious where not.
 ## Component patterns
 
 ### Job cards / list rows (most common component)
+
 - Inspired by dub.co link rows
 - Left: company favicon (20px) + job title + company name
 - Right: match score (NumberTicker, mono font, accent color) + status badge
@@ -109,6 +122,7 @@ Confident, focused, data-dense where needed, spacious where not.
 - No heavy shadow — border only
 
 ### Stat cards (dashboard overview)
+
 - Inspired by dub.co stat cards
 - Large number (NumberTicker animation on mount)
 - Label below in muted text
@@ -116,6 +130,7 @@ Confident, focused, data-dense where needed, spacious where not.
 - No icon unless functionally necessary
 
 ### Status badges
+
 - Applied: accent-subtle bg, accent-border border, accent text
 - Interview: success-tinted
 - Rejected: error-tinted
@@ -123,6 +138,7 @@ Confident, focused, data-dense where needed, spacious where not.
 - Never use solid filled badges on dark — tinted only
 
 ### Sidebar navigation
+
 - Inspired by dub.co sidebar
 - Active item: accent-subtle bg, accent left border 2px, accent text
 - Inactive: muted text, no bg
@@ -130,6 +146,7 @@ Confident, focused, data-dense where needed, spacious where not.
 - Section labels: 11px uppercase muted, tracking wide
 
 ### Data tables
+
 - Header: border-bottom only, muted text, 11px uppercase
 - Row: border-bottom only (border default color)
 - Row hover: surface-hover bg
@@ -139,11 +156,13 @@ Confident, focused, data-dense where needed, spacious where not.
 ## Animations — Magic UI usage rules
 
 ### Where to use animation
+
 - Landing/hero page: yes, freely
 - Dashboard data pages: minimal — only on mount, never on interaction
 - Never animate tables, lists, or form inputs
 
 ### Specific Magic UI components and where
+
 - BlurFade: page section entry on landing only
 - NumberTicker: stat card numbers on mount (dashboard)
 - GradualSpacing or TypingAnimation: hero headline only
@@ -153,12 +172,14 @@ Confident, focused, data-dense where needed, spacious where not.
 - Never use Sparkles, Confetti, or other celebratory effects
 
 ### Animation rules
+
 - Max duration: 300ms for UI interactions, 600ms for entry animations
 - Easing: ease-out always
 - Never block interaction with animation
 - Reduced motion: always respect prefers-reduced-motion
 
 ## What NOT to do
+
 - No bright white anywhere — use #f5f0eb max
 - No cold/blue-tinted grays — all neutrals must be warm
 - No multiple accent colors — brown only, everywhere
