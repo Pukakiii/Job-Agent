@@ -21,8 +21,8 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 *Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules.*
 
 - [x] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
-- [ ] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
-- [ ] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
+- [x] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
+- [x] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
 - [ ] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
 - [ ] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, and error display
 - [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
