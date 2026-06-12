@@ -2,6 +2,7 @@
 
 import React, {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentPropsWithoutRef,
@@ -47,6 +48,8 @@ interface ParticlesProps extends ComponentPropsWithoutRef<"div"> {
   vy?: number
 }
 
+const PARTICLE_RGB_FALLBACK: [number, number, number] = [74, 46, 16]
+
 function hexToRgb(hex: string): number[] {
   hex = hex.replace("#", "")
 
@@ -62,6 +65,37 @@ function hexToRgb(hex: string): number[] {
   const green = (hexInt >> 8) & 255
   const blue = hexInt & 255
   return [red, green, blue]
+}
+
+/** Safari returns rgb() from getComputedStyle even when the token is hex. */
+function colorToRgb(color: string): number[] {
+  const value = color.trim()
+  if (!value) return [...PARTICLE_RGB_FALLBACK]
+
+  if (value.startsWith("#")) {
+    return hexToRgb(value)
+  }
+
+  const rgbMatch = value.match(
+    /^rgba?\(\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)/
+  )
+  if (rgbMatch) {
+    return [
+      Math.round(Number(rgbMatch[1])),
+      Math.round(Number(rgbMatch[2])),
+      Math.round(Number(rgbMatch[3])),
+    ]
+  }
+
+  return [...PARTICLE_RGB_FALLBACK]
+}
+
+function readParticleColor(explicit?: string): string {
+  if (explicit?.trim()) return explicit.trim()
+  if (typeof document === "undefined") return ""
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue("--particle-color")
+    .trim()
 }
 
 type Circle = {
@@ -84,7 +118,7 @@ export const Particles: React.FC<ParticlesProps> = ({
   ease = 50,
   size = 0.4,
   refresh = false,
-  color = "#ffffff",
+  color,
   vx = 0,
   vy = 0,
   ...props
@@ -96,14 +130,42 @@ export const Particles: React.FC<ParticlesProps> = ({
   const mousePosition = MousePosition()
   const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
-  const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1
+  const dprRef = useRef(1)
   const rafID = useRef<number | null>(null)
   const resizeTimeout = useRef<NodeJS.Timeout | null>(null)
   const initCanvasRef = useRef<() => void>(() => {})
   const onMouseMoveRef = useRef<() => void>(() => {})
   const animateRef = useRef<() => void>(() => {})
+  const [canvasReady, setCanvasReady] = useState(false)
+
+  const resolvedColor = useMemo(
+    () => readParticleColor(color),
+    [color, canvasReady]
+  )
+  const rgb = useMemo(() => colorToRgb(resolvedColor), [resolvedColor])
 
   useEffect(() => {
+    const container = canvasContainerRef.current
+    if (!container) return
+
+    const checkSize = () => {
+      if (container.offsetWidth > 0 && container.offsetHeight > 0) {
+        setCanvasReady(true)
+      }
+    }
+
+    const observer = new ResizeObserver(checkSize)
+    observer.observe(container)
+    checkSize()
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!canvasReady) return
+
+    dprRef.current = window.devicePixelRatio || 1
+
     if (canvasRef.current) {
       context.current = canvasRef.current.getContext("2d")
     }
@@ -130,17 +192,26 @@ export const Particles: React.FC<ParticlesProps> = ({
       }
       window.removeEventListener("resize", handleResize)
     }
-  }, [color])
+  }, [canvasReady, resolvedColor])
 
   useEffect(() => {
     onMouseMoveRef.current()
   }, [mousePosition.x, mousePosition.y])
 
   useEffect(() => {
+    if (!canvasReady) return
     initCanvasRef.current()
-  }, [refresh])
+  }, [refresh, canvasReady])
 
   const initCanvas = () => {
+    const container = canvasContainerRef.current
+    if (
+      !container ||
+      container.offsetWidth === 0 ||
+      container.offsetHeight === 0
+    ) {
+      return
+    }
     resizeCanvas()
     drawParticles()
   }
@@ -161,6 +232,7 @@ export const Particles: React.FC<ParticlesProps> = ({
 
   const resizeCanvas = () => {
     if (canvasContainerRef.current && canvasRef.current && context.current) {
+      const dpr = dprRef.current
       canvasSize.current.w = canvasContainerRef.current.offsetWidth
       canvasSize.current.h = canvasContainerRef.current.offsetHeight
 
@@ -168,9 +240,8 @@ export const Particles: React.FC<ParticlesProps> = ({
       canvasRef.current.height = canvasSize.current.h * dpr
       canvasRef.current.style.width = `${canvasSize.current.w}px`
       canvasRef.current.style.height = `${canvasSize.current.h}px`
-      context.current.scale(dpr, dpr)
+      context.current.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      // Clear existing particles and create new ones with exact quantity
       circles.current = []
       for (let i = 0; i < quantity; i++) {
         const circle = circleParams()
@@ -204,10 +275,9 @@ export const Particles: React.FC<ParticlesProps> = ({
     }
   }
 
-  const rgb = hexToRgb(color)
-
   const drawCircle = (circle: Circle, update = false) => {
     if (context.current) {
+      const dpr = dprRef.current
       const { x, y, translateX, translateY, size, alpha } = circle
       context.current.translate(translateX, translateY)
       context.current.beginPath()
@@ -257,12 +327,11 @@ export const Particles: React.FC<ParticlesProps> = ({
   const animate = () => {
     clearContext()
     circles.current.forEach((circle: Circle, i: number) => {
-      // Handle the alpha value
       const edge = [
-        circle.x + circle.translateX - circle.size, // distance from left edge
-        canvasSize.current.w - circle.x - circle.translateX - circle.size, // distance from right edge
-        circle.y + circle.translateY - circle.size, // distance from top edge
-        canvasSize.current.h - circle.y - circle.translateY - circle.size, // distance from bottom edge
+        circle.x + circle.translateX - circle.size,
+        canvasSize.current.w - circle.x - circle.translateX - circle.size,
+        circle.y + circle.translateY - circle.size,
+        canvasSize.current.h - circle.y - circle.translateY - circle.size,
       ]
       const closestEdge = edge.reduce((a, b) => Math.min(a, b))
       const remapClosestEdge = parseFloat(
@@ -287,16 +356,13 @@ export const Particles: React.FC<ParticlesProps> = ({
 
       drawCircle(circle, true)
 
-      // circle gets out of the canvas
       if (
         circle.x < -circle.size ||
         circle.x > canvasSize.current.w + circle.size ||
         circle.y < -circle.size ||
         circle.y > canvasSize.current.h + circle.size
       ) {
-        // remove the circle from the array
         circles.current.splice(i, 1)
-        // create a new circle
         const newCircle = circleParams()
         drawCircle(newCircle)
       }

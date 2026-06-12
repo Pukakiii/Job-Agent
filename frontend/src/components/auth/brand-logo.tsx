@@ -1,16 +1,14 @@
 import { cn } from "@/lib/utils"
-
+import Image from "next/image"
 type BrandLogoProps = {
   className?: string
 }
 
 export function BrandLogo({ className }: BrandLogoProps) {
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-        J
-      </div>
-      <span className="text-lg font-semibold tracking-tight text-foreground">
+    <div className={cn("flex items-center gap-2.5" , className)}>
+        <Image src="/job-agent.svg" alt="Job Agent" width={32} height={32} className="size-20" />   
+      <span className="text-3xl font-semibold tracking-tight text-foreground self-end">
         Job Agent
       </span>
     </div>

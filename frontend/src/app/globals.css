@@ -349,6 +349,21 @@
   }
 }
 
+@keyframes fade-in-up {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out both;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -358,11 +373,15 @@
   html {
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
+    min-height: 100vh;
+    min-height: 100svh;
     min-height: 100dvh;
   }
   body {
-    background-color: var(--background, #f7f3ee);
-    color: var(--foreground, #1c1410);
+    background-color: var(--background, #f5f0e8);
+    color: var(--foreground, #1a1008);
+    min-height: 100vh;
+    min-height: 100svh;
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
   }

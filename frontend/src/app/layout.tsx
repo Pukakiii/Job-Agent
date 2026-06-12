@@ -34,7 +34,7 @@ export default function RootLayout({
       style={{ WebkitTextSizeAdjust: "100%" }}
       suppressHydrationWarning
     >
-      <body className="min-h-screen min-h-[100dvh] bg-background text-foreground">
+      <body className="min-h-screen min-h-[100svh] min-h-[100dvh] bg-background text-foreground">
         {children}
       </body>
     </html>
