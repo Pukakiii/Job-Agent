@@ -49,6 +49,7 @@
 }
 
 :root {
+  color-scheme: dark;
   /* shadcn semantic tokens mapped to project DESIGN_REFERENCES (OKLCH) */
   --background: oklch(0.04 0.02 20deg); /* #0c0a09 */
   --foreground: oklch(0.95 0.01 30deg); /* #f5f0eb */
