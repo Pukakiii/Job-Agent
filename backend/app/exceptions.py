@@ -32,3 +32,18 @@ class UnsupportedCVType(AppError):
 class LLMOutputInvalid(AppError):
     status_code = 502
     code = "llm_output_invalid"
+
+
+class CVNotParsed(AppError):
+    status_code = 409
+    code = "cv_not_parsed"
+
+
+class NoMatchesFound(AppError):
+    status_code = 404
+    code = "no_matches"
+
+
+class SearchNotFound(AppError):
+    status_code = 404
+    code = "search_not_found"
