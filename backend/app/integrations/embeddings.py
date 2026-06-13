@@ -7,7 +7,13 @@ if TYPE_CHECKING:
 
 
 class Embedder(Protocol):
+    """Turns text into vectors. `embed_batch` embeds documents (job text on ingest);
+    `embed_query` embeds a single search query. They are separate methods because some
+    models (e.g. nomic-embed-text) need different task-instruction prefixes for the two
+    sides — see the Local Ollama plan. OpenAI ignores the distinction."""
+
     async def embed_batch(self, texts: list[str]) -> list[list[float]]: ...
+    async def embed_query(self, text: str) -> list[float]: ...
 
 
 class OpenAIEmbedder:
@@ -25,3 +31,9 @@ class OpenAIEmbedder:
         if vectors is None:
             raise RuntimeError("Embedding failed (OpenAI returned no vectors)")
         return vectors
+
+    async def embed_query(self, text: str) -> list[float]:
+        vectors = await self._client.embed_batch([text], dimensions=self._dimensions)
+        if not vectors:
+            raise RuntimeError("Embedding failed (OpenAI returned no vectors)")
+        return vectors[0]

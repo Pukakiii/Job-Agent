@@ -23,3 +23,11 @@ async def test_openai_embedder_raises_when_client_returns_none():
     emb = OpenAIEmbedder(client=fake, dimensions=768)
     with pytest.raises(RuntimeError):
         await emb.embed_batch(["a"])
+
+
+async def test_openai_embedder_embed_query_returns_single_vector():
+    fake = _FakeOpenAIClient([[0.25] * 768])
+    emb = OpenAIEmbedder(client=fake, dimensions=768)
+    out = await emb.embed_query("a software engineer")
+    assert out == [0.25] * 768
+    assert fake.calls == [(["a software engineer"], 768)]
