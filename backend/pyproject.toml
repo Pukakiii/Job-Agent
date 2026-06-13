@@ -45,6 +45,12 @@ testpaths = ["tests"]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
+# The importable package is `app`. Without this, setuptools' flat-layout
+# auto-discovery sees multiple top-level dirs (app, alembic, tests, scripts)
+# and aborts the build with "Multiple top-level packages discovered".
+[tool.setuptools.packages.find]
+include = ["app*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
