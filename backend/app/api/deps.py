@@ -50,7 +50,7 @@ def get_chat_client() -> OpenAIClient:
 
 @lru_cache
 def get_embedder() -> Embedder:
-    return OpenAIEmbedder(OpenAIClient(), settings.EMBED_DIM)
+    return OpenAIEmbedder(get_chat_client(), settings.EMBED_DIM)
 
 
 def get_matching_service(db: AsyncSession = Depends(get_db)) -> MatchingService:
