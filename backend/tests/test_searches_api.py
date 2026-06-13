@@ -3,7 +3,6 @@ import uuid
 from app.api.deps import get_matching_service
 from app.main import app
 from app.models.search import Search
-from app.models.search_result import SearchResult
 
 
 class StubMatching:
