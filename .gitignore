@@ -2,6 +2,11 @@
 __pycache__/
 *.pyc
 venv/
+# Build artifacts from `pip install -e` / setuptools (regenerated on every install)
+*.egg-info/
+build/
+dist/
+.pytest_cache/
 
 # Env
 .env
