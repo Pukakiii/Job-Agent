@@ -116,3 +116,14 @@ async def test_find_matches_no_candidates_raises(db):
     cv = await _parsed_cv(db, user.id)  # no jobs seeded
     with pytest.raises(NoMatchesFound):
         await _service(db, []).find_matches(user.id, cv.id, "python")
+
+
+async def test_find_matches_all_indices_out_of_range_raises(db):
+    user = await _user(db, "oob@test.io")
+    cv = await _parsed_cv(db, user.id)
+    await _seed_jobs(db, 3)
+    # LLM returns only out-of-range indices → ranked list is empty
+    matches = [{"index": 99, "score": 0.9, "explanation": "x"},
+               {"index": 100, "score": 0.8, "explanation": "y"}]
+    with pytest.raises(NoMatchesFound):
+        await _service(db, matches).find_matches(user.id, cv.id, "python")
