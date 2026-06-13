@@ -1,0 +1,52 @@
+name: Backend Tests
+
+on:
+  push:
+  pull_request:
+
+# Cancel an in-progress run when a newer commit is pushed to the same ref.
+concurrency:
+  group: backend-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Floor (matches requires-python = ">=3.11") + a modern version.
+        python-version: ['3.11', '3.13']
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Settings() (app/core/config.py) has no defaults for these, and there is no
+      # .env in CI, so config would fail to import without them. The integration
+      # tests use Testcontainers for Postgres and moto for S3, so these throwaway
+      # values are never used to reach a real service.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: job_agent
+      SECRET_KEY: ci-test-secret-not-used-in-production
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      # ubuntu-latest ships with a running Docker daemon, which Testcontainers uses
+      # to start the pgvector/pgvector:pg16 Postgres container for integration tests.
+      - name: Run tests
+        run: python -m pytest -q
