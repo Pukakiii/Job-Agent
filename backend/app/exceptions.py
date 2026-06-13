@@ -27,3 +27,8 @@ class CVFileTooLarge(AppError):
 class UnsupportedCVType(AppError):
     status_code = 415
     code = "unsupported_cv_type"
+
+
+class LLMOutputInvalid(AppError):
+    status_code = 502
+    code = "llm_output_invalid"

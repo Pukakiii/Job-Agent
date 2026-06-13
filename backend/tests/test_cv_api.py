@@ -39,3 +39,31 @@ async def test_cv_endpoints_require_auth(auth_client):
     # auth_client is NOT logged in
     r = await auth_client.get("/api/v1/cvs")
     assert r.status_code == 401
+
+
+async def test_upload_enqueues_parse_cv(cv_client):
+    from app.api.deps import get_arq_redis
+    from app.main import app
+
+    enqueued = []
+
+    class _Recorder:
+        async def enqueue_job(self, name, *args, **kwargs):
+            enqueued.append((name, args, kwargs))
+
+            class _Job:
+                job_id = "job-123"
+
+            return _Job()
+
+    app.dependency_overrides[get_arq_redis] = lambda: _Recorder()
+    try:
+        resp = await cv_client.post(
+            "/api/v1/cvs",
+            files={"file": ("cv.pdf", b"%PDF-1.4 minimal", "application/pdf")},
+        )
+        assert resp.status_code == 201
+        assert enqueued and enqueued[0][0] == "parse_cv"
+        assert enqueued[0][1][0] == resp.json()["id"]  # cv id passed as first arg
+    finally:
+        app.dependency_overrides.pop(get_arq_redis, None)
