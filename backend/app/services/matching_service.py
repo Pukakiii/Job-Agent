@@ -74,7 +74,9 @@ class MatchingService:
         saved = await self.search_repo.save_search(user_id, cv_id, prompt, rows)
         # Reload with results + jobs eager-loaded so the response can serialize without
         # lazy I/O (and ordered by rank via the relationship's order_by).
-        return await self.search_repo.get_with_results(saved.id)
+        result = await self.search_repo.get_with_results(saved.id)
+        assert result is not None  # we just flushed saved.id; None here is a DB invariant violation
+        return result
 
     @staticmethod
     def _query_text(cv, prompt: str) -> str:
