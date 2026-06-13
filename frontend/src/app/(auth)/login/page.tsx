@@ -195,10 +195,12 @@ export default function LoginPage() {
         <Particles
           className="absolute inset-0 z-0 h-full w-full"
           quantity={60}
+          staticity={80}
+          ease={80}
           size={0.8}
-          staticity={30}
-          ease={50}
           color="var(--primary)"
+          vx={0.02}
+          vy={0.01}
         />
       )}
 

@@ -66,14 +66,14 @@ export function HomeHero() {
           <ClientMounted fallback={<span>Find the right job,</span>}>
             <TypingAnimation
               as="span"
-              className="inline"
+              className="inline font-medium"
               duration={40}
               showCursor={false}
             >
               Find the right job,
             </TypingAnimation>
           </ClientMounted>{" "}
-          <span className="text-primary">faster.</span>
+          <span className="text-primary font-logo font-bold">FASTER.</span>
         </h1>
 
         <FadeIn delay={0.15} className="mt-6 max-w-md">

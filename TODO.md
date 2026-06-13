@@ -25,13 +25,13 @@ _Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Desi
 - [x] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
 - [x] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
 - [x] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, and error display
-- [ ] **Fix login page layout and styling** — Fix card centering,
+- [x] **Fix login page layout and styling** — Fix card centering,
 remove premature validation errors, fix input default border
 color, tighten border radius, fix title position outside card,
 and align spacing to DESIGN_REFERENCES.md
-- [ ] **Root layout** — Add `src/app/layout.tsx` with html/body shell,
+- [x] **Root layout** — Add `src/app/layout.tsx` with html/body shell,
 Geist font setup, dark color-scheme, and metadata for "Job Agent"
-- [ ] **Homepage** — Add `src/app/page.tsx` landing page with hero
+- [x] **Homepage** — Add `src/app/page.tsx` landing page with hero
 section, headline, subheadline, and CTA button linking to /login
 - [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
 - [ ] **Auth session hook** — Add `src/features/auth/useAuth.ts` for current user state, loading, and cookie-backed session persistence

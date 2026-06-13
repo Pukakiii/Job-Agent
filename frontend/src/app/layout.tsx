@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Luxurious_Roman } from "next/font/google"
 import "./globals.css"
 
 const geist = Geist({
@@ -10,6 +10,12 @@ const geist = Geist({
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+})
+
+const luxuriousRoman = Luxurious_Roman({
+  weight: ["400"],
+  subsets: ["latin"],
+  variable: "--font-logo",
 })
 
 export const metadata: Metadata = {
@@ -30,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable} antialiased`}
+      className={`${geist.variable} ${geistMono.variable} ${luxuriousRoman.variable} antialiased`}
       style={{ WebkitTextSizeAdjust: "100%" }}
       suppressHydrationWarning
     >
