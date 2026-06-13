@@ -214,22 +214,18 @@ export default function LoginPage() {
         />
       )}
 
-      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4 ">
-        {mounted ? (
-          <>
-            <BlurFade delay={0} inView={false} suppressHydrationWarning>
-              {logo}
-            </BlurFade>
-            <BlurFade delay={0.1} inView={false} suppressHydrationWarning>
-              {card}
-            </BlurFade>
-          </>
-        ) : (
-          <>
-            {logo}
-            {card}
-          </>
-        )}
+      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4">
+        <BlurFade delay={0} inView={false} suppressHydrationWarning>
+          {logo}
+        </BlurFade>
+        <BlurFade
+          delay={0.1}
+          inView={false}
+          suppressHydrationWarning
+          className="w-full max-w-[380px]"
+        >
+          {card}
+        </BlurFade>
       </div>
     </div>
   )
