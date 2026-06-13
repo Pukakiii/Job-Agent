@@ -1,0 +1,26 @@
+[
+  {
+    "rank": 1,
+    "score": 0.96,
+    "explanation": "Excellent React match",
+    "job": {
+      "id": "job_001",
+      "title": "Junior React Developer",
+      "company": "TechSoft",
+      "location": "Warsaw, Poland",
+      "url": "https://example.com/jobs/1"
+    }
+  },
+  {
+    "rank": 2,
+    "score": 0.89,
+    "explanation": "Strong frontend match",
+    "job": {
+      "id": "job_002",
+      "title": "Frontend Engineer",
+      "company": "CodeLabs",
+      "location": "Remote",
+      "url": "https://example.com/jobs/2"
+    }
+  }
+]
