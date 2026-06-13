@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from arq import create_pool
+from arq.connections import RedisSettings
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -16,8 +18,10 @@ logger = get_logger("app.main")
 async def lifespan(app: FastAPI):
     configure_logging()
     await init_db()
+    app.state.redis = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
     logger.info("API startup complete.")
     yield
+    await app.state.redis.aclose()
     await engine.dispose()
     logger.info("API shutdown complete.")
 
