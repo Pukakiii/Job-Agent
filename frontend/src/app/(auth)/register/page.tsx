@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 
 import { BrandLogo } from "@/components/auth/brand-logo"
 import { FormField } from "@/components/forms"
@@ -17,10 +17,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { login } from "@/lib/api/auth"
+import { register } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
 
-type Field = "email" | "password"
+type Field = "email" | "password" | "confirmPassword"
 
 type Touched = Record<Field, boolean>
 
@@ -34,6 +34,14 @@ function validatePassword(value: string): string | undefined {
   if (value.length < 8) return "Password must be at least 8 characters"
 }
 
+function validateConfirmPassword(
+  password: string,
+  confirmPassword: string,
+): string | undefined {
+  if (!confirmPassword) return "Please confirm your password"
+  if (confirmPassword !== password) return "Passwords do not match"
+}
+
 function showFieldError(
   field: Field,
   touched: Touched,
@@ -42,16 +50,16 @@ function showFieldError(
   return touched[field] && !!error
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const registered = searchParams.get("registered") === "true"
   const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [touched, setTouched] = useState<Touched>({
     email: false,
     password: false,
+    confirmPassword: false,
   })
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
@@ -59,6 +67,7 @@ export default function LoginPage() {
   const errors = {
     email: validateEmail(email),
     password: validatePassword(password),
+    confirmPassword: validateConfirmPassword(password, confirmPassword),
   }
 
   useEffect(() => {
@@ -71,19 +80,19 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setTouched({ email: true, password: true })
+    setTouched({ email: true, password: true, confirmPassword: true })
 
-    if (errors.email || errors.password) return
+    if (errors.email || errors.password || errors.confirmPassword) return
 
     setLoading(true)
     setApiError(null)
 
-    const result = await login({ username: email, password })
+    const result = await register({ email, password })
 
     setLoading(false)
 
     if (result.ok) {
-      router.push("/dashboard")
+      router.push("/login?registered=true")
     } else {
       setApiError(result.error.message)
     }
@@ -91,6 +100,11 @@ export default function LoginPage() {
 
   const showEmailError = showFieldError("email", touched, errors.email)
   const showPasswordError = showFieldError("password", touched, errors.password)
+  const showConfirmPasswordError = showFieldError(
+    "confirmPassword",
+    touched,
+    errors.confirmPassword,
+  )
 
   const logo = <BrandLogo className="mb-8" />
 
@@ -98,20 +112,12 @@ export default function LoginPage() {
     <Card variant="glass" className="w-full max-w-[380px] gap-0 p-8">
       <CardHeader className="gap-1 p-0 pb-7">
         <CardTitle className="text-lg font-semibold text-foreground">
-          Welcome back
+          Create account
         </CardTitle>
-        <CardDescription>Sign in to continue</CardDescription>
+        <CardDescription>Start finding better jobs today</CardDescription>
       </CardHeader>
 
       <CardContent className="p-0">
-        {registered && (
-          <div className="mb-5 rounded-md border border-success/40 bg-success/10 px-4 py-3">
-            <p className="text-sm text-success">
-              Account created — sign in to continue
-            </p>
-          </div>
-        )}
-
         {apiError && (
           <div className="mb-5 flex items-start justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3">
             <p className="text-sm text-destructive">{apiError}</p>
@@ -160,7 +166,7 @@ export default function LoginPage() {
               id="password"
               type="password"
               variant="glass"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onBlur={() => handleBlur("password")}
@@ -169,6 +175,29 @@ export default function LoginPage() {
               className={cn(
                 "py-2.5",
                 showPasswordError && "border-destructive",
+              )}
+            />
+          </FormField>
+
+          <FormField
+            label="Confirm password"
+            htmlFor="confirmPassword"
+            error={errors.confirmPassword}
+            showError={showConfirmPasswordError}
+          >
+            <Input
+              id="confirmPassword"
+              type="password"
+              variant="glass"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onBlur={() => handleBlur("confirmPassword")}
+              placeholder="••••••••"
+              aria-invalid={showConfirmPasswordError}
+              className={cn(
+                "py-2.5",
+                showConfirmPasswordError && "border-destructive",
               )}
             />
           </FormField>
@@ -182,17 +211,17 @@ export default function LoginPage() {
             shimmerDuration="4s"
             className="w-full rounded-md py-2.5 text-sm font-medium text-primary-foreground shadow-none"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Creating account…" : "Create account"}
           </ShimmerButton>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="font-medium text-primary hover:underline"
           >
-            Register
+            Sign in
           </Link>
         </p>
       </CardContent>
