@@ -48,15 +48,15 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 *Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra.*
 
 - [X] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
-- [ ] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
-- [ ] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
-- [ ] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
-- [ ] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
-- [ ] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
-- [ ] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
-- [ ] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
-- [ ] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
-- [ ] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
+- [X] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
+- [X] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
+- [X] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
+- [X] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
+- [X] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [X] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
+- [X] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
+- [X] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
+- [X] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
 
 ---
 
@@ -67,12 +67,12 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 - [X] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
 - [X] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
 - [X] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
-- [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
-- [ ] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
-- [ ] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
-- [ ] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
+- [X] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
+- [X] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
+- [X] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
+- [X] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
 - [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
-- [ ] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
+- [X] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
 - [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
 - [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
 - [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
