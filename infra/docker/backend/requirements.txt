@@ -16,3 +16,5 @@ python-multipart
 filetype
 openai
 tenacity
+pypdf
+python-docx
