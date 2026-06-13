@@ -148,8 +148,17 @@ async def cv_client(pg_url):
         boto3.client("s3", region_name=cfg.S3_REGION).create_bucket(Bucket=cfg.S3_BUCKET_NAME)
         test_s3 = S3(cfg.S3_BUCKET_NAME, cfg)
 
+        from app.api.deps import get_arq_redis
+
+        class _NoOpRedis:
+            async def enqueue_job(self, name, *args, **kwargs):
+                class _Job:
+                    job_id = "noop"
+                return _Job()
+
         app.dependency_overrides[get_db] = override_get_db
         app.dependency_overrides[get_s3] = lambda: test_s3
+        app.dependency_overrides[get_arq_redis] = lambda: _NoOpRedis()
 
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:

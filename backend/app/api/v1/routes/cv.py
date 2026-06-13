@@ -1,23 +1,29 @@
 from uuid import UUID
 
+from arq.connections import ArqRedis
 from fastapi import APIRouter, Depends, UploadFile, status
 
-from app.api.deps import get_cv_service
+from app.api.deps import get_arq_redis, get_cv_service
 from app.core.security import current_active_user
 from app.models.user import User
 from app.schemas.cv import CVDownloadResponse, CVRead, CVUploadResponse
 from app.services.cv_service import CVService
+from app.workers.tasks import enqueue_parse_cv
 
 router = APIRouter(prefix="/cvs", tags=["cvs"])
+
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=CVUploadResponse)
 async def upload_cv(
     file: UploadFile,
     user: User = Depends(current_active_user),
     service: CVService = Depends(get_cv_service),
+    redis: ArqRedis = Depends(get_arq_redis),
 ):
     content = await file.read()
-    return await service.upload(user.id, file.filename or "cv", content)
+    cv = await service.upload(user.id, file.filename or "cv", content)
+    await enqueue_parse_cv(redis, str(cv.id))
+    return cv
 
 
 @router.get("", response_model=list[CVRead])
