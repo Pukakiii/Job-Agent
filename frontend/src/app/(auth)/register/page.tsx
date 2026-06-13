@@ -243,7 +243,7 @@ export default function RegisterPage() {
         />
       )}
 
-      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4 py-12">
+      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4">
         {mounted ? (
           <>
             <BlurFade delay={0} inView={false} suppressHydrationWarning>
