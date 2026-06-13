@@ -1,8 +1,9 @@
 from typing import AsyncIterator
 from functools import lru_cache
-from fastapi import Depends
+from fastapi import Depends, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from arq.connections import ArqRedis
 
 from app.core.db import async_session_factory
 from app.core.config import settings
@@ -31,3 +32,6 @@ def get_cv_service(
 ) -> CVService:
     return CVService(CVRepository(db), s3, settings)
 
+def get_arq_redis(request: Request) -> ArqRedis:
+    """The ARQ Redis pool opened in the app lifespan (used to enqueue background jobs)."""
+    return request.app.state.redis
