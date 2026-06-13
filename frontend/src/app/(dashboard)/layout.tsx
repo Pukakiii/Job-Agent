@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import type { ComponentType } from "react"
 import { usePathname } from "next/navigation"
 import {
   Briefcase,
@@ -30,7 +33,7 @@ function NavLink({
 }: {
   href: string
   label: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: ComponentType<{ className?: string }>
   exact?: boolean
 }) {
   const pathname = usePathname()
