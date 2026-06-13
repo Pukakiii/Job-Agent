@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Luxurious_Roman } from "next/font/google"
+
+import AuthProvider from "@/features/auth/AuthProvider"
 import "./globals.css"
 
 const geist = Geist({
@@ -41,7 +43,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen min-h-[100svh] min-h-[100dvh] bg-background text-foreground">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )
