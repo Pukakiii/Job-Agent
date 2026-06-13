@@ -21,6 +21,7 @@ dependencies = [
     "python-multipart",
     "filetype",
     "openai",
+    "tenacity",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,7 @@ dev = [
     "testcontainers[postgres]",
     "moto[s3]",
     "ruff",
+    "psycopg[binary]",
 ]
 
 [tool.pytest.ini_options]

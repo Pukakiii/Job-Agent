@@ -3,7 +3,18 @@
 Repository tests run against a *real* Postgres with pgvector (via Testcontainers),
 because the whole point is exercising pgvector queries, the upsert constraint, and
 the real types — a mock or SQLite wouldn't.
+
+Driver note: asyncpg 0.31.0 has a bug on Python 3.14 Windows (SCRAM-SHA-256
+auth fails in the C extension). Tests use psycopg3 (psycopg[binary]) as the
+SQLAlchemy driver instead — the app still uses asyncpg in production.
+
+psycopg3 requires SelectorEventLoop on Windows (ProactorEventLoop is not
+supported). The _asyncio_loop_factory fixture below forces SelectorEventLoop
+for all async tests; pytest-asyncio 1.x passes this factory to asyncio.Runner.
 """
+import asyncio
+import sys
+
 import boto3
 import pytest
 import pytest_asyncio
@@ -16,14 +27,22 @@ from app.core.config import settings
 from app.integrations.s3 import S3
 from app.models import Base
 
+@pytest.fixture(scope="session")
+def _asyncio_loop_factory():
+    # psycopg3 requires SelectorEventLoop on Windows; return None elsewhere to let
+    # pytest-asyncio pick the platform default.
+    if sys.platform == "win32":
+        return asyncio.SelectorEventLoop
+    return None
+
 
 @pytest.fixture(scope="session")
 def pg_url() -> str:
     """Start one pgvector Postgres container for the whole test session.
 
-    Sync fixture (Testcontainers is synchronous); yields an asyncpg URL.
+    Sync fixture (Testcontainers is synchronous); yields a psycopg URL.
     """
-    with PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg") as pg:
+    with PostgresContainer("pgvector/pgvector:pg16", driver="psycopg") as pg:
         yield pg.get_connection_url()
 
 
