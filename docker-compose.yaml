@@ -90,30 +90,40 @@ services:
       start_period: 20s
     restart: unless-stopped
 
-  # worker:
-  #   # Reuses the same image built by the api service — no separate build needed.
-  #   # entrypoint is overridden to run the ARQ background worker instead of uvicorn.
-  #   image: job-agent-backend:latest
-  #   networks:
-  #     - job-agent-network
-  #   env_file:
-  #     - infra/secret/.env.backend
-  #   environment:
-  #     # Same overrides as api
-  #     POSTGRES_HOST: postgres
-  #     POSTGRES_PORT: 5432
-  #     REDIS_URL: redis://redis:6379
-  #     S3_ENDPOINT_URL: http://minio:9000
-  #     S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-  #   command: ["arq", "app.workers.settings.WorkerSettings"]
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #     minio:
-  #       condition: service_healthy
-  #   restart: unless-stopped
+  worker:
+    # Reuses the image built by the api service — no separate build.
+    # Entrypoint is overridden to run the ARQ worker instead of uvicorn.
+    image: job-agent-backend:latest
+    networks:
+      - job-agent-network
+    env_file:
+      - infra/secret/.env.backend
+    environment:
+      # Same host overrides as api → Compose service hostnames.
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+    command: ["arq", "app.workers.settings.WorkerSettings"]
+    depends_on:
+      api:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      # ARQ writes a health record to Redis; `--check` exits non-zero if the worker
+      # is unhealthy or its heartbeat is stale. This checks the service, not just liveness.
+      test: ["CMD", "arq", "app.workers.settings.WorkerSettings", "--check"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
 networks:
   job-agent-network:
