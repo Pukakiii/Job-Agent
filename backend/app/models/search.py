@@ -19,5 +19,7 @@ class Search(Base):
     prompt:     Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     results:    Mapped[list["SearchResult"]] = relationship(
-        back_populates="search", cascade="all, delete-orphan"
+        back_populates="search",
+        cascade="all, delete-orphan",
+        order_by="SearchResult.rank",
     )
