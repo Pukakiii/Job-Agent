@@ -1,26 +1,28 @@
 "use client"
 
-import { useEffect, useState, type CSSProperties } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+import { BrandLogo } from "@/components/auth/brand-logo"
+import { FormField } from "@/components/forms"
 import { BlurFade } from "@/components/ui/magic/blur-fade"
 import { Particles } from "@/components/ui/magic/particles"
 import { ShimmerButton } from "@/components/ui/magic/shimmer-button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { login } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
-import { BrandLogo } from "@/components/auth/brand-logo"
 
 type Field = "email" | "password"
 
 type Touched = Record<Field, boolean>
-
-const CARD_BACKDROP_STYLE: CSSProperties = {
-  WebkitBackdropFilter: "blur(12px)",
-}
-
-const INPUT_BASE =
-  "w-full rounded-md border bg-background/60 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors backdrop-blur-sm"
 
 function validateEmail(value: string): string | undefined {
   if (!value) return "Email is required"
@@ -91,102 +93,100 @@ export default function LoginPage() {
   const logo = <BrandLogo className="mb-8" />
 
   const card = (
-    <div
-      className="w-full max-w-[380px] rounded-xl border border-border bg-card/80 p-8 shadow-sm backdrop-blur-md"
-      style={CARD_BACKDROP_STYLE}
-    >
-      <h2 className="text-lg font-semibold text-foreground">Welcome back</h2>
-      <p className="mt-1 mb-7 text-sm text-muted-foreground">
-        Sign in to continue
-      </p>
+    <Card variant="glass" className="w-full max-w-[380px] gap-0 p-8">
+      <CardHeader className="gap-1 p-0 pb-7">
+        <CardTitle className="text-lg font-semibold text-foreground">
+          Welcome back
+        </CardTitle>
+        <CardDescription>Sign in to continue</CardDescription>
+      </CardHeader>
 
-      {apiError && (
-        <div className="mb-5 flex items-start justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3">
-          <p className="text-sm text-destructive">{apiError}</p>
-          <button
-            type="button"
-            onClick={() => setApiError(null)}
-            className="mt-0.5 text-lg leading-none text-destructive/70 hover:text-destructive"
-            aria-label="Dismiss error"
-          >
-            ×
-          </button>
-        </div>
-      )}
+      <CardContent className="p-0">
+        {apiError && (
+          <div className="mb-5 flex items-start justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3">
+            <p className="text-sm text-destructive">{apiError}</p>
+            <button
+              type="button"
+              onClick={() => setApiError(null)}
+              className="mt-0.5 text-lg leading-none text-destructive/70 hover:text-destructive"
+              aria-label="Dismiss error"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
-        <div className="space-y-2">
-          <label
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <FormField
+            label="Email"
             htmlFor="email"
-            className="text-sm font-medium text-foreground"
+            error={errors.email}
+            showError={showEmailError}
           >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onBlur={() => handleBlur("email")}
-            placeholder="you@example.com"
-            aria-invalid={showEmailError}
-            className={cn(
-              INPUT_BASE,
-              showEmailError ? "border-destructive" : "border-border",
-            )}
-          />
-          {showEmailError && (
-            <p className="text-xs text-destructive">{errors.email}</p>
-          )}
-        </div>
+            <Input
+              id="email"
+              type="email"
+              variant="glass"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur("email")}
+              placeholder="you@example.com"
+              aria-invalid={showEmailError}
+              className={cn(
+                "py-2.5",
+                showEmailError && "border-destructive",
+              )}
+            />
+          </FormField>
 
-        <div className="space-y-2">
-          <label
+          <FormField
+            label="Password"
             htmlFor="password"
-            className="text-sm font-medium text-foreground"
+            error={errors.password}
+            showError={showPasswordError}
           >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => handleBlur("password")}
-            placeholder="••••••••"
-            aria-invalid={showPasswordError}
-            className={cn(
-              INPUT_BASE,
-              showPasswordError ? "border-destructive" : "border-border",
-            )}
-          />
-          {showPasswordError && (
-            <p className="text-xs text-destructive">{errors.password}</p>
-          )}
-        </div>
+            <Input
+              id="password"
+              type="password"
+              variant="glass"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur("password")}
+              placeholder="••••••••"
+              aria-invalid={showPasswordError}
+              className={cn(
+                "py-2.5",
+                showPasswordError && "border-destructive",
+              )}
+            />
+          </FormField>
 
-        <ShimmerButton
-          type="submit"
-          disabled={loading}
-          borderRadius="6px"
-          background="var(--primary)"
-          shimmerColor="var(--color-accent-hover)"
-          shimmerDuration="4s"
-          className="w-full rounded-md py-2.5 text-sm font-medium text-primary-foreground shadow-none"
-        >
-          {loading ? "Signing in…" : "Sign in"}
-        </ShimmerButton>
-      </form>
+          <ShimmerButton
+            type="submit"
+            disabled={loading}
+            borderRadius="6px"
+            background="var(--primary)"
+            shimmerColor="var(--color-accent-hover)"
+            shimmerDuration="4s"
+            className="w-full rounded-md py-2.5 text-sm font-medium text-primary-foreground shadow-none"
+          >
+            {loading ? "Signing in…" : "Sign in"}
+          </ShimmerButton>
+        </form>
 
-      <p className="mt-5 text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          Register
-        </Link>
-      </p>
-    </div>
+        <p className="mt-5 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/register"
+            className="font-medium text-primary hover:underline"
+          >
+            Register
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   )
 
   return (

@@ -1,20 +1,52 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+const GLASS_BACKDROP_STYLE: React.CSSProperties = {
+  WebkitBackdropFilter: "blur(12px)",
+}
+
+const cardVariants = cva(
+  "group/card flex flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
+  {
+    variants: {
+      variant: {
+        default: "",
+        glass:
+          "rounded-xl border-border bg-card/80 shadow-sm backdrop-blur-md",
+      },
+      size: {
+        default: "",
+        sm: "gap-3",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
 function Card({
   className,
+  variant = "default",
   size = "default",
+  style,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof cardVariants> & { size?: "default" | "sm" }) {
   return (
     <div
       data-slot="card"
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
-        className
-      )}
+      data-variant={variant}
+      className={cn(cardVariants({ variant, size }), className)}
+      style={
+        variant === "glass"
+          ? { ...GLASS_BACKDROP_STYLE, ...style }
+          : style
+      }
       {...props}
     />
   )

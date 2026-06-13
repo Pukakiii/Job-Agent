@@ -36,7 +36,7 @@ section, headline, subheadline, and CTA button linking to /login
 - [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
 - [ ] **Auth session hook** — Add `src/features/auth/useAuth.ts` for current user state, loading, and cookie-backed session persistence
 - [ ] **Route protection middleware** — Add `src/middleware.ts` to redirect unauthenticated users away from `(dashboard)` routes
-- [ ] **Shared UI primitives** — Add `Button`, `Input`, `Label`, and `Card` under `src/components/ui/`
+- [x] **Shared UI primitives** — Add `Button`, `Input`, `Label`, and `Card` under `src/components/ui/`
 - [ ] **Dashboard shell layout** — Add `(dashboard)/layout.tsx` with sidebar nav linking jobs, CVs, applications, documents, outreach, and settings
 - [ ] **Jobs page scaffold** — Add `(dashboard)/jobs/page.tsx` with empty state and list container ready for API data
 - [ ] **CVs page scaffold** — Add `(dashboard)/cvs/page.tsx` with upload dropzone placeholder and active-CV selector UI
