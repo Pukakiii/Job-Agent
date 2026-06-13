@@ -110,6 +110,12 @@ async def auth_client(pg_url):
     app.dependency_overrides[get_db] = override_get_db
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
+        creds = {"email": "auth@test.io", "password": "supersecret123"}
+        await client.post("/api/v1/auth/register", json=creds)
+        await client.post(
+            "/api/v1/auth/jwt/login",
+            data={"username": creds["email"], "password": creds["password"]},
+        )
         yield client
 
     app.dependency_overrides.clear()
