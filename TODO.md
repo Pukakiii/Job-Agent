@@ -8,11 +8,11 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 ## Current stage
 
-**Done (foundation):** Backend core (`config`, `db`, app factory, CORS), SQLAlchemy models + Alembic initial migration (pgvector HNSW), JWT auth (`fastapi-users`), repositories (`job_repo`, `search_repo`, `cv_repo`), S3 integration, and repository-layer tests (Testcontainers + moto).
+**Done (backend foundation):** Core (`config`, `db`, app factory, CORS), SQLAlchemy models + Alembic initial migration (pgvector HNSW), JWT auth (`fastapi-users`), repositories (`job_repo`, `search_repo`, `cv_repo`), S3 integration, repository-layer tests (Testcontainers + moto), Docker Compose stack, CV API routes + `cv_service`.
 
-**Not started / in progress:** API routes beyond auth, service layer, ARQ workers, Docker Compose, job-source adapters, AI integrations, and frontend feature pages (route groups, layouts, dashboard shell).
+**Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Done (frontend foundation):** Next.js 16 initialized via `create-next-app` (App Router, TypeScript, Tailwind CSS v4, ESLint) with default `layout.tsx`, `page.tsx`, and `globals.css`.
+**Not started / in progress:** Jobs + searches + applications backend routes, service layer (matching, ingestion), ARQ workers, job-source adapters, AI integrations, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
 
 ---
 
@@ -20,34 +20,53 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 _Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
 
+_Order follows app flow: foundation → auth → API client modules → route protection → dashboard shell → page scaffolds → polish & wiring._
+
+### Foundation
+
 - [x] **Initialize Next.js app** — Add `next`, `react`, `tailwindcss`, and App Router config to `frontend/`; create `layout.tsx`, `page.tsx`, `globals.css`, and `next.config.ts` per [code-architecture.md](docs/code-architecture.md#frontend-folder-structure)
 - [x] **Design tokens and Tailwind theme** — Define color palette, typography scale, spacing, and radius in `tailwind.config.ts` + CSS variables in `globals.css`
-- [x] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
-- [x] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, and `logout` calls against `/api/v1/auth`
-- [x] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, and error display
-- [x] **Fix login page layout and styling** — Fix card centering,
-remove premature validation errors, fix input default border
-color, tighten border radius, fix title position outside card,
-and align spacing to DESIGN_REFERENCES.md
-- [x] **Root layout** — Add `src/app/layout.tsx` with html/body shell,
-Geist font setup, dark color-scheme, and metadata for "Job Agent"
-- [x] **Homepage** — Add `src/app/page.tsx` landing page with hero
-section, headline, subheadline, and CTA button linking to /login
-- [ ] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect
-- [ ] **Auth session hook** — Add `src/features/auth/useAuth.ts` for current user state, loading, and cookie-backed session persistence
-- [ ] **Route protection middleware** — Add `src/middleware.ts` to redirect unauthenticated users away from `(dashboard)` routes
+- [x] **Root layout** — Add `src/app/layout.tsx` with html/body shell, Geist font setup, dark color-scheme, and metadata for "Job Agent"
+- [x] **Homepage** — Add `src/app/page.tsx` landing page with hero section, headline, subheadline, and CTA button linking to /login
+- [x] **Safari compatibility** — Hex-first CSS tokens, `100dvh` fallbacks, Particles/BlurFade fixes, `-webkit-backdrop-filter` on glass surfaces
 - [x] **Shared UI primitives** — Add `Button`, `Input`, `Label`, and `Card` under `src/components/ui/`
-- [ ] **Dashboard shell layout** — Add `(dashboard)/layout.tsx` with sidebar nav linking jobs, CVs, applications, documents, outreach, and settings
-- [ ] **Jobs page scaffold** — Add `(dashboard)/jobs/page.tsx` with empty state and list container ready for API data
-- [ ] **CVs page scaffold** — Add `(dashboard)/cvs/page.tsx` with upload dropzone placeholder and active-CV selector UI
-- [ ] **Applications page scaffold** — Add `(dashboard)/applications/page.tsx` with Kanban column layout (saved / applied / interview / offer / rejected)
-- [ ] **Documents page scaffold** — Add `(dashboard)/documents/page.tsx` for resume and cover-letter generation placeholders
-- [ ] **Outreach page scaffold** — Add `(dashboard)/outreach/page.tsx` with email list and compose panel placeholders
-- [ ] **Settings page scaffold** — Add `(dashboard)/settings/page.tsx` with account info and AI-instruction fields
-- [ ] **Jobs API module** — Add `src/lib/api/jobs.ts` with `getJob` and list helpers mirroring backend schemas
-- [ ] **CVs API module** — Add `src/lib/api/cvs.ts` with upload, list, and set-active helpers
-- [ ] **Searches API module** — Add `src/lib/api/searches.ts` with `triggerSearch` and `getSearchHistory` helpers
+- [x] **FormField composition** — Add `components/forms/form-field.tsx` for label + input + error message in auth forms
+
+### API client (before pages that import types)
+
+- [x] **API client base** — Add `src/lib/api/client.ts` with base URL, credentials, JSON parsing, and domain error envelope handling
+- [x] **Auth API module** — Add `src/lib/api/auth.ts` with typed `login`, `register`, `logout`, and `getMe` calls
+- [x] **Jobs API module** — Add `src/lib/api/jobs.ts` with `listJobs`, `getJob`, and `getJobScore` helpers mirroring backend schemas
+- [x] **CVs API module** — Add `src/lib/api/cvs.ts` with upload, list, set-active, and delete helpers
+- [x] **Searches API module** — Add `src/lib/api/searches.ts` with `triggerSearch`, `getSearch`, `listSearches`, and `getSearchResults` helpers
+- [x] **Applications API module** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
+
+### Auth flow
+
+- [x] **Login page** — Build `(auth)/login/page.tsx` with email/password form, validation, error display, and `?registered=true` success banner
+- [x] **Fix login page layout and styling** — Fix card centering, remove premature validation errors, fix input default border color, tighten border radius, fix title position outside card, and align spacing to DESIGN_REFERENCES.md
+- [x] **Register page** — Build `(auth)/register/page.tsx` with sign-up form and post-register redirect to `/login?registered=true`
+- [x] **Auth session hook** — Add `src/features/auth/AuthProvider.tsx` + `useAuth.ts` for current user state, loading, and cookie-backed session persistence
+- [x] **Route protection middleware** — Add `src/middleware.ts` to redirect unauthenticated users away from `/dashboard` routes (cookie presence check)
+
+### Dashboard shell & pages
+
+- [x] **Dashboard shell layout** — Add `(dashboard)/layout.tsx` with sidebar nav linking overview, jobs, CVs, applications, documents, outreach, and settings
+- [x] **Dashboard overview page** — Add `(dashboard)/dashboard/page.tsx` as the `/dashboard` landing view
+- [x] **Jobs page scaffold** — Add `(dashboard)/dashboard/jobs/page.tsx` with empty state, stat cards, and list container ready for API data
+- [x] **CVs page scaffold** — Add `(dashboard)/dashboard/cvs/page.tsx` with upload dropzone placeholder and active-CV selector UI
+- [x] **Applications page scaffold** — Add `(dashboard)/dashboard/applications/page.tsx` with Kanban column layout (saved / applied / interview / offer / rejected)
+- [x] **Documents page scaffold** — Add `(dashboard)/dashboard/documents/page.tsx` for resume and cover-letter generation placeholders
+- [x] **Outreach page scaffold** — Add `(dashboard)/dashboard/outreach/page.tsx` with email list and compose panel placeholders
+- [x] **Settings page scaffold** — Add `(dashboard)/dashboard/settings/page.tsx` with account info and AI-instruction fields
+
+### Next up (polish & wiring — do after backend routes land)
+
+- [ ] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
 - [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
+- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs` once backend `GET /jobs` exists
+- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` (backend route live; see Joint Tasks)
+- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` once backend routes exist
 
 ---
 
@@ -55,12 +74,18 @@ section, headline, subheadline, and CTA button linking to /login
 
 _Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra._
 
+_Order: infra → CV domain (unblocks frontend CV wiring) → jobs/searches (unblocks matching flow) → workers → services._
+
 - [x] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
 - [ ] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
-- [ ] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
+- [x] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, download, delete) wired to `cv_repo` and S3; register in `router.py`
+- [x] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
 - [ ] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
 - [ ] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
-- [ ] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [ ] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
+- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
+- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
 - [ ] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
 - [ ] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
 - [ ] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
@@ -72,18 +97,16 @@ _Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes
 
 _Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit._
 
+_Order: integration tests → domain integrations → E2E wiring → CI._
+
 - [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
 - [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
 - [x] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
-- [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
+- [ ] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB) _(also listed under Kyryll)_
+- [ ] **Wire login flow E2E** — Verify frontend login/register → session cookie → `getMe` → protected `/dashboard` redirect round-trip against live API
+- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` _(backend route live; frontend scaffold ready)_
 - [ ] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
 - [ ] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
 - [ ] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
 - [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
-- [ ] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
-- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
-- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
-- [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
-- [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` once backend route exists
 - [ ] **CI workflow** — Add GitHub Actions job running backend `pytest` and frontend `lint` on pull requests
