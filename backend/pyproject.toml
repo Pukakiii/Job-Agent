@@ -20,6 +20,8 @@ dependencies = [
     "boto3",
     "python-multipart",
     "filetype",
+    "pypdf",
+    "python-docx",
     "openai",
     "tenacity",
 ]
