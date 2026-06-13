@@ -11,6 +11,13 @@ class SearchCreate(BaseModel):            # request body
     prompt: str
 
 
+class SearchSummary(BaseModel):           # list item — no results payload
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    prompt: str
+    created_at: datetime
+
+
 class SearchRead(BaseModel):              # response body: the search + its ranked matches
     model_config = ConfigDict(from_attributes=True)
     id: UUID
