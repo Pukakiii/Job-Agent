@@ -22,6 +22,16 @@ class SearchRepository:
         )
         return res.scalar_one_or_none()
 
+    async def list_by_user(self, user_id: UUID, limit: int = 20, offset: int = 0) -> list[Search]:
+        res = await self.db.execute(
+            select(Search)
+            .where(Search.user_id == user_id)
+            .order_by(Search.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(res.scalars())
+
     async def save_search(
         self,
         user_id: UUID,

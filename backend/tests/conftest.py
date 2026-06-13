@@ -117,6 +117,23 @@ async def auth_client(pg_url):
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
+
+@pytest_asyncio.fixture
+async def logged_in_client(auth_client):
+    """auth_client with a registered and logged-in user.
+
+    Use this when the test exercises a protected endpoint and needs a valid
+    session cookie already set.  auth_client stays unauthenticated so that
+    tests which verify 401 responses continue to work.
+    """
+    creds = {"email": "auth@test.io", "password": "supersecret123"}
+    await auth_client.post("/api/v1/auth/register", json=creds)
+    await auth_client.post(
+        "/api/v1/auth/jwt/login",
+        data={"username": creds["email"], "password": creds["password"]},
+    )
+    yield auth_client
+
 @pytest_asyncio.fixture
 async def cv_client(pg_url):
     """Authenticated httpx client with a per-test DB (committing) and a moto-backed
