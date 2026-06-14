@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +15,17 @@ class JobRepository:
         """Nearest jobs to the query embedding by cosine distance (ORM objects)."""
         res = await self.db.execute(
             select(Job).order_by(Job.embedding.cosine_distance(query_vector)).limit(limit)
+        )
+        return list(res.scalars())
+
+    async def get_by_id(self, job_id: UUID) -> Job | None:
+        """Return the Job with the given id, or None if not found."""
+        return await self.db.get(Job, job_id)
+
+    async def list_jobs(self, limit: int = 20, offset: int = 0) -> list[Job]:
+        """Jobs ordered by ingested_at DESC, id; paginated by limit/offset."""
+        res = await self.db.execute(
+            select(Job).order_by(Job.ingested_at.desc(), Job.id).limit(limit).offset(offset)
         )
         return list(res.scalars())
 

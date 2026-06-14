@@ -50,6 +50,13 @@ _TAGS: list[dict] = [
             "LLM-rerank into up to 10 explained matches, and persist the result."
         ),
     },
+    {
+        "name": "jobs",
+        "description": (
+            "Browse the ingested job corpus (paginated) and fetch a single posting, "
+            "plus trigger an on-demand ingestion run (enqueued to the background worker)."
+        ),
+    },
 ]
 
 app = FastAPI(
