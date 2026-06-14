@@ -1407,6 +1407,11 @@
               }
             ],
             "title": "Location"
+          },
+          "include_remote": {
+            "type": "boolean",
+            "title": "Include Remote",
+            "default": false
           }
         },
         "type": "object",
