@@ -76,7 +76,12 @@ export default function DashboardPage() {
               <CardDescription>{link.description}</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-              <Button variant="outline" size="sm" render={<Link href={link.href} />}>
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link href={link.href} />}
+              >
                 Open
                 <ArrowRight />
               </Button>
