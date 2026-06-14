@@ -55,6 +55,11 @@ export async function login(
     body: params.toString(),
   });
 
+  // MSW service worker responses don't persist Set-Cookie; set mock cookie for middleware.
+  if (res.ok && process.env.NODE_ENV === 'development' && typeof document !== 'undefined') {
+    document.cookie = 'fastapiusersauth=mock-jwt-token; path=/; SameSite=Lax';
+  }
+
   return res;
 }
 

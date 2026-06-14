@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { login } from "@/lib/api/auth"
+import { useAuth } from "@/features/auth/useAuth"
 import { cn } from "@/lib/utils"
 
 type Field = "email" | "password"
@@ -45,6 +45,7 @@ function showFieldError(
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { login } = useAuth()
   const registered = searchParams.get("registered") === "true"
   const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState("")
