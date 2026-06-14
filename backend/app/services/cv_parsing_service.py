@@ -4,6 +4,7 @@ import anyio
 
 from app.core.logger import get_logger
 from app.exceptions import CVNotFound, LLMOutputInvalid
+from app.integrations.embeddings import Embedder
 from app.integrations.openai_client import OpenAIClient
 from app.integrations.s3 import S3
 from app.integrations.text_extract import extract_text
@@ -25,10 +26,11 @@ class CVParsingService:
     parsers are blocking/CPU-bound), LLM-extract a structured profile, persist both
     onto the cvs row. HTTP-agnostic — raises domain exceptions."""
 
-    def __init__(self, repo: CVRepository, s3: S3, openai: OpenAIClient):
+    def __init__(self, repo: CVRepository, s3: S3, openai: OpenAIClient, embedder: Embedder):
         self.repo = repo
         self.s3 = s3
         self.openai = openai
+        self.embedder = embedder
 
     async def run(self, cv_id: UUID) -> None:
         cv = await self.repo.get_by_id(cv_id)
@@ -40,11 +42,22 @@ class CVParsingService:
         text = await anyio.to_thread.run_sync(extract_text, cv.content_type, data)
 
         profile = await self._extract_profile(text)
-        await self.repo.set_parsing_result(cv_id, text, profile.model_dump())
+        embedding = await self._embed(text)
+        await self.repo.set_parsing_result(cv_id, text, profile.model_dump(), embedding)
         logger.info(
-            "Parsed CV %s (%d chars, %d experiences)",
-            cv_id, len(text), len(profile.experience or []),
+            "Parsed CV %s (%d chars, %d experiences, embedding=%s)",
+            cv_id, len(text), len(profile.experience or []), "yes" if embedding else "skipped",
         )
+
+    async def _embed(self, text: str) -> list[float] | None:
+        """Cache the CV vector so searches needn't re-embed the full CV each time.
+        Best-effort: a failing embed backend must not lose the parsed text — matching
+        falls back to embedding the query text live when this is None."""
+        try:
+            return await self.embedder.embed_query(text)
+        except Exception:
+            logger.warning("CV embedding failed — storing parsed text without it", exc_info=True)
+            return None
 
     async def _extract_profile(self, cv_text: str) -> CVProfile:
         raw = await self.openai.chat(

@@ -52,7 +52,7 @@ async def parse_cv(ctx, cv_id: str) -> None:
     """Parse an uploaded CV off-request. Tolerant of a not-yet-committed row: if the
     CV isn't visible yet, CVNotFound propagates and ARQ retries the job."""
     async with async_session_factory() as session:
-        service = CVParsingService(CVRepository(session), ctx["s3"], ctx["openai"])
+        service = CVParsingService(CVRepository(session), ctx["s3"], ctx["openai"], ctx["embedder"])
         await service.run(UUID(cv_id))
         await session.commit()
 
