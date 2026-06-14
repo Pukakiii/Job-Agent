@@ -43,10 +43,17 @@ async def enqueue_scrape(
     query: str,
     location: str | None = None,
     sources: list[str] | None = None,
+    dedup_key: str | None = None,
 ) -> str:
-    """Enqueue an on-demand scrape job. Returns the ARQ job id."""
-    job = await redis.enqueue_job("scrape_board", query, location=location, sources=sources)
-    return job.job_id
+    """Enqueue an on-demand scrape job. Returns the ARQ job id.
+
+    When `dedup_key` is given, ARQ won't queue a second job under the same key while one
+    is already pending/running (it returns None) — used so repeated searches against an
+    empty corpus don't pile up duplicate scrapes; we then report the existing key."""
+    job = await redis.enqueue_job(
+        "scrape_board", query, location=location, sources=sources, _job_id=dedup_key
+    )
+    return job.job_id if job else (dedup_key or "")
 
 
 async def parse_cv(ctx, cv_id: str) -> None:
