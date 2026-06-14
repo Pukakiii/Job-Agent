@@ -11,6 +11,29 @@ export const handlers = [
     return HttpResponse.json(userMe)
   }),
 
+  http.post("/api/v1/auth/jwt/login", async () => {
+    return HttpResponse.json(userMe, {
+      headers: {
+        "Set-Cookie": "fastapiusersauth=mock-jwt-token; Path=/; HttpOnly",
+      },
+    })
+  }),
+
+  http.post("/api/v1/auth/register", async ({ request }) => {
+    const body = await request.json() as { email: string; password: string }
+    return HttpResponse.json({
+      id: "usr_001",
+      email: body.email,
+      is_active: true,
+      is_verified: false,
+      is_superuser: false,
+    })
+  }),
+
+  http.post("/api/v1/auth/jwt/logout", () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
   // ── Jobs ─────────────────────────────────────────────────────────
   http.get("/api/v1/jobs", ({ request }) => {
     const url = new URL(request.url)
@@ -58,16 +81,12 @@ export const handlers = [
   }),
 
   http.post("/api/v1/searches", async ({ request }) => {
-    const body = await request.json() as { cv_id: string }
+    const body = await request.json() as { cv_id: string; prompt?: string }
     return HttpResponse.json(
       {
         id: "search_new",
-        user_id: "usr_001",
-        cv_id: body.cv_id,
-        status: "pending",
+        prompt: body.prompt ?? "New search",
         created_at: new Date().toISOString(),
-        completed_at: null,
-        result_count: null,
       },
       { status: 202 }
     )
@@ -80,22 +99,16 @@ export const handlers = [
 
   http.post("/api/v1/cvs/upload", async () => {
     return HttpResponse.json({
-      cv: {
-        id: "cv_new",
-        user_id: "usr_001",
-        filename: "uploaded_cv.pdf",
-        storage_key: "cvs/usr_001/uploaded_cv.pdf",
-        is_active: false,
-        created_at: new Date().toISOString(),
-      },
-      presigned_url: "https://s3.example.com/upload/mock-presigned-url",
+      id: "cv_new",
+      original_filename: "uploaded_cv.pdf",
+      created_at: new Date().toISOString(),
     })
   }),
 
   http.patch("/api/v1/cvs/:id/active", ({ params }) => {
     const cv = cvs.find((c) => c.id === params.id)
     if (!cv) return new HttpResponse(null, { status: 404 })
-    return HttpResponse.json({ ...cv, is_active: true })
+    return HttpResponse.json(cv)
   }),
 
   http.delete("/api/v1/cvs/:id", () => {
@@ -117,14 +130,12 @@ export const handlers = [
     const job = jobs.find((j) => j.id === body.job_id)
     return HttpResponse.json({
       id: "app_new",
-      user_id: "usr_001",
       job_id: body.job_id,
       status: body.status ?? "saved",
       notes: null,
-      applied_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      job: job ?? null,
+      job: job ?? undefined,
     })
   }),
 
@@ -143,32 +154,3 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   }),
 ]
-// Login
-http.post("/api/v1/auth/jwt/login", async () => {
-  return HttpResponse.json(userMe, {
-    headers: {
-      "Set-Cookie": "fastapiusersauth=mock-jwt-token; Path=/; HttpOnly",
-    },
-  })
-}),
-
-// Register  
-http.post("/api/v1/auth/register", async ({ request }) => {
-  const body = await request.json() as { email: string; password: string }
-  return HttpResponse.json({
-    id: "usr_001",
-    email: body.email,
-    is_active: true,
-    is_verified: false,
-    is_superuser: false,
-  })
-}),
-
-http.post("/api/v1/auth/jwt/logout", () => {
-  return new HttpResponse(null, { status: 204 })
-}),
-
-// Logout
-http.post("/api/v1/auth/jwt/logout", () => {
-  return new HttpResponse(null, { status: 204 })
-})
