@@ -45,7 +45,8 @@ async def enqueue_scrape(
     sources: list[str] | None = None,
 ) -> str:
     """Enqueue an on-demand scrape job. Returns the ARQ job id."""
-    return await redis.enqueue_job("scrape_board", query, location=location, sources=sources)
+    job = await redis.enqueue_job("scrape_board", query, location=location, sources=sources)
+    return job.job_id
 
 
 async def parse_cv(ctx, cv_id: str) -> None:
