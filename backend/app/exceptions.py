@@ -47,3 +47,8 @@ class NoMatchesFound(AppError):
 class SearchNotFound(AppError):
     status_code = 404
     code = "search_not_found"
+
+
+class JobNotFound(AppError):
+    status_code = 404
+    code = "job_not_found"

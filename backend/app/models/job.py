@@ -19,7 +19,7 @@ class Job(Base):
     location:      Mapped[str | None]
     url:           Mapped[str]                                      # direct apply link (ADR-003)
     description:   Mapped[str] = mapped_column(Text)
-    embedding:     Mapped[list[float]] = mapped_column(Vector(768)) # nomic-embed-text
+    embedding:     Mapped[list[float]] = mapped_column(Vector(768)) # text-embedding-3-small @ 768 dims (Matryoshka truncation)
     posted_at:     Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ingested_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
