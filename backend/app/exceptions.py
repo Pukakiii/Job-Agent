@@ -52,3 +52,9 @@ class SearchNotFound(AppError):
 class JobNotFound(AppError):
     status_code = 404
     code = "job_not_found"
+
+
+class CorpusEmpty(Exception):
+    """Signal: no jobs in the corpus to match against. The search route catches this,
+    kicks off ingestion, and returns 202 Accepted. Deliberately NOT an AppError — it is
+    control flow, not an error envelope."""

@@ -9,6 +9,7 @@ from app.schemas.job import JobMatch
 class SearchCreate(BaseModel):            # request body
     cv_id: UUID
     prompt: str
+    location: str | None = None           # restrict matches to this location (+ remote)
 
 
 class SearchSummary(BaseModel):           # list item — no results payload

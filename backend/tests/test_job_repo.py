@@ -80,6 +80,36 @@ async def test_search_by_vector_respects_limit(db):
     assert len(hits) == 3
 
 
+async def test_search_by_vector_filters_by_location(db):
+    repo = JobRepository(db)
+    await repo.upsert_many([
+        {**_job_row("adzuna", "W1", "Warsaw job", 0), "location": "Warsaw, PL"},
+        {**_job_row("adzuna", "U1", "USA job", 1), "location": "New York, USA"},
+        {**_job_row("adzuna", "R1", "Remote job", 2), "location": "Remote"},
+    ])
+    await db.flush()
+
+    hits = await repo.search_by_vector(_unit_vec(0), limit=10, location="warsaw")
+    titles = {j.title for j in hits}
+
+    assert "Warsaw job" in titles   # case-insensitive substring match
+    assert "Remote job" in titles   # remote is always location-eligible
+    assert "USA job" not in titles  # filtered out
+
+
+async def test_search_by_vector_no_location_returns_all(db):
+    repo = JobRepository(db)
+    await repo.upsert_many([
+        {**_job_row("adzuna", "W1", "Warsaw job", 0), "location": "Warsaw, PL"},
+        {**_job_row("adzuna", "U1", "USA job", 1), "location": "New York, USA"},
+    ])
+    await db.flush()
+
+    hits = await repo.search_by_vector(_unit_vec(0), limit=10)
+
+    assert {j.title for j in hits} == {"Warsaw job", "USA job"}
+
+
 async def test_get_by_id_returns_job(db):
     repo = JobRepository(db)
     row = _job_row("adzuna", "A99", "Target Job", 0)
