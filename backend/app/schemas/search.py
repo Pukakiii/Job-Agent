@@ -9,7 +9,8 @@ from app.schemas.job import JobMatch
 class SearchCreate(BaseModel):            # request body
     cv_id: UUID
     prompt: str
-    location: str | None = None           # restrict matches to this location (+ remote)
+    location: str | None = None           # restrict matches to this location (city token)
+    include_remote: bool = False          # also include remote listings when location is set
 
 
 class SearchSummary(BaseModel):           # list item — no results payload

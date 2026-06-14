@@ -12,17 +12,26 @@ class JobRepository:
         self.db = db
 
     async def search_by_vector(
-        self, query_vector: list[float], limit: int = 20, location: str | None = None
+        self,
+        query_vector: list[float],
+        limit: int = 20,
+        location: str | None = None,
+        include_remote: bool = False,
     ) -> list[Job]:
         """Nearest jobs to the query embedding by cosine distance (ORM objects).
 
-        When `location` is given, restrict to jobs whose location matches it (case-
-        insensitive substring) or are remote; rank by cosine within that subset. Jobs
-        with a NULL location are excluded by the filter (location can't be confirmed)."""
+        When `location` is given, restrict to jobs whose location matches the city token
+        of the input (the part before the first comma — so "Warszawa, PL" matches a job
+        listed as "Warszawa"), then rank by cosine within that subset. `include_remote`
+        additionally keeps remote listings. Jobs with a NULL location are excluded by the
+        filter (location can't be confirmed)."""
         stmt = select(Job)
-        if location and location.strip():
-            like = f"%{location.strip()}%"
-            stmt = stmt.where(or_(Job.location.ilike(like), Job.location.ilike("%remote%")))
+        city = (location or "").split(",")[0].strip()
+        if city:
+            clauses = [Job.location.ilike(f"%{city}%")]
+            if include_remote:
+                clauses.append(Job.location.ilike("%remote%"))
+            stmt = stmt.where(or_(*clauses))
         stmt = stmt.order_by(Job.embedding.cosine_distance(query_vector)).limit(limit)
         res = await self.db.execute(stmt)
         return list(res.scalars())

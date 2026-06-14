@@ -80,21 +80,39 @@ async def test_search_by_vector_respects_limit(db):
     assert len(hits) == 3
 
 
-async def test_search_by_vector_filters_by_location(db):
+async def test_search_by_vector_filters_by_city_token(db):
     repo = JobRepository(db)
     await repo.upsert_many([
-        {**_job_row("adzuna", "W1", "Warsaw job", 0), "location": "Warsaw, PL"},
-        {**_job_row("adzuna", "U1", "USA job", 1), "location": "New York, USA"},
+        {**_job_row("adzuna", "W1", "Warsaw job", 0), "location": "Warszawa"},
+        {**_job_row("adzuna", "U1", "USA job", 1), "location": "Miami, FL, USA"},
         {**_job_row("adzuna", "R1", "Remote job", 2), "location": "Remote"},
     ])
     await db.flush()
 
-    hits = await repo.search_by_vector(_unit_vec(0), limit=10, location="warsaw")
+    # A full "City, Country" input matches on the city token; remote is off by default.
+    hits = await repo.search_by_vector(_unit_vec(0), limit=10, location="Warszawa, PL")
     titles = {j.title for j in hits}
 
-    assert "Warsaw job" in titles   # case-insensitive substring match
-    assert "Remote job" in titles   # remote is always location-eligible
-    assert "USA job" not in titles  # filtered out
+    assert "Warsaw job" in titles    # "Warszawa, PL" -> token "Warszawa" matches "Warszawa"
+    assert "USA job" not in titles
+    assert "Remote job" not in titles  # remote is opt-in now
+
+
+async def test_search_by_vector_includes_remote_when_opted_in(db):
+    repo = JobRepository(db)
+    await repo.upsert_many([
+        {**_job_row("adzuna", "W1", "Warsaw job", 0), "location": "Warszawa"},
+        {**_job_row("adzuna", "R1", "Remote job", 2), "location": "Remote"},
+    ])
+    await db.flush()
+
+    hits = await repo.search_by_vector(
+        _unit_vec(0), limit=10, location="Warszawa", include_remote=True
+    )
+    titles = {j.title for j in hits}
+
+    assert "Warsaw job" in titles
+    assert "Remote job" in titles
 
 
 async def test_search_by_vector_no_location_returns_all(db):

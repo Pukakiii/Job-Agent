@@ -7,14 +7,14 @@ from app.models.search import Search
 
 
 class StubMatching:
-    async def find_matches(self, user_id, cv_id, prompt, location=None):
+    async def find_matches(self, user_id, cv_id, prompt, location=None, include_remote=False):
         s = Search(user_id=user_id, cv_id=cv_id, prompt=prompt)
         s.results = []  # empty shortlist is a valid (serializable) response
         return s
 
 
 class StubMatchingEmptyCorpus:
-    async def find_matches(self, user_id, cv_id, prompt, location=None):
+    async def find_matches(self, user_id, cv_id, prompt, location=None, include_remote=False):
         raise CorpusEmpty("no jobs yet")
 
 

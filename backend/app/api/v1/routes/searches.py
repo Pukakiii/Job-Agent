@@ -26,7 +26,9 @@ async def create_search(
     redis: ArqRedis = Depends(get_arq_redis),
 ):
     try:
-        return await service.find_matches(user.id, body.cv_id, body.prompt, body.location)
+        return await service.find_matches(
+            user.id, body.cv_id, body.prompt, body.location, body.include_remote
+        )
     except CorpusEmpty:
         # No jobs to match against yet — kick off ingestion for this query and tell the
         # client to retry shortly (202). dedup_key collapses repeated identical searches

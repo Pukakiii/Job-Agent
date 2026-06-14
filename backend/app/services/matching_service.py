@@ -56,7 +56,12 @@ class MatchingService:
         self.openai = openai
 
     async def find_matches(
-        self, user_id: UUID, cv_id: UUID, prompt: str, location: str | None = None
+        self,
+        user_id: UUID,
+        cv_id: UUID,
+        prompt: str,
+        location: str | None = None,
+        include_remote: bool = False,
     ) -> Search:
         cv = await self.cv_repo.get_by_id(cv_id)
         if cv is None or cv.user_id != user_id:
@@ -68,7 +73,7 @@ class MatchingService:
         query_vec = await self._query_vector(cv, prompt)
         t_embed = time.perf_counter()
         candidates = await self.job_repo.search_by_vector(
-            query_vec, limit=CANDIDATE_LIMIT, location=location
+            query_vec, limit=CANDIDATE_LIMIT, location=location, include_remote=include_remote
         )
         t_search = time.perf_counter()
         if not candidates:
