@@ -38,6 +38,17 @@ class JobRepository:
         )
         return list(res.scalars())
 
+    async def get_by_id(self, job_id: UUID) -> Job | None:
+        """Return the Job with the given id, or None if not found."""
+        return await self.db.get(Job, job_id)
+
+    async def list_jobs(self, limit: int = 20, offset: int = 0) -> list[Job]:
+        """Jobs ordered by ingested_at DESC, id; paginated by limit/offset."""
+        res = await self.db.execute(
+            select(Job).order_by(Job.ingested_at.desc(), Job.id).limit(limit).offset(offset)
+        )
+        return list(res.scalars())
+
     async def upsert_many(self, rows: list[dict]) -> None:
         """Idempotently insert or update a batch of jobs, keyed by (source, source_job_id)."""
         stmt = insert(Job).values(rows)
