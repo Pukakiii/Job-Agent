@@ -1396,6 +1396,17 @@
           "prompt": {
             "type": "string",
             "title": "Prompt"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",
