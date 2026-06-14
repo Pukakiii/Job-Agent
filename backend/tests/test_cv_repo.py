@@ -74,6 +74,20 @@ async def test_set_parsing_result_updates_row(db):
     assert refreshed.parsed_profile == {"name": "Jane"}
 
 
+async def test_set_parsing_result_stores_embedding(db):
+    user = await _make_user(db)
+    repo = CVRepository(db)
+    cv = await repo.create(user.id, "cvs/e.pdf", "e.pdf", "application/pdf")
+    cid = cv.id
+
+    await repo.set_parsing_result(cid, "extracted", {"name": "Jo"}, embedding=[0.25] * 768)
+    db.expire_all()
+    refreshed = await repo.get_by_id(cid)
+
+    assert refreshed.embedding is not None
+    assert len(refreshed.embedding) == 768
+
+
 async def test_s3_keys_for_user_returns_all_keys(db):
     user = await _make_user(db)
     repo = CVRepository(db)
