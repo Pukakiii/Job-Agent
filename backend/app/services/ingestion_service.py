@@ -28,6 +28,16 @@ class IngestionService:
             return 0
 
         rows = deduplicate(rows, self._scraped)
+        # Drop jobs with no embeddable text (empty title AND description). Their embed input
+        # would be an empty string, which OpenAI rejects with a 400 that sinks the whole
+        # batch — and a job with neither title nor description is useless to rank anyway.
+        dropped = [r for r in rows if not self._text(r)]
+        if dropped:
+            logger.warning("Skipping %d job(s) with empty title+description before embedding", len(dropped))
+        rows = [r for r in rows if self._text(r)]
+        if not rows:
+            return 0
+
         vectors = await self.embedder.embed_batch([self._text(r) for r in rows])
         for row, vec in zip(rows, vectors):
             row["embedding"] = vec

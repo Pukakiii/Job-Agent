@@ -60,3 +60,18 @@ async def test_run_empty_returns_zero(db):
     sources = {"adzuna": FakeSource("adzuna", False, [])}
     service = IngestionService(sources, FakeEmbedder(), JobRepository(db))
     assert await service.run("python") == 0
+
+
+async def test_run_drops_jobs_with_empty_text(db):
+    # A job with no title and no description embeds to an empty string, which OpenAI
+    # rejects (400) — and that would sink the whole batch. It must be dropped instead.
+    blank = RawJob(source_job_id="2", title="", url="http://j/2", description="")
+    sources = {"adzuna": FakeSource("adzuna", False, [_raw(1, title="Python Dev"), blank])}
+    service = IngestionService(sources, FakeEmbedder(), JobRepository(db))
+
+    n = await service.run("python")
+    await db.flush()
+
+    assert n == 1
+    assert await _count(db) == 1
+    assert await db.scalar(select(Job.title)) == "Python Dev"
