@@ -32,7 +32,7 @@ _RANK_SYSTEM = (
     "You re-rank job postings for a candidate. You are given the candidate profile, "
     "their instructions, and a numbered list of candidate jobs. Return ONLY a JSON "
     'object of the form {"matches": [{"index": <int>, "score": <float 0..1>, '
-    '"explanation": <one short sentence>}]}. Include only genuinely relevant jobs, '
+    '"explanation": <one short sentence>}]}. Include jobs that might be relevant, '
     f"best first, at most {MAX_RESULTS}. Each 'index' must reference a job in the list."
 )
 
