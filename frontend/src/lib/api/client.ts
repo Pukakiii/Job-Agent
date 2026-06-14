@@ -10,8 +10,10 @@ export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: ApiError };
 
-const DEFAULT_BASE = 'http://localhost:8000';
-
+  const DEFAULT_BASE =
+  process.env.NODE_ENV === "development"
+    ? ""
+    : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000")
 function getBaseUrl(): string {
   const env =
     typeof process !== 'undefined'
