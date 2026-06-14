@@ -1,3 +1,4 @@
+from app.core.countries import parse_location
 from app.core.logger import get_logger
 from app.integrations.sources.base import RawJob
 
@@ -12,7 +13,11 @@ class ApifyIndeedSource:
         self._apify = apify
 
     async def fetch(self, query: str, location: str | None = None) -> list[RawJob]:
-        items = await self._apify.run_indeed(query, location)
+        # Split "Warszawa, PL" into the city (Indeed's location field) and the ISO code
+        # (which selects the Indeed domain, e.g. pl.indeed.com — without it the actor
+        # defaults to indeed.com / US and ignores a foreign city).
+        city, country, _ = parse_location(location)
+        items = await self._apify.run_indeed(query, city or location, country=country)
         jobs: list[RawJob] = []
         for r in items:
             url = r.get("url") or r.get("link") or ""
