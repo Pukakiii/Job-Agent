@@ -5,5 +5,8 @@
   "scripts": {
     "setup": "git config core.hooksPath .githooks",
     "prepare": "node -e \"if (!process.env.CI) { require('child_process').execSync('git config core.hooksPath .githooks', {stdio: 'inherit'}); require('fs').chmodSync('.githooks/pre-commit', '755'); }\""
+  },
+  "dependencies": {
+    "typescript": "^6.0.3"
   }
 }
