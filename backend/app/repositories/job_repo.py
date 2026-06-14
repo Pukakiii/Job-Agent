@@ -4,6 +4,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.countries import parse_location
 from app.models.job import Job
 
 
@@ -20,15 +21,17 @@ class JobRepository:
     ) -> list[Job]:
         """Nearest jobs to the query embedding by cosine distance (ORM objects).
 
-        When `location` is given, restrict to jobs whose location matches the city token
-        of the input (the part before the first comma — so "Warszawa, PL" matches a job
-        listed as "Warszawa"), then rank by cosine within that subset. `include_remote`
-        additionally keeps remote listings. Jobs with a NULL location are excluded by the
-        filter (location can't be confirmed)."""
+        When `location` is given (e.g. "Warszawa, PL"), restrict to jobs whose location
+        matches the city token OR the country name — boards label inconsistently (Jooble
+        returns coarse "Poland", Indeed returns "Warszawa"), so matching either keeps both.
+        Rank by cosine within that subset. `include_remote` additionally keeps remote
+        listings. Jobs with a NULL location are excluded (location can't be confirmed)."""
         stmt = select(Job)
-        city = (location or "").split(",")[0].strip()
+        city, _, country_name = parse_location(location)
         if city:
             clauses = [Job.location.ilike(f"%{city}%")]
+            if country_name:
+                clauses.append(Job.location.ilike(f"%{country_name}%"))
             if include_remote:
                 clauses.append(Job.location.ilike("%remote%"))
             stmt = stmt.where(or_(*clauses))

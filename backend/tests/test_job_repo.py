@@ -98,6 +98,25 @@ async def test_search_by_vector_filters_by_city_token(db):
     assert "Remote job" not in titles  # remote is opt-in now
 
 
+async def test_search_by_vector_matches_city_or_country_label(db):
+    repo = JobRepository(db)
+    await repo.upsert_many([
+        {**_job_row("jooble", "P1", "Poland job", 0), "location": "Poland"},
+        {**_job_row("indeed", "W1", "Warsaw job", 1), "location": "Warszawa, Mazowieckie"},
+        {**_job_row("indeed", "U1", "USA job", 2), "location": "Seattle, WA"},
+    ])
+    await db.flush()
+
+    # "Warszawa, PL" -> city "Warszawa" + country "Poland"; keeps both the city-labelled
+    # (Indeed) and the coarse country-labelled (Jooble) jobs, excludes the US one.
+    hits = await repo.search_by_vector(_unit_vec(0), limit=10, location="Warszawa, PL")
+    titles = {j.title for j in hits}
+
+    assert "Poland job" in titles   # matched via country name
+    assert "Warsaw job" in titles   # matched via city token
+    assert "USA job" not in titles
+
+
 async def test_search_by_vector_includes_remote_when_opted_in(db):
     repo = JobRepository(db)
     await repo.upsert_many([
