@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +11,20 @@ class JobRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def search_by_vector(self, query_vector: list[float], limit: int = 20) -> list[Job]:
-        """Nearest jobs to the query embedding by cosine distance (ORM objects)."""
-        res = await self.db.execute(
-            select(Job).order_by(Job.embedding.cosine_distance(query_vector)).limit(limit)
-        )
+    async def search_by_vector(
+        self, query_vector: list[float], limit: int = 20, location: str | None = None
+    ) -> list[Job]:
+        """Nearest jobs to the query embedding by cosine distance (ORM objects).
+
+        When `location` is given, restrict to jobs whose location matches it (case-
+        insensitive substring) or are remote; rank by cosine within that subset. Jobs
+        with a NULL location are excluded by the filter (location can't be confirmed)."""
+        stmt = select(Job)
+        if location and location.strip():
+            like = f"%{location.strip()}%"
+            stmt = stmt.where(or_(Job.location.ilike(like), Job.location.ilike("%remote%")))
+        stmt = stmt.order_by(Job.embedding.cosine_distance(query_vector)).limit(limit)
+        res = await self.db.execute(stmt)
         return list(res.scalars())
 
     async def get_by_id(self, job_id: UUID) -> Job | None:

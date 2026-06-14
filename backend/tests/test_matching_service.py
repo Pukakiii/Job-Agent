@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.exceptions import CVNotFound, CVNotParsed, NoMatchesFound
+from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed, NoMatchesFound
 from app.models.user import User
 from app.repositories.cv_repo import CVRepository
 from app.repositories.job_repo import JobRepository
@@ -17,6 +17,16 @@ class FakeEmbedder:
         return [[0.1] * 768 for _ in texts]
 
     async def embed_query(self, text):
+        return [0.1] * 768
+
+
+class RecordingEmbedder(FakeEmbedder):
+    """Records every embed_query input so tests can assert what got embedded."""
+    def __init__(self):
+        self.queries: list[str] = []
+
+    async def embed_query(self, text):
+        self.queries.append(text)
         return [0.1] * 768
 
 
@@ -111,11 +121,71 @@ async def test_find_matches_requires_parsed_cv(db):
         await _service(db, []).find_matches(user.id, cv.id, "python")
 
 
-async def test_find_matches_no_candidates_raises(db):
+async def test_find_matches_empty_corpus_signals_ingest(db):
     user = await _user(db, "empty@test.io")
     cv = await _parsed_cv(db, user.id)  # no jobs seeded
-    with pytest.raises(NoMatchesFound):
+    with pytest.raises(CorpusEmpty):
         await _service(db, []).find_matches(user.id, cv.id, "python")
+
+
+async def test_find_matches_uses_cached_cv_embedding(db):
+    user = await _user(db, "cache@test.io")
+    cv = await CVRepository(db).create(user.id, f"cvs/{user.id}/a.docx", "a.docx", DOCX_MIME)
+    await CVRepository(db).set_parsing_result(
+        cv.id, "Python engineer, 5 years", {"name": "Jo"}, embedding=[0.2] * 768
+    )
+    cid = cv.id
+    await _seed_jobs(db, 3)
+    rec = RecordingEmbedder()
+    svc = MatchingService(
+        CVRepository(db), JobRepository(db), SearchRepository(db),
+        rec, FakeChat([{"index": 0, "score": 0.9, "explanation": "x"}]),
+    )
+    await svc.find_matches(user.id, cid, "remote backend")
+
+    # With a cached CV vector, only the short prompt is embedded — not the full CV text.
+    assert rec.queries == ["remote backend"]
+
+
+async def test_find_matches_falls_back_to_full_text_without_cached_embedding(db):
+    user = await _user(db, "nocache@test.io")
+    cv = await _parsed_cv(db, user.id)  # parsed but no cached embedding
+    await _seed_jobs(db, 3)
+    rec = RecordingEmbedder()
+    svc = MatchingService(
+        CVRepository(db), JobRepository(db), SearchRepository(db),
+        rec, FakeChat([{"index": 0, "score": 0.9, "explanation": "x"}]),
+    )
+    await svc.find_matches(user.id, cv.id, "remote backend")
+
+    # Fallback: embeds the combined query text (prompt + summary + extracted_text).
+    assert len(rec.queries) == 1
+    assert "remote backend" in rec.queries[0]
+    assert "Python engineer" in rec.queries[0]
+
+
+async def test_find_matches_filters_candidates_by_location(db):
+    user = await _user(db, "loc@test.io")
+    cv = await _parsed_cv(db, user.id)
+    await JobRepository(db).upsert_many([
+        {"source": "adzuna", "source_job_id": "W", "content_hash": "hw", "title": "Warsaw Dev",
+         "company": "A", "location": "Warsaw, PL", "url": "http://j/w", "description": "d",
+         "embedding": [0.1] * 768},
+        {"source": "adzuna", "source_job_id": "U", "content_hash": "hu", "title": "USA Dev",
+         "company": "B", "location": "New York, USA", "url": "http://j/u", "description": "d",
+         "embedding": [0.1] * 768},
+    ])
+    await db.flush()
+    # location=Warsaw -> only the Warsaw job is a candidate; FakeChat ranks index 0.
+    svc = MatchingService(
+        CVRepository(db), JobRepository(db), SearchRepository(db),
+        FakeEmbedder(), FakeChat([{"index": 0, "score": 0.9, "explanation": "x"}]),
+    )
+    search = await svc.find_matches(user.id, cv.id, "dev", location="Warsaw")
+    await db.flush()
+
+    assert len(search.results) == 1
+    assert "Warsaw" in search.results[0].job.location
 
 
 async def test_find_matches_all_indices_out_of_range_raises(db):

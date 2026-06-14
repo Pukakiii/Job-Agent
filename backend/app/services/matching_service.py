@@ -1,10 +1,11 @@
 import json
+import time
 from uuid import UUID
 
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from app.core.logger import get_logger
-from app.exceptions import CVNotFound, CVNotParsed, LLMOutputInvalid, NoMatchesFound
+from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed, LLMOutputInvalid, NoMatchesFound
 from app.integrations.embeddings import Embedder
 from app.integrations.openai_client import OpenAIClient
 from app.models.job import Job
@@ -54,19 +55,29 @@ class MatchingService:
         self.embedder = embedder
         self.openai = openai
 
-    async def find_matches(self, user_id: UUID, cv_id: UUID, prompt: str) -> Search:
+    async def find_matches(
+        self, user_id: UUID, cv_id: UUID, prompt: str, location: str | None = None
+    ) -> Search:
         cv = await self.cv_repo.get_by_id(cv_id)
         if cv is None or cv.user_id != user_id:
             raise CVNotFound("CV not found.")
         if not cv.extracted_text:
             raise CVNotParsed("CV has not been parsed yet — try again shortly.")
 
-        query_vec = await self.embedder.embed_query(self._query_text(cv, prompt))
-        candidates = await self.job_repo.search_by_vector(query_vec, limit=CANDIDATE_LIMIT)
+        t0 = time.perf_counter()
+        query_vec = await self._query_vector(cv, prompt)
+        t_embed = time.perf_counter()
+        candidates = await self.job_repo.search_by_vector(
+            query_vec, limit=CANDIDATE_LIMIT, location=location
+        )
+        t_search = time.perf_counter()
         if not candidates:
-            raise NoMatchesFound("No jobs available to match against.")
+            # Nothing to match against (corpus empty, or empty for this location) — signal
+            # the route to kick off ingestion instead of returning a dead end.
+            raise CorpusEmpty("No jobs available to match against.")
 
         ranked = await self._rerank(cv, prompt, candidates)
+        t_rerank = time.perf_counter()
         if not ranked:
             raise NoMatchesFound("No relevant jobs found for this search.")
 
@@ -76,7 +87,28 @@ class MatchingService:
         # lazy I/O (and ordered by rank via the relationship's order_by).
         result = await self.search_repo.get_with_results(saved.id)
         assert result is not None  # we just flushed saved.id; None here is a DB invariant violation
+        t_done = time.perf_counter()
+        logger.info(
+            "find_matches timing (ms): embed=%.0f search=%.0f rerank=%.0f persist=%.0f "
+            "total=%.0f | %d candidates -> %d results",
+            (t_embed - t0) * 1000, (t_search - t_embed) * 1000, (t_rerank - t_search) * 1000,
+            (t_done - t_rerank) * 1000, (t_done - t0) * 1000, len(candidates), len(ranked),
+        )
         return result
+
+    async def _query_vector(self, cv, prompt: str) -> list[float]:
+        """Build the search vector. When the CV embedding was cached at parse time, embed
+        only the (short) prompt and blend it with the stored CV vector — far cheaper than
+        re-embedding the whole CV each search. Cosine distance is scale-invariant, so a
+        plain element-wise sum suffices to combine the two. Falls back to embedding the
+        full query text when no cached CV vector exists (older CVs, or a failed embed)."""
+        if cv.embedding is None:
+            return await self.embedder.embed_query(self._query_text(cv, prompt))
+        cv_vec = list(cv.embedding)
+        if not prompt or not prompt.strip():
+            return cv_vec
+        prompt_vec = await self.embedder.embed_query(prompt)
+        return [c + p for c, p in zip(cv_vec, prompt_vec)]
 
     @staticmethod
     def _query_text(cv, prompt: str) -> str:
