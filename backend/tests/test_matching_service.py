@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed, NoMatchesFound
+from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed
 from app.models.user import User
 from app.repositories.cv_repo import CVRepository
 from app.repositories.job_repo import JobRepository
@@ -188,12 +188,13 @@ async def test_find_matches_filters_candidates_by_location(db):
     assert "Warsaw" in search.results[0].job.location
 
 
-async def test_find_matches_all_indices_out_of_range_raises(db):
+async def test_find_matches_no_relevant_results_signals_ingest(db):
     user = await _user(db, "oob@test.io")
     cv = await _parsed_cv(db, user.id)
     await _seed_jobs(db, 3)
-    # LLM returns only out-of-range indices → ranked list is empty
+    # Candidates exist but the rerank keeps none (e.g. a PM prompt against a SWE corpus) →
+    # treat "nothing relevant" the same as an empty corpus: signal ingestion, not a dead end.
     matches = [{"index": 99, "score": 0.9, "explanation": "x"},
                {"index": 100, "score": 0.8, "explanation": "y"}]
-    with pytest.raises(NoMatchesFound):
+    with pytest.raises(CorpusEmpty):
         await _service(db, matches).find_matches(user.id, cv.id, "python")

@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from app.core.logger import get_logger
-from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed, LLMOutputInvalid, NoMatchesFound
+from app.exceptions import CorpusEmpty, CVNotFound, CVNotParsed, LLMOutputInvalid
 from app.integrations.embeddings import Embedder
 from app.integrations.openai_client import OpenAIClient
 from app.models.job import Job
@@ -84,7 +84,10 @@ class MatchingService:
         ranked = await self._rerank(cv, prompt, candidates)
         t_rerank = time.perf_counter()
         if not ranked:
-            raise NoMatchesFound("No relevant jobs found for this search.")
+            # Candidates existed but none were relevant (e.g. a Product Manager prompt
+            # against a Software Engineering corpus). Treat this like an empty corpus:
+            # signal the route to ingest for this query rather than return a dead end.
+            raise CorpusEmpty("No relevant jobs found — fetching more for this search.")
 
         rows = [(candidates[r.index].id, r.score, r.explanation) for r in ranked]
         saved = await self.search_repo.save_search(user_id, cv_id, prompt, rows)

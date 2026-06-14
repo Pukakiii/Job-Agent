@@ -39,11 +39,6 @@ class CVNotParsed(AppError):
     code = "cv_not_parsed"
 
 
-class NoMatchesFound(AppError):
-    status_code = 404
-    code = "no_matches"
-
-
 class SearchNotFound(AppError):
     status_code = 404
     code = "search_not_found"
@@ -55,6 +50,7 @@ class JobNotFound(AppError):
 
 
 class CorpusEmpty(Exception):
-    """Signal: no jobs in the corpus to match against. The search route catches this,
-    kicks off ingestion, and returns 202 Accepted. Deliberately NOT an AppError — it is
-    control flow, not an error envelope."""
+    """Signal: nothing to return for a search — either no candidate jobs in the corpus, or
+    candidates existed but none were relevant after rerank. Either way the search route
+    catches this, kicks off ingestion for the query, and returns 202 Accepted. Deliberately
+    NOT an AppError — it is control flow, not an error envelope."""
