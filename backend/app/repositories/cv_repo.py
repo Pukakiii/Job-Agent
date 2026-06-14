@@ -51,13 +51,24 @@ class CVRepository:
         await self.db.delete(cv)
 
     async def set_parsing_result(
-        self, cv_id: UUID, extracted_text: str, parsed_profile: dict
+        self,
+        cv_id: UUID,
+        extracted_text: str,
+        parsed_profile: dict,
+        embedding: list[float] | None = None,
     ) -> None:
-        """Fill in the parsed fields once off-request CV parsing completes."""
+        """Fill in the parsed fields once off-request CV parsing completes.
+
+        `embedding` is the cached CV vector (None if embedding was skipped/failed —
+        matching falls back to embedding the query text live)."""
         await self.db.execute(
             update(CV)
             .where(CV.id == cv_id)
-            .values(extracted_text=extracted_text, parsed_profile=parsed_profile)
+            .values(
+                extracted_text=extracted_text,
+                parsed_profile=parsed_profile,
+                embedding=embedding,
+            )
         )
 
     async def s3_keys_for_user(self, user_id: UUID) -> list[str]:

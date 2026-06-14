@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, ForeignKey, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -17,4 +18,5 @@ class CV(Base):
     content_type:      Mapped[str]
     extracted_text:    Mapped[str | None] = mapped_column(Text)     # filled after parsing
     parsed_profile:    Mapped[dict | None] = mapped_column(JSONB)   # validated CVProfile (see DTOs)
+    embedding:         Mapped[list[float] | None] = mapped_column(Vector(768))  # cached at parse; reused per search
     created_at:        Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
