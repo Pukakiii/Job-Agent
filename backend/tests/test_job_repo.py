@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from sqlalchemy import func, select
@@ -77,3 +78,57 @@ async def test_search_by_vector_respects_limit(db):
     hits = await repo.search_by_vector(_unit_vec(0), limit=3)
 
     assert len(hits) == 3
+
+
+async def test_get_by_id_returns_job(db):
+    repo = JobRepository(db)
+    row = _job_row("adzuna", "A99", "Target Job", 0)
+    await repo.upsert_many([row])
+    await db.flush()
+
+    result = await repo.get_by_id(row["id"])
+
+    assert result is not None
+    assert result.id == row["id"]
+    assert result.title == "Target Job"
+
+
+async def test_get_by_id_returns_none_when_missing(db):
+    repo = JobRepository(db)
+
+    result = await repo.get_by_id(uuid4())
+
+    assert result is None
+
+
+async def test_list_jobs_orders_by_ingested_at_desc(db):
+    repo = JobRepository(db)
+    old_row = {**_job_row("adzuna", "OLD1", "Old Job", 0), "ingested_at": datetime(2026, 1, 1, tzinfo=timezone.utc)}
+    new_row = {**_job_row("adzuna", "NEW1", "New Job", 1), "ingested_at": datetime(2026, 2, 1, tzinfo=timezone.utc)}
+    await repo.upsert_many([old_row, new_row])
+    await db.flush()
+
+    jobs = await repo.list_jobs()
+
+    titles = [j.title for j in jobs]
+    assert titles.index("New Job") < titles.index("Old Job")
+
+
+async def test_list_jobs_respects_limit_and_offset(db):
+    repo = JobRepository(db)
+    rows = [
+        {**_job_row("adzuna", f"L{i}", f"Job {i}", i), "ingested_at": datetime(2026, 1, i + 1, tzinfo=timezone.utc)}
+        for i in range(5)
+    ]
+    await repo.upsert_many(rows)
+    await db.flush()
+
+    page1 = await repo.list_jobs(limit=2, offset=0)
+    page2 = await repo.list_jobs(limit=2, offset=2)
+
+    assert len(page1) == 2
+    assert len(page2) == 2
+    # pages must not overlap
+    page1_ids = {j.id for j in page1}
+    page2_ids = {j.id for j in page2}
+    assert page1_ids.isdisjoint(page2_ids)
