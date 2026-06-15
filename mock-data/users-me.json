@@ -1,7 +1,0 @@
-{
-  "id": "usr_001",
-  "email": "john@example.com",
-  "is_active": true,
-  "is_verified": true,
-  "is_superuser": false
-}
