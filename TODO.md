@@ -105,4 +105,5 @@ _Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Ky
 - [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
 - [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
 - [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` once backend route exists
-- [ ] **CI workflow** — Add GitHub Actions job running backend `pytest` and frontend `lint` on pull requests
+- [ ] **CI workflow1** — Add GitHub Actions job running backend `pytest` on pull requests
+- [ ] **CI workflow2** — Add GitHub Actions job running  frontend `lint` on pull requests

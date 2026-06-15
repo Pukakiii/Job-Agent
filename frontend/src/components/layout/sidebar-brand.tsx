@@ -12,20 +12,24 @@ export function SidebarBrand({ className }: SidebarBrandProps) {
     <Link
       href="/dashboard"
       className={cn(
-        "flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-4",
+        "cursor-default flex h-14 shrink-0 items-center gap-2 border-b border-border px-4",
         className,
       )}
     >
-      <Image
-        src="/job-agent-logo.svg"
-        alt=""
-        width={28}
-        height={28}
-        className="size-7 shrink-0"
-      />
-      <span className="font-logo text-lg font-bold tracking-tight text-foreground">
+       <div className={cn("flex items-center gap-0.5", className)}>
+        <Image
+          src="/job-agent-logo.svg"
+          alt="Job Agent"
+          width={32}
+          height={32}
+          loading="eager"
+          priority
+          className="size-10 cursor-pointer transition-all duration-500 hover:scale-105 hover:brightness-110"
+        />
+      <span className="cursor-pointer self-end font-logo text-xl font-bold tracking-tight text-foreground">
         Job Agent
       </span>
+    </div>
     </Link>
   )
 }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { SidebarBrand } from "@/components/layout/sidebar-brand"
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -63,9 +64,7 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-[100dvh] bg-background">
       <aside className="flex w-[220px] shrink-0 flex-col border-r border-border bg-sidebar">
-        <div className="border-b border-border px-5 py-5">
-          <span className="font-logo text-lg text-foreground">Job Agent</span>
-        </div>
+        <SidebarBrand />
         <nav className="flex flex-1 flex-col gap-1 p-3">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.href} {...item} />

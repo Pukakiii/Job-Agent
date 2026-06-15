@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Luxurious_Roman } from "next/font/google"
+import { Geist, Geist_Mono, Girassol } from "next/font/google"
 
 import AuthProvider from "@/features/auth/AuthProvider"
 import MSWProvider  from "@/mocks/MSWProvider"
@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-const luxuriousRoman = Luxurious_Roman({
+const girassol = Girassol({
   weight: ["400"],
   subsets: ["latin"],
   variable: "--font-logo",
@@ -40,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable} ${luxuriousRoman.variable} antialiased`}
+      className={`${geist.variable} ${geistMono.variable} ${girassol.variable} antialiased`}
       style={{ WebkitTextSizeAdjust: "100%" }}
       suppressHydrationWarning
     >
