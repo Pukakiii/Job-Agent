@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { BrandLogo } from "@/components/layout/brand-logo"
+import { BrandLogo } from "@/components/brand/brand-logo"
 import { ClientMounted } from "@/components/home/client-mounted"
 import { FadeIn } from "@/components/home/fade-in"
 import { Particles } from "@/components/ui/particles"

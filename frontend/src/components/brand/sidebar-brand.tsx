@@ -1,12 +1,9 @@
 import Image from "next/image"
 import Link from "next/link"
-
 import { cn } from "@/lib/utils"
-
 type SidebarBrandProps = {
   className?: string
 }
-
 export function SidebarBrand({ className }: SidebarBrandProps) {
   return (
     <Link
