@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, Girassol } from "next/font/google"
 
 import AuthProvider from "@/features/auth/AuthProvider"
-import MSWProvider  from "@/mocks/MSWProvider"
+import ThemeProvider from "@/features/theme/ThemeProvider"
+import MSWProvider from "@/mocks/MSWProvider"
 import "./globals.css"
 
 const geist = Geist({
@@ -46,9 +47,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen min-h-[100svh] min-h-[100dvh] bg-background text-foreground">
         <MSWProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <ThemeProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ThemeProvider>
         </MSWProvider>
       </body>
     </html>

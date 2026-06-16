@@ -66,7 +66,7 @@ _Order follows app flow: foundation → auth → API client modules → route pr
 
 ### Next up — UI polish (sidebar & theme)
 
-- [ ] **Dark theme** — Add theme provider + toggle (header or settings); persist user preference; audit pages and shared components under `.dark` tokens in `globals.css`
+- [x] **Dark theme** — Add theme provider + toggle (header or settings); persist user preference; audit pages and shared components under `.dark` tokens in `globals.css`
 - [ ] **Fixed sidebar navigation** — Pin brand header and main nav links so they stay visible while the nav list scrolls independently on long viewports
 - [ ] **Fixed sidebar footer** — Pin Settings and Logout at the bottom of the sidebar so they remain visible while main content scrolls
 
@@ -106,16 +106,16 @@ _These pages have layout placeholders; they need interactive flows even before f
 
 _Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra._
 
-- [X] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
-- [X] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
-- [X] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
-- [X] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
-- [X] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
-- [X] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
-- [X] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
-- [X] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
-- [X] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
-- [X] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
+- [x] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
+- [x] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
+- [x] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
+- [x] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
+- [x] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
+- [x] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [x] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
+- [x] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
+- [x] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
+- [x] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
 
 ---
 
@@ -123,17 +123,17 @@ _Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes
 
 _Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit._
 
-- [X] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
-- [X] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
-- [X] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
-- [X] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
-- [X] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
-- [X] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
-- [X] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
+- [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
+- [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
+- [x] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
+- [x] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
+- [x] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
+- [x] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
+- [x] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
 - [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
-- [X] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
+- [x] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
 - [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
 - [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
 - [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
 - [ ] **CI workflow1** — Add GitHub Actions job running backend `pytest` on pull requests
-- [ ] **CI workflow2** — Add GitHub Actions job running  frontend `lint` on pull requests
+- [ ] **CI workflow2** — Add GitHub Actions job running frontend `lint` on pull requests

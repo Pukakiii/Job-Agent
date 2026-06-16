@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 
 import { BrandLogo } from "@/components/brand/brand-logo"
 import { ClientMounted } from "@/components/home/client-mounted"
@@ -10,6 +11,7 @@ import { FadeIn } from "@/components/home/fade-in"
 import { Particles } from "@/components/ui/particles"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { TypingAnimation } from "@/components/ui/typing-animation"
+import { useIsClient } from "@/hooks/use-is-client"
 
 const FEATURES = [
   "Semantic job matching",
@@ -19,17 +21,9 @@ const FEATURES = [
 
 export function HomeHero() {
   const router = useRouter()
-  const [particleColor, setParticleColor] = useState("")
-  const [showParticles, setShowParticles] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const mounted = useIsClient()
   const [particleKey, setParticleKey] = useState(0)
-
-  useLayoutEffect(() => {
-    const color = getComputedStyle(document.documentElement)
-      .getPropertyValue("--particle-color")
-      .trim()
-    setParticleColor(color)
-    setShowParticles(true)
-  }, [])
 
   useEffect(() => {
     setParticleKey((k) => k + 1)
@@ -37,19 +31,18 @@ export function HomeHero() {
 
   return (
     <main className="relative flex min-h-screen min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
-      {showParticles && (
+      {mounted ? (
         <Particles
-          key={particleKey}
+          key={`${particleKey}-${resolvedTheme ?? "system"}`}
           className="absolute inset-0 h-full w-full"
           quantity={60}
           staticity={80}
           ease={80}
           size={0.8}
-          color={particleColor}
           vx={0.02}
           vy={0.01}
         />
-      )}
+      ) : null}
 
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center">
         <FadeIn>
