@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
-import { BrandLogo } from "@/components/auth/brand-logo"
+import { BrandLogo } from "@/components/brand/brand-logo"
 import { FormField } from "@/components/forms"
 import { BlurFade } from "@/components/ui/magic/blur-fade"
 import { Particles } from "@/components/ui/magic/particles"

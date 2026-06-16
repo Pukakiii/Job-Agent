@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react"
 
+import { ThemeAppearanceSettings } from "@/components/theme/theme-appearance-settings"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -51,6 +52,20 @@ export default function SettingsPage() {
           <Button size="sm" disabled>
             Save account
           </Button>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="text-base">Appearance</CardTitle>
+          <CardDescription>
+            Choose how Job Agent looks on your device.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemeAppearanceSettings />
         </CardContent>
       </Card>
 

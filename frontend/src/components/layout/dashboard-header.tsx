@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation"
 
+import { ThemeToggle } from "@/components/theme/theme-toggle"
+
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Overview",
   "/dashboard/jobs": "Jobs",
@@ -30,10 +32,11 @@ export function DashboardHeader() {
   const title = getPageTitle(pathname)
 
   return (
-    <header className="flex h-14 shrink-0 items-center border-b border-border px-6">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
       <h1 className="text-lg font-semibold tracking-tight text-foreground">
         {title}
       </h1>
+      <ThemeToggle />
     </header>
   )
 }

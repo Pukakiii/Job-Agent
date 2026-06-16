@@ -1,8 +1,8 @@
 # Project TODO
 
-Second-wave tasks for MVP foundation. Pick work from your section; **Joint Tasks** are open to any contributor (including new joiners via PR).
+Second-wave tasks for MVP foundation. Pick work from your assignee section.
 
-Each item is scoped to **one commit** — small, reviewable, and modular. See [contributing-rules.md](docs/contributing-rules.md) for branch naming and PR conventions. Assignees are grouped by [team roles](.cursor/rules/roles.mdc) — check that file when picking or adding tasks.
+Each item is scoped to **one commit** — small, reviewable, and modular. See [contributing-rules.md](docs/contributing-rules.md) for branch naming and PR conventions. Assignees are grouped by [team roles](ai-agents/roles.md) — check that file when picking or adding tasks.
 
 ---
 
@@ -12,13 +12,17 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Not started / in progress:** Jobs + searches + applications backend routes, service layer (matching, ingestion), ARQ workers, job-source adapters, AI integrations, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
+**Not started / in progress:** Applications backend (repo + routes), live matching/ingestion pipelines, AI analysis + document generation APIs, Postmark integration, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
+
+**Recently completed (backend):** Jobs, searches, and CV API routes; service stubs (CV, matching, ingestion); ARQ worker settings + task stubs; Adzuna source adapter; OpenAI client integration.
+
+**Recently completed (frontend):** Dashboard shell now uses extracted `SidebarNav`, `SidebarFooter`, `DashboardHeader`, and brand components; all dashboard page scaffolds in place.
 
 ---
 
 ## Assigned to Pukakiii
 
-_Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
+_Per [team roles](ai-agents/roles.md): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
 
 _Order follows app flow: foundation → auth → API client modules → route protection → dashboard shell → page scaffolds → polish & wiring._
 
@@ -60,49 +64,130 @@ _Order follows app flow: foundation → auth → API client modules → route pr
 - [x] **Outreach page scaffold** — Add `(dashboard)/dashboard/outreach/page.tsx` with email list and compose panel placeholders
 - [x] **Settings page scaffold** — Add `(dashboard)/dashboard/settings/page.tsx` with account info and AI-instruction fields
 
-### Next up (polish & wiring — do after backend routes land)
+### Next up — UI polish (sidebar & theme)
 
-- [ ] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
+- [x] **Dark theme** — Add theme provider + toggle (header or settings); persist user preference; audit pages and shared components under `.dark` tokens in `globals.css`
+- [ ] **Fixed sidebar navigation** — Pin brand header and main nav links so they stay visible while the nav list scrolls independently on long viewports
+- [ ] **Fixed sidebar footer** — Pin Settings and Logout at the bottom of the sidebar so they remain visible while main content scrolls
+
+### Next up — polish & wiring
+
+- [x] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
 - [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
-- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs` once backend `GET /jobs` exists
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` (backend route live; see Joint Tasks)
-- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` once backend routes exist
+- [ ] **Reusable empty state** — Extract a shared `EmptyState` component (icon, title, description, CTA) used across jobs, CVs, applications, documents, and outreach scaffolds
+- [ ] **Toast notifications** — Add success/error toasts for upload, search, save, and logout actions
+
+### Next up — wire pages to live data
+
+_Backend jobs, searches, and CV routes are live; applications routes are still pending (see Thịnh Phương)._
+
+- [ ] **Wire overview dashboard stats** — Replace hardcoded `0` stat cards with live counts (jobs, applications, CVs, outreach drafts) or skeleton placeholders while loading
+- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs`; render job cards with title, company, location, and match score
+- [ ] **Job detail view** — Add job detail page or drawer showing full description, AI relevance score/explanation, risk flags, and external apply URL
+- [ ] **Wire search trigger** — Connect "Run new search" on jobs page to `triggerSearch` and poll `getSearchResults`; refresh job list on completion
+- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs`; show upload progress and validation errors
+- [ ] **Wire CV list and active selector** — Load CVs via `listCvs`, display file metadata, and wire set-active/delete actions
+- [ ] **Wire settings account section** — Populate email/name from `getMe`; enable save when backend profile update endpoint exists
+- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates once backend routes exist _(blocked on Thịnh Phương — Applications API)_
+
+### Next up — content features (scaffold → functional UI)
+
+_These pages have layout placeholders; they need interactive flows even before full AI backends land._
+
+- [ ] **Jobs list filtering** — Wire the jobs page search input to client-side filter (title, company) over fetched results
+- [ ] **Applications Kanban interactions** — Add drag-and-drop or status-change controls on Kanban cards once API supports transitions
+- [ ] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
+- [ ] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
+- [ ] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
 
 ---
 
 ## Assigned to Kyryll
 
-_Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra._
+_Per [team roles](ai-agents/roles.md): **Backend Developer** — API routes, service layer, workers, and local infra._
 
-- [X] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
-- [X] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
-- [X] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
-- [X] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
-- [X] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
-- [X] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
-- [X] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
-- [X] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
-- [X] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
-- [X] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
+- [x] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
+- [x] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
+- [x] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
+- [x] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
+- [x] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
+- [x] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
+- [x] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
+- [x] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
+- [x] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
+- [x] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
 
 ---
 
-## Joint Tasks
+## Assigned to Thịnh Phương
 
-_Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit._
+_Per [team roles](ai-agents/roles.md): **Backend Developer**, **QA & Documentation** — API routes, service layer, workers, local infra, and AI pipeline research._
 
-- [X] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
-- [X] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
-- [X] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
-- [X] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
-- [X] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
-- [X] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
-- [X] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
+### Research & proposals
+
+_Pre-implementation work only — no pipeline or matching code changes. For each task: (1) open a GitHub issue, (2) fill in the linked doc using the required format below. Doc and issue should cover the same content; the doc is the durable project record._
+
+- [ ] **Job embedding & retrieval** — Research how jobs should be embedded at ingest and retrieved at query time in our pgvector matching pipeline. Review `IngestionService`, `MatchingService`, `JobRepository.search_by_vector`, and `Embedder` against [ADR 002](docs/adr/002-ai-layer-stack.md) and [ai-layer.md](ai-agents/ai-layer.md).
+
+  **Deliverables:**
+  1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md).
+  2. **Documentation** — Write [docs/research/job-embedding-retrieval.md](docs/research/job-embedding-retrieval.md) (currently empty — you create the full doc). Include the GitHub issue URL at the top.
+
+  **Required format (issue + doc):**
+  - Header — owner, status, GitHub issue URL, related links
+  - **Current pipeline** — summary of how ingest and query work today (reference key files)
+  - **Problem statement** — what is unclear, suboptimal, or missing
+  - **Research questions** — embed input format, query vector construction (CV + prompt), retrieval params (candidate limit, filters, HNSW), doc-vs-code gaps (e.g. nomic task prefixes), re-embed strategy
+  - **Why the recommended approach is better** — comparison table: current vs recommended
+  - **Recommendations & phased plan** — embed strategy, retrieval strategy, phased implementation table, MVP non-goals
+  - **Risks & open questions**
+  - **Evaluation approach** — how to measure retrieval quality before/after changes
+  - **References**
+
+- [ ] **Knowledge-graph job recommendation** — Research whether a knowledge-graph–hybrid approach could improve job recommendation (speed, relevance, explainability) compared to the current vector-only pipeline (embed → pgvector cosine search → LLM rerank).
+
+  **Deliverables:**
+  1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md) and [job-embedding-retrieval.md](docs/research/job-embedding-retrieval.md).
+  2. **Documentation** — Write [docs/research/kg-recommendation-proposal.md](docs/research/kg-recommendation-proposal.md) (currently empty — you create the full doc). Include the GitHub issue URL at the top.
+
+  **Required format (issue + doc):**
+  - Header — owner, status, GitHub issue URL, related links
+  - **Current baseline** — summary of the vector-only pipeline and its limitations
+  - **Problem statement** — gaps that vector search alone does not address
+  - **Why KG-hybrid could be better** — comparison table: vector-only vs KG-hybrid (speed, relevance, explainability, structured relations)
+  - **Proposed approach** — entity types, relationship types, hybrid retrieval flow
+  - **Phased implementation plan** — Phase 0 / 1 / 2 table with explicit MVP non-goals
+  - **Risks & open questions** — maintenance, extraction accuracy, overlap with pgvector
+  - **Recommended next steps** — prioritised actions after team review
+  - **References**
+
+### Backend & QA
+
 - [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
-- [X] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
 - [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
 - [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
-- [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
+- [ ] **CI workflow (backend)** — Add GitHub Actions job running backend `pytest` on pull requests
+
+---
+
+## Assigned to Abdul 'Aziz
+
+_Per [team roles](ai-agents/roles.md): **Frontend Developer**, **QA & Documentation** — UI, design system, React components, client-side API modules, and testing._
+
 - [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` once backend route exists
-- [ ] **CI workflow** — Add GitHub Actions job running backend `pytest` and frontend `lint` on pull requests
+- [ ] **CI workflow (frontend)** — Add GitHub Actions job running frontend `lint` on pull requests
+
+---
+
+## Completed cross-team work
+
+_Historical items that spanned multiple roles — kept for reference only._
+
+- [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
+- [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
+- [x] **Auth route integration tests** — Add register → login → protected-endpoint flow test using dependency overrides
+- [x] **CV upload route tests** — Add API tests for upload and list endpoints (moto S3 + Testcontainers DB)
+- [x] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
+- [x] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
+- [x] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
+- [x] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
