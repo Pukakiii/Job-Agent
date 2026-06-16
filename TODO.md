@@ -12,7 +12,11 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Not started / in progress:** Jobs + searches + applications backend routes, service layer (matching, ingestion), ARQ workers, job-source adapters, AI integrations, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
+**Not started / in progress:** Applications backend (repo + routes), live matching/ingestion pipelines, AI analysis + document generation APIs, Postmark integration, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
+
+**Recently completed (backend):** Jobs, searches, and CV API routes; service stubs (CV, matching, ingestion); ARQ worker settings + task stubs; Adzuna source adapter; OpenAI client integration.
+
+**Recently completed (frontend):** Dashboard shell now uses extracted `SidebarNav`, `SidebarFooter`, `DashboardHeader`, and brand components; all dashboard page scaffolds in place.
 
 ---
 
@@ -60,13 +64,41 @@ _Order follows app flow: foundation → auth → API client modules → route pr
 - [x] **Outreach page scaffold** — Add `(dashboard)/dashboard/outreach/page.tsx` with email list and compose panel placeholders
 - [x] **Settings page scaffold** — Add `(dashboard)/dashboard/settings/page.tsx` with account info and AI-instruction fields
 
-### Next up (polish & wiring — do after backend routes land)
+### Next up — UI polish (sidebar & theme)
 
-- [ ] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
+- [ ] **Dark theme** — Add theme provider + toggle (header or settings); persist user preference; audit pages and shared components under `.dark` tokens in `globals.css`
+- [ ] **Fixed sidebar navigation** — Pin brand header and main nav links so they stay visible while the nav list scrolls independently on long viewports
+- [ ] **Fixed sidebar footer** — Pin Settings and Logout at the bottom of the sidebar so they remain visible while main content scrolls
+
+### Next up — polish & wiring
+
+- [x] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
 - [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
-- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs` once backend `GET /jobs` exists
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` (backend route live; see Joint Tasks)
-- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` once backend routes exist
+- [ ] **Reusable empty state** — Extract a shared `EmptyState` component (icon, title, description, CTA) used across jobs, CVs, applications, documents, and outreach scaffolds
+- [ ] **Toast notifications** — Add success/error toasts for upload, search, save, and logout actions
+
+### Next up — wire pages to live data
+
+_Backend jobs, searches, and CV routes are live; applications routes are still pending (see Joint Tasks)._
+
+- [ ] **Wire overview dashboard stats** — Replace hardcoded `0` stat cards with live counts (jobs, applications, CVs, outreach drafts) or skeleton placeholders while loading
+- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs`; render job cards with title, company, location, and match score
+- [ ] **Job detail view** — Add job detail page or drawer showing full description, AI relevance score/explanation, risk flags, and external apply URL
+- [ ] **Wire search trigger** — Connect "Run new search" on jobs page to `triggerSearch` and poll `getSearchResults`; refresh job list on completion
+- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs`; show upload progress and validation errors
+- [ ] **Wire CV list and active selector** — Load CVs via `listCvs`, display file metadata, and wire set-active/delete actions
+- [ ] **Wire settings account section** — Populate email/name from `getMe`; enable save when backend profile update endpoint exists
+- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates once backend routes exist _(blocked on Joint Tasks)_
+
+### Next up — content features (scaffold → functional UI)
+
+_These pages have layout placeholders; they need interactive flows even before full AI backends land._
+
+- [ ] **Jobs list filtering** — Wire the jobs page search input to client-side filter (title, company) over fetched results
+- [ ] **Applications Kanban interactions** — Add drag-and-drop or status-change controls on Kanban cards once API supports transitions
+- [ ] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
+- [ ] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
+- [ ] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
 
 ---
 
@@ -102,8 +134,6 @@ _Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Ky
 - [X] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
 - [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
 - [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
-- [ ] **Applications API module (frontend)** — Add `src/lib/api/applications.ts` mirroring backend application endpoints
 - [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs` once backend route exists
 - [ ] **CI workflow1** — Add GitHub Actions job running backend `pytest` on pull requests
 - [ ] **CI workflow2** — Add GitHub Actions job running  frontend `lint` on pull requests
