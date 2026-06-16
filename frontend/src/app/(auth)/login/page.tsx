@@ -18,21 +18,15 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/features/auth/useAuth"
+import {
+  validateEmail,
+  validatePassword,
+} from "@/lib/validation/auth"
 import { cn } from "@/lib/utils"
 
 type Field = "email" | "password"
 
 type Touched = Record<Field, boolean>
-
-function validateEmail(value: string): string | undefined {
-  if (!value) return "Email is required"
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Enter a valid email"
-}
-
-function validatePassword(value: string): string | undefined {
-  if (!value) return "Password is required"
-  if (value.length < 8) return "Password must be at least 8 characters"
-}
 
 function showFieldError(
   field: Field,
