@@ -1,8 +1,8 @@
 # Project TODO
 
-Second-wave tasks for MVP foundation. Pick work from your section; **Joint Tasks** are open to any contributor (including new joiners via PR).
+Second-wave tasks for MVP foundation. Pick work from your assignee section.
 
-Each item is scoped to **one commit** — small, reviewable, and modular. See [contributing-rules.md](docs/contributing-rules.md) for branch naming and PR conventions. Assignees are grouped by [team roles](.cursor/rules/roles.mdc) — check that file when picking or adding tasks.
+Each item is scoped to **one commit** — small, reviewable, and modular. See [contributing-rules.md](docs/contributing-rules.md) for branch naming and PR conventions. Assignees are grouped by [team roles](ai-agents/roles.md) — check that file when picking or adding tasks.
 
 ---
 
@@ -22,7 +22,7 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 ## Assigned to Pukakiii
 
-_Per [team roles](.cursor/rules/roles.mdc): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
+_Per [team roles](ai-agents/roles.md): **Frontend Developer**, **UI/UX Designer** — UI, design system, React components, and client-side API modules._
 
 _Order follows app flow: foundation → auth → API client modules → route protection → dashboard shell → page scaffolds → polish & wiring._
 
@@ -79,7 +79,7 @@ _Order follows app flow: foundation → auth → API client modules → route pr
 
 ### Next up — wire pages to live data
 
-_Backend jobs, searches, and CV routes are live; applications routes are still pending (see Joint Tasks)._
+_Backend jobs, searches, and CV routes are live; applications routes are still pending (see Thịnh Phương)._
 
 - [ ] **Wire overview dashboard stats** — Replace hardcoded `0` stat cards with live counts (jobs, applications, CVs, outreach drafts) or skeleton placeholders while loading
 - [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs`; render job cards with title, company, location, and match score
@@ -88,7 +88,7 @@ _Backend jobs, searches, and CV routes are live; applications routes are still p
 - [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs`; show upload progress and validation errors
 - [ ] **Wire CV list and active selector** — Load CVs via `listCvs`, display file metadata, and wire set-active/delete actions
 - [ ] **Wire settings account section** — Populate email/name from `getMe`; enable save when backend profile update endpoint exists
-- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates once backend routes exist _(blocked on Joint Tasks)_
+- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates once backend routes exist _(blocked on Thịnh Phương — Applications API)_
 
 ### Next up — content features (scaffold → functional UI)
 
@@ -104,7 +104,7 @@ _These pages have layout placeholders; they need interactive flows even before f
 
 ## Assigned to Kyryll
 
-_Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes, service layer, workers, and local infra._
+_Per [team roles](ai-agents/roles.md): **Backend Developer** — API routes, service layer, workers, and local infra._
 
 - [x] **Docker Compose stack** — Add `infra/docker/docker-compose.yml` with postgres/pgvector, Redis, Ollama (model pull + healthcheck), `api`, and `worker` per [docker-orchestration.md](docs/docker-orchestration.md)
 - [x] **Multi-stage Dockerfile** — Add shared backend image with `uvicorn` (api) and `arq` (worker) entrypoints
@@ -119,9 +119,29 @@ _Per [team roles](.cursor/rules/roles.mdc): **Backend Developer** — API routes
 
 ---
 
-## Joint Tasks
+## Assigned to Thịnh Phương
 
-_Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Kyryll), plus cross-cutting work any assignee or external contributor can pick up. Each item should still land as a single commit._
+_Per [team roles](ai-agents/roles.md): **Backend Developer**, **QA & Documentation** — API routes, service layer, workers, and local infra._
+
+- [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
+- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
+- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
+- [ ] **CI workflow (backend)** — Add GitHub Actions job running backend `pytest` on pull requests
+
+---
+
+## Assigned to Abdul 'Aziz
+
+_Per [team roles](ai-agents/roles.md): **Frontend Developer**, **QA & Documentation** — UI, design system, React components, client-side API modules, and testing._
+
+- [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
+- [ ] **CI workflow (frontend)** — Add GitHub Actions job running frontend `lint` on pull requests
+
+---
+
+## Completed cross-team work
+
+_Historical items that spanned multiple roles — kept for reference only._
 
 - [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
 - [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
@@ -130,10 +150,4 @@ _Per [team roles](.cursor/rules/roles.mdc): **QA & Documentation** (Pukakiii, Ky
 - [x] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
 - [x] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
 - [x] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
-- [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
 - [x] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
-- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
-- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
-- [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
-- [ ] **CI workflow1** — Add GitHub Actions job running backend `pytest` on pull requests
-- [ ] **CI workflow2** — Add GitHub Actions job running frontend `lint` on pull requests

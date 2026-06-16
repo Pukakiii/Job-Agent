@@ -18,6 +18,7 @@ Responsibilities:
 ## Frontend Developer
 Assigned Developers:
 - Developer Pukakiii
+- Developer Abdul 'Aziz
 
 Responsibilities:
 - UI development
@@ -31,6 +32,7 @@ Responsibilities:
 Assigned Developers:
 - Developer Pukakiii
 - Developer Kyryll
+- Developer Thịnh Phương
 
 Responsibilities:
 - API integration
@@ -56,6 +58,8 @@ Responsibilities:
 Assigned Developers:
 - Developer Pukakiii
 - Developer Kyryll
+- Developer Thịnh Phương
+- Developer Abdul 'Aziz
 
 Responsibilities:
 - Testing

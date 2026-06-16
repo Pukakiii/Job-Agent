@@ -303,12 +303,12 @@ This project is for people who want **real experience working on a team** and **
 **How to join**
 
 1. **Read the docs first.** Work through [docs/](docs/) — especially [contributing-rules.md](docs/contributing-rules.md), [system-requirements.md](docs/system-requirements.md), [code-architecture.md](docs/code-architecture.md), and the [ADRs](docs/adr/). Skim the [project structure](#project-structure) and [current state](#current-state) so you know what is implemented versus planned.
-2. **Pick a Joint Task.** Choose one open item from [Joint Tasks](docs/TODO.md#joint-tasks) in [docs/TODO.md](docs/TODO.md). These are scoped for new contributors and align with the MVP foundation.
+2. **Pick a task.** Choose one open item from your role section in [TODO.md](TODO.md) (see [team roles](ai-agents/roles.md)). Tasks are scoped for contributors and align with the MVP foundation.
 3. **Open a pull request.** Follow branch naming, commit prefixes, and the PR workflow in [contributing-rules.md](docs/contributing-rules.md). Rebase on `main`, keep the change focused, and explain what you did and why.
 4. **Team review.** Core developers review your PR. We check that the work matches the docs (architecture, ADRs, conventions) and that the feature, fix, or contribution is **effective** — correct, maintainable, and useful to the project.
-5. **Join the team.** If the review passes, you are welcomed as a contributor with an ongoing role. If not, you are welcome to address feedback and try again with the same or another Joint Task.
+5. **Join the team.** If the review passes, you are welcomed as a contributor with an ongoing role. If not, you are welcome to address feedback and try again with the same or another task.
 
-Questions before you start? Open an issue or note your intent on the Joint Task you plan to take.
+Questions before you start? Open an issue or note your intent on the task you plan to take.
 
 ---
 

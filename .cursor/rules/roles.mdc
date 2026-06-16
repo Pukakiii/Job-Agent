@@ -1,0 +1,5 @@
+---
+description: Team roles and responsibilities
+alwaysApply: true
+---
+@include ../../ai-agents/roles.md
