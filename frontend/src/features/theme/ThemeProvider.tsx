@@ -1,6 +1,6 @@
 "use client"
 
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { ThemeProvider as NextThemesProvider } from "@teispace/next-themes"
 import type { ReactNode } from "react"
 
 const THEME_STORAGE_KEY = "job-agent-theme"

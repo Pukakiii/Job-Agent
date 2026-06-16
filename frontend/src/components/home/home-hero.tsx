@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
+import { useTheme } from "@teispace/next-themes"
 
 import { BrandLogo } from "@/components/brand/brand-logo"
 import { ClientMounted } from "@/components/home/client-mounted"
