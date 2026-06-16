@@ -121,7 +121,47 @@ _Per [team roles](ai-agents/roles.md): **Backend Developer** — API routes, ser
 
 ## Assigned to Thịnh Phương
 
-_Per [team roles](ai-agents/roles.md): **Backend Developer**, **QA & Documentation** — API routes, service layer, workers, and local infra._
+_Per [team roles](ai-agents/roles.md): **Backend Developer**, **QA & Documentation** — API routes, service layer, workers, local infra, and AI pipeline research._
+
+### Research & proposals
+
+_Pre-implementation work only — no pipeline or matching code changes. For each task: (1) open a GitHub issue, (2) fill in the linked doc using the required format below. Doc and issue should cover the same content; the doc is the durable project record._
+
+- [ ] **Job embedding & retrieval** — Research how jobs should be embedded at ingest and retrieved at query time in our pgvector matching pipeline. Review `IngestionService`, `MatchingService`, `JobRepository.search_by_vector`, and `Embedder` against [ADR 002](docs/adr/002-ai-layer-stack.md) and [ai-layer.md](ai-agents/ai-layer.md).
+
+  **Deliverables:**
+  1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md).
+  2. **Documentation** — Write [docs/research/job-embedding-retrieval.md](docs/research/job-embedding-retrieval.md) (currently empty — you create the full doc). Include the GitHub issue URL at the top.
+
+  **Required format (issue + doc):**
+  - Header — owner, status, GitHub issue URL, related links
+  - **Current pipeline** — summary of how ingest and query work today (reference key files)
+  - **Problem statement** — what is unclear, suboptimal, or missing
+  - **Research questions** — embed input format, query vector construction (CV + prompt), retrieval params (candidate limit, filters, HNSW), doc-vs-code gaps (e.g. nomic task prefixes), re-embed strategy
+  - **Why the recommended approach is better** — comparison table: current vs recommended
+  - **Recommendations & phased plan** — embed strategy, retrieval strategy, phased implementation table, MVP non-goals
+  - **Risks & open questions**
+  - **Evaluation approach** — how to measure retrieval quality before/after changes
+  - **References**
+
+- [ ] **Knowledge-graph job recommendation** — Research whether a knowledge-graph–hybrid approach could improve job recommendation (speed, relevance, explainability) compared to the current vector-only pipeline (embed → pgvector cosine search → LLM rerank).
+
+  **Deliverables:**
+  1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md) and [job-embedding-retrieval.md](docs/research/job-embedding-retrieval.md).
+  2. **Documentation** — Write [docs/research/kg-recommendation-proposal.md](docs/research/kg-recommendation-proposal.md) (currently empty — you create the full doc). Include the GitHub issue URL at the top.
+
+  **Required format (issue + doc):**
+  - Header — owner, status, GitHub issue URL, related links
+  - **Current baseline** — summary of the vector-only pipeline and its limitations
+  - **Problem statement** — gaps that vector search alone does not address
+  - **Why KG-hybrid could be better** — comparison table: vector-only vs KG-hybrid (speed, relevance, explainability, structured relations)
+  - **Proposed approach** — entity types, relationship types, hybrid retrieval flow
+  - **Phased implementation plan** — Phase 0 / 1 / 2 table with explicit MVP non-goals
+  - **Risks & open questions** — maintenance, extraction accuracy, overlap with pgvector
+  - **Recommended next steps** — prioritised actions after team review
+  - **References**
+
+### Backend & QA
 
 - [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
 - [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
