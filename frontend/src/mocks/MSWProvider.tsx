@@ -1,32 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 export default function MSWProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [ready, setReady] = useState(
-    process.env.NODE_ENV !== "development"
-  )
-
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      import("./browser").then(({ worker }) => {
-        worker
-          .start({
-            onUnhandledRequest: "bypass",
-            serviceWorker: {
-              url: "/mockServiceWorker.js",
-            },
-          })
-          .then(() => setReady(true))
-      })
-    }
-  }, [])
+    if (process.env.NODE_ENV !== "development") return
 
-  if (!ready) return null
+    void import("./browser").then(({ worker }) =>
+      worker.start({
+        onUnhandledRequest: "bypass",
+        serviceWorker: {
+          url: "/mockServiceWorker.js",
+        },
+      }),
+    )
+  }, [])
 
   return <>{children}</>
 }
