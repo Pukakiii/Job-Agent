@@ -55,7 +55,7 @@ function countByStatus(status: ApplicationStatus): number {
 
 export default function ApplicationsPage() {
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-[1200px] flex-col gap-6 px-6 py-5">
+    <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 py-5">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">

@@ -41,7 +41,7 @@ export function SidebarNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex-1 overflow-y-auto py-4">
+    <nav className="flex-1 min-h-0 overflow-y-auto py-4">
       <ul className="flex flex-col gap-0.5 px-2">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href)
