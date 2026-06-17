@@ -532,4 +532,9 @@ Recommended order: database + Redis → migrations → API → workers → front
 
 ## License
 
-TBD
+Job Agent is **source-available**, licensed under the
+[PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+Free to use, modify, and share for any **noncommercial** purpose (personal, study,
+research, nonprofit/educational/government). **Commercial use is reserved** and requires
+a separate license from the copyright holder.
+Copyright © 2026 Igor Pukaki. All commercial rights reserved. See the LICENSE file.
