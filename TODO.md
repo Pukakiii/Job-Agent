@@ -192,9 +192,9 @@ _Fresh set. The dashboard pages are scaffold-only on `main` (hardcoded empty arr
 
 ---
 
-## Completed cross-team work
+## Completed — earlier foundation (Pukakiii & Kyryll)
 
-_Historical items that spanned multiple roles — kept for reference only._
+_Historical items delivered by Pukakiii and Kyryll — kept for reference only._
 
 - [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
 - [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
