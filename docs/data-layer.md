@@ -167,13 +167,16 @@ class SearchResult(Base):
 
 
 class ApplicationStatus(str, enum.Enum):
-    """Lifecycle stages of a single job application."""
-    saved        = "saved"
-    applied      = "applied"
-    interviewing = "interviewing"
-    offered      = "offered"
-    rejected     = "rejected"
-    withdrawn    = "withdrawn"
+    """Lifecycle stages of a single job application.
+
+    Values match the frontend ApplicationStatus type in
+    frontend/src/lib/api/applications.ts exactly.
+    """
+    saved     = "saved"
+    applied   = "applied"
+    interview = "interview"
+    offer     = "offer"
+    rejected  = "rejected"
 
 
 class JobApplication(Base):
@@ -206,7 +209,7 @@ class JobApplication(Base):
  
 A few things worth noting. `jobs` carries no `user_id` or `search_id` — a scraped posting is shared across every user, and a user's relationship to it is always mediated by a search. The composite primary key on `search_results` `(search_id, job_id)` means a job can appear at most once per search. The `parsed_profile` JSONB column lets a structured CV profile live alongside the raw text without a rigid column-per-field schema (and it's validated by a Pydantic model — see [DTOs](#dtos-pydantic-vs-orm-models)).
 
-`job_applications` is the user's side of the story: once a job surfaces in a search the user can save it, apply (attaching the CV they want to be evaluated against), and track the outcome through the `status` ENUM (`saved → applied → interviewing → offered / rejected / withdrawn`). The unique constraint `(user_id, job_id)` ensures a single application record per user-job pair — status transitions update that row, not create new ones. `cv_id` is nullable so users can save a job before deciding which CV to use; the service layer fills in `applied_at` when status first becomes `applied`.
+`job_applications` is the user's side of the story: once a job surfaces in a search the user can save it, apply (attaching the CV they want to be evaluated against), and track the outcome through the `status` ENUM (`saved → applied → interview → offer / rejected`). Values match the frontend `ApplicationStatus` type exactly — the DB ENUM will hard-reject any value it doesn't know, so both sides must stay in sync. The unique constraint `(user_id, job_id)` ensures a single application record per user-job pair — status transitions update that row, not create new ones. `cv_id` is nullable so users can save a job before deciding which CV to use; the service layer fills in `applied_at` when status first becomes `applied`.
 
 ## pgvector: the vector column & index
  

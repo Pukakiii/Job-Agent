@@ -9,13 +9,17 @@ from app.models.base import Base
 
 
 class ApplicationStatus(str, enum.Enum):
-    """Lifecycle stages of a single job application."""
+    """Lifecycle stages of a single job application.
+
+    Values are intentionally kept identical to the frontend ApplicationStatus
+    type in frontend/src/lib/api/applications.ts so the DB ENUM never rejects
+    a value the API receives.
+    """
     saved        = "saved"
     applied      = "applied"
-    interviewing = "interviewing"
-    offered      = "offered"
+    interview    = "interview"
+    offer        = "offer"
     rejected     = "rejected"
-    withdrawn    = "withdrawn"
 
 
 class JobApplication(Base):

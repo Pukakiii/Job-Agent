@@ -19,8 +19,9 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 # ENUM values — kept in sync with ApplicationStatus in app/models/application.py
+# and with ApplicationStatus in frontend/src/lib/api/applications.ts
 _applicationstatus = sa.Enum(
-    "saved", "applied", "interviewing", "offered", "rejected", "withdrawn",
+    "saved", "applied", "interview", "offer", "rejected",
     name="applicationstatus",
 )
 
@@ -40,7 +41,7 @@ def upgrade() -> None:
         sa.Column(
             "status",
             postgresql.ENUM(
-                "saved", "applied", "interviewing", "offered", "rejected", "withdrawn",
+                "saved", "applied", "interview", "offer", "rejected",
                 name="applicationstatus",
                 create_type=False,   # already created above
             ),
