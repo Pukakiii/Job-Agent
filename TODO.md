@@ -12,11 +12,11 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Not started / in progress:** Applications backend (repo + routes), live matching/ingestion pipelines, AI analysis + document generation APIs, Postmark integration, loading/error UI, wiring dashboard pages to live API data, E2E auth + CV upload integration, CI workflow.
+**Not started / in progress:** Applications backend (model + repo + service + routes), AI analysis + document generation APIs, Postmark integration, loading/error UI, wiring dashboard pages to live API data, E2E auth integration, frontend CI workflow.
 
-**Recently completed (backend):** Jobs, searches, and CV API routes; service stubs (CV, matching, ingestion); ARQ worker settings + task stubs; Adzuna source adapter; OpenAI client integration.
+**Recently completed (backend):** Jobs, searches, and CV API routes; CV service + CV parsing/normalization; functional matching (location filtering) and ingestion (dedupe, country-aware location); ARQ worker settings + task stubs; Adzuna, Jooble, and Apify/Indeed source adapters (+ Apify client); OpenAI client integration; backend CI (pytest matrix) and verify-ai-rules CI workflows.
 
-**Recently completed (frontend):** Dashboard shell now uses extracted `SidebarNav`, `SidebarFooter`, `DashboardHeader`, and brand components; all dashboard page scaffolds in place.
+**Recently completed (frontend):** Dashboard shell now uses extracted `SidebarNav`, `SidebarFooter`, `DashboardHeader`, and brand components; all dashboard page scaffolds in place; dark theme toggle. Frontend remains at scaffold stage — live API wiring and polish are now owned by Abdul 'Aziz.
 
 ---
 
@@ -64,41 +64,12 @@ _Order follows app flow: foundation → auth → API client modules → route pr
 - [x] **Outreach page scaffold** — Add `(dashboard)/dashboard/outreach/page.tsx` with email list and compose panel placeholders
 - [x] **Settings page scaffold** — Add `(dashboard)/dashboard/settings/page.tsx` with account info and AI-instruction fields
 
-### Next up — UI polish (sidebar & theme)
+### UI polish & shell
 
 - [x] **Dark theme** — Add theme provider + toggle (header or settings); persist user preference; audit pages and shared components under `.dark` tokens in `globals.css`
-- [ ] **Fixed sidebar navigation** — Pin brand header and main nav links so they stay visible while the nav list scrolls independently on long viewports
-- [ ] **Fixed sidebar footer** — Pin Settings and Logout at the bottom of the sidebar so they remain visible while main content scrolls
-
-### Next up — polish & wiring
-
 - [x] **Wire dashboard shell components** — Use `sidebar-footer` (logout), `sidebar-nav`, and `dashboard-header` in layout instead of inline nav; ensure logout calls `AuthProvider`
-- [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
-- [ ] **Reusable empty state** — Extract a shared `EmptyState` component (icon, title, description, CTA) used across jobs, CVs, applications, documents, and outreach scaffolds
-- [ ] **Toast notifications** — Add success/error toasts for upload, search, save, and logout actions
 
-### Next up — wire pages to live data
-
-_Backend jobs, searches, and CV routes are live; applications routes are still pending (see Thịnh Phương)._
-
-- [ ] **Wire overview dashboard stats** — Replace hardcoded `0` stat cards with live counts (jobs, applications, CVs, outreach drafts) or skeleton placeholders while loading
-- [ ] **Wire jobs page to API** — Connect jobs scaffold to `listJobs`; render job cards with title, company, location, and match score
-- [ ] **Job detail view** — Add job detail page or drawer showing full description, AI relevance score/explanation, risk flags, and external apply URL
-- [ ] **Wire search trigger** — Connect "Run new search" on jobs page to `triggerSearch` and poll `getSearchResults`; refresh job list on completion
-- [ ] **Wire CV upload UI** — Connect CVs page upload control to `POST /api/v1/cvs`; show upload progress and validation errors
-- [ ] **Wire CV list and active selector** — Load CVs via `listCvs`, display file metadata, and wire set-active/delete actions
-- [ ] **Wire settings account section** — Populate email/name from `getMe`; enable save when backend profile update endpoint exists
-- [ ] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates once backend routes exist _(blocked on Thịnh Phương — Applications API)_
-
-### Next up — content features (scaffold → functional UI)
-
-_These pages have layout placeholders; they need interactive flows even before full AI backends land._
-
-- [ ] **Jobs list filtering** — Wire the jobs page search input to client-side filter (title, company) over fetched results
-- [ ] **Applications Kanban interactions** — Add drag-and-drop or status-change controls on Kanban cards once API supports transitions
-- [ ] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
-- [ ] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
-- [ ] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
+_Remaining frontend wiring, polish, and content-feature work has been handed off to Abdul 'Aziz — see that section below._
 
 ---
 
@@ -111,11 +82,16 @@ _Per [team roles](ai-agents/roles.md): **Backend Developer** — API routes, ser
 - [x] **CV API routes** — Add `api/v1/routes/cv.py` (upload, list, set active) wired to `cv_repo` and S3; register in `router.py`
 - [x] **Jobs API routes** — Add `api/v1/routes/jobs.py` (get by id, list with pagination) delegating to `job_repo`
 - [x] **Searches API routes** — Add `api/v1/routes/searches.py` (trigger match, retrieve history) delegating to `search_repo`
-- [x] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction stub, and `cv_repo` persistence
-- [x] **Matching service stub** — Add `services/matching_service.py` with embed → vector search → re-rank placeholder interface
-- [x] **Ingestion service stub** — Add `services/ingestion_service.py` with normalise → dedupe → embed → store pipeline skeleton
+- [x] **CV service** — Add `services/cv_service.py` orchestrating S3 upload, text extraction, and `cv_repo` persistence
+- [x] **CV parsing service** — Add `services/cv_parsing_service.py` + `services/normalization.py` for text extraction and field normalisation
+- [x] **Matching service** — `services/matching_service.py` with embed → vector search → re-rank, including tolerant location filtering (city OR country, remote opt-in)
+- [x] **Ingestion service** — `services/ingestion_service.py` normalise → dedupe → embed → store pipeline with country-aware location and empty-record skipping
 - [x] **ARQ worker settings** — Implement `workers/settings.py` with Redis URL, task registry, and cron hooks per [ADR 001](docs/adr/001-queue-tool.md)
 - [x] **ARQ task stubs** — Add `workers/tasks.py` with `scrape_board` and `embed_jobs` delegating to `IngestionService`
+- [x] **Jooble source adapter** — Implement `integrations/sources/jooble.py` against the `JobSource` protocol
+- [x] **Apify/Indeed source adapter** — Implement `integrations/sources/apify_indeed.py` + `integrations/apify_client.py` (token kept server-side)
+- [x] **CI workflow (backend)** — `.github/workflows/backend-tests.yml` running `pytest` matrix (py3.11/3.13) on push/PR with Testcontainers + moto
+- [x] **verify-ai-rules CI workflow** — `.github/workflows/verify-ai-rules.yml` keeping `.github/instructions/*` in sync with `ai-agents/*`
 
 ---
 
@@ -163,10 +139,17 @@ _Pre-implementation work only — no pipeline or matching code changes. For each
 
 ### Backend & QA
 
-- [ ] **Postmark client stub** — Add `integrations/postmark.py` with send-email interface (no live calls required)
-- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries
-- [ ] **Applications API routes** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `router.py`
-- [ ] **CI workflow (backend)** — Add GitHub Actions job running backend `pytest` on pull requests
+_Fresh set scoped to current `main`. The Applications domain does not exist yet — no model, repo, service, routes, or migration. Order follows dependencies: model → repo → service → routes → tests._
+
+- [ ] **Application model + migration** — Add `Application` ORM model (user, job, status, notes, timestamps) and Alembic revision; mirror existing `models/cv.py` and `models/search_result.py`
+- [ ] **Application repository** — Add `repositories/application_repo.py` with CRUD and status-transition queries; mirror `repositories/cv_repo.py`
+- [ ] **Application service** — Add `services/application_service.py` orchestrating repo persistence and status transitions; mirror `services/cv_service.py`
+- [ ] **Applications API routes + schemas** — Add `api/v1/routes/applications.py` and Pydantic schemas; register in `api/v1/router.py` alongside auth/cv/jobs/searches
+- [ ] **Postmark client** — Implement send-email interface in the existing empty `integrations/postmark.py` (no live calls required)
+- [ ] **Tests: job source adapters** — Add adapter tests covering `integrations/sources/jooble.py` and `integrations/sources/apify_indeed.py`
+- [ ] **Tests: ingestion + normalization** — Cover `services/normalization.py` and ingestion dedupe / country-aware location logic
+- [ ] **Tests: applications endpoints** — Add API tests for the applications routes (Testcontainers DB) once routes land
+- [ ] **Document non-Adzuna job sources** — Update [ADR 004](docs/adr/004-jobs-scraping.md) / [data-layer.md](docs/data-layer.md) to cover the Jooble and Apify/Indeed sources
 
 ---
 
@@ -174,14 +157,44 @@ _Pre-implementation work only — no pipeline or matching code changes. For each
 
 _Per [team roles](ai-agents/roles.md): **Frontend Developer**, **QA & Documentation** — UI, design system, React components, client-side API modules, and testing._
 
+_Fresh set. The dashboard pages are scaffold-only on `main` (hardcoded empty arrays); the typed API modules under `src/lib/api/` already exist and just need wiring. Backend jobs/searches/CV routes are live; applications routes depend on Thịnh Phương._
+
+### Wire pages to live data
+
+- [ ] **Wire jobs page to API** — Connect the jobs scaffold to `listJobs`; render job cards with title, company, location, and match score
+- [ ] **Wire CVs page** — Connect upload control to `POST /api/v1/cvs`, load CVs via `listCVs`, and wire set-active/delete actions
+- [ ] **Wire overview dashboard stats** — Replace hardcoded `0` stat cards with live counts (jobs, applications, CVs) or skeletons while loading
+- [ ] **Wire settings account section** — Populate email/name from `getMe`; enable save when a profile-update endpoint exists
+- [ ] **Wire applications Kanban** — Connect the Kanban to `listApplications` and status updates _(blocked on Thịnh Phương — Applications API)_
+
+### Shared UI & polish
+
+- [ ] **Loading and error UI** — Add shared `LoadingSkeleton` and `ErrorBanner` components for consistent async states
+- [ ] **Reusable empty state** — Extract a shared `EmptyState` component (icon, title, description, CTA) used across jobs, CVs, applications, documents, and outreach
+- [ ] **Toast notifications** — Add success/error toasts for upload, search, save, and logout actions
+- [ ] **Fixed sidebar navigation & footer** — Pin the brand header, nav links, and Settings/Logout so they stay visible while content scrolls
+- [ ] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
+- [ ] **Outreach + documents API modules** — Fill the empty `src/lib/api/outreach.ts` and `src/lib/api/documents.ts` modules mirroring backend endpoints
+
+### Content features (scaffold → functional UI)
+
+- [ ] **Job detail view** — Add a job detail page or drawer showing full description, AI relevance score/explanation, risk flags, and external apply URL
+- [ ] **Wire search trigger** — Connect "Run new search" on the jobs page to `triggerSearch` and poll `getSearchResults`; refresh the job list on completion
+- [ ] **Jobs list filtering** — Wire the jobs page search input to a client-side filter (title, company) over fetched results
+- [ ] **Applications Kanban interactions** — Add drag-and-drop or status-change controls on Kanban cards once the API supports transitions
+- [ ] **Documents job picker** — Add a job-selection step before "Generate resume" / "Generate cover letter" on the documents page
+- [ ] **Outreach compose panel** — Build a compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
+
+### QA
+
 - [ ] **Wire login flow E2E** — Connect frontend login/register pages to live auth API and verify session cookie round-trip
 - [ ] **CI workflow (frontend)** — Add GitHub Actions job running frontend `lint` on pull requests
 
 ---
 
-## Completed cross-team work
+## Completed — earlier foundation (Pukakiii & Kyryll)
 
-_Historical items that spanned multiple roles — kept for reference only._
+_Historical items delivered by Pukakiii and Kyryll — kept for reference only._
 
 - [x] **`.env.example` files** — Document required backend and frontend env vars (DB, Redis, S3, JWT secret, API URL) without secrets
 - [x] **API health-check test** — Extend `tests/` with `httpx.AsyncClient` hitting `GET /health` through the app factory per [code-architecture.md](docs/code-architecture.md)
@@ -190,4 +203,3 @@ _Historical items that spanned multiple roles — kept for reference only._
 - [x] **JobSource protocol** — Add pluggable `JobSource` ABC in `integrations/sources/base.py` per [ADR 004](docs/adr/004-jobs-scraping.md)
 - [x] **Adzuna source adapter** — Implement first official API source in `integrations/sources/adzuna.py`
 - [x] **OpenAI client integration** — Add `integrations/openai_client.py` for embeddings and chat completions (env-gated)
-- [x] **Application model + migration** — Add `Application` ORM model (user, job, status, notes) and Alembic revision
