@@ -15,15 +15,18 @@ The data layer itself is three kinds of code: `models/` (SQLAlchemy ORM table de
 
 ## The data model
  
-Five tables. The key design decision (corrected from the first draft) is the split between a **job posting** — a shared, scraped entity — and a **match result** — a job's relevance *to one particular search*. The posting lives in `jobs`; the result lives in the `search_results` join. A job's score is a fact about a `(search, job)` pair, not about the job, so it belongs on the join.
+Six tables. The key design decision (corrected from the first draft) is the split between a **job posting** — a shared, scraped entity — and a **match result** — a job's relevance *to one particular search*. The posting lives in `jobs`; the result lives in the `search_results` join. A job's score is a fact about a `(search, job)` pair, not about the job, so it belongs on the join. The sixth table, `job_applications`, tracks a user's own application lifecycle for a discovered job — distinct from the system's match results.
  
 ```mermaid
 erDiagram
     USERS ||--o{ CVS : uploads
     USERS ||--o{ SEARCHES : runs
+    USERS ||--o{ JOB_APPLICATIONS : tracks
     CVS ||--o{ SEARCHES : used_by
+    CVS ||--o{ JOB_APPLICATIONS : optimises
     SEARCHES ||--o{ SEARCH_RESULTS : contains
     JOBS ||--o{ SEARCH_RESULTS : matches
+    JOBS ||--o{ JOB_APPLICATIONS : applied_to
  
     USERS {
         uuid    id           PK
@@ -72,6 +75,17 @@ erDiagram
         int   rank
         float score
         text  explanation
+    }
+    JOB_APPLICATIONS {
+        uuid      id          PK
+        uuid      user_id     FK
+        uuid      job_id      FK
+        uuid      cv_id       FK
+        enum      status
+        timestamp applied_at
+        text      notes
+        timestamp created_at
+        timestamp updated_at
     }
 ```
  
@@ -150,9 +164,49 @@ class SearchResult(Base):
     explanation: Mapped[str] = mapped_column(Text)
     search:      Mapped["Search"] = relationship(back_populates="results")
     job:         Mapped["Job"] = relationship()
+
+
+class ApplicationStatus(str, enum.Enum):
+    """Lifecycle stages of a single job application."""
+    saved        = "saved"
+    applied      = "applied"
+    interviewing = "interviewing"
+    offered      = "offered"
+    rejected     = "rejected"
+    withdrawn    = "withdrawn"
+
+
+class JobApplication(Base):
+    """One row per (user, job) application attempt.
+
+    ``cv_id`` is nullable — a user may save a job before attaching the CV
+    they intend to use. The service layer sets ``applied_at`` when the status
+    transitions to ``ApplicationStatus.applied``.
+    """
+    __tablename__ = "job_applications"
+    id:         Mapped[UUID]              = mapped_column(primary_key=True, default=uuid4)
+    user_id:    Mapped[UUID]              = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    job_id:     Mapped[UUID]              = mapped_column(ForeignKey("jobs.id",  ondelete="CASCADE"), index=True)
+    cv_id:      Mapped[UUID | None]       = mapped_column(ForeignKey("cvs.id",   ondelete="SET NULL"), index=True)
+    status:     Mapped[ApplicationStatus] = mapped_column(
+        Enum(ApplicationStatus, name="applicationstatus"),
+        default=ApplicationStatus.saved,
+    )
+    applied_at: Mapped[datetime | None]   = mapped_column(DateTime(timezone=True))
+    notes:      Mapped[str | None]        = mapped_column(Text)
+    created_at: Mapped[datetime]          = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime]          = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "job_id", name="uq_application_user_job"),
+    )
 ```
  
 A few things worth noting. `jobs` carries no `user_id` or `search_id` — a scraped posting is shared across every user, and a user's relationship to it is always mediated by a search. The composite primary key on `search_results` `(search_id, job_id)` means a job can appear at most once per search. The `parsed_profile` JSONB column lets a structured CV profile live alongside the raw text without a rigid column-per-field schema (and it's validated by a Pydantic model — see [DTOs](#dtos-pydantic-vs-orm-models)).
+
+`job_applications` is the user's side of the story: once a job surfaces in a search the user can save it, apply (attaching the CV they want to be evaluated against), and track the outcome through the `status` ENUM (`saved → applied → interviewing → offered / rejected / withdrawn`). The unique constraint `(user_id, job_id)` ensures a single application record per user-job pair — status transitions update that row, not create new ones. `cv_id` is nullable so users can save a job before deciding which CV to use; the service layer fills in `applied_at` when status first becomes `applied`.
 
 ## pgvector: the vector column & index
  
@@ -354,7 +408,11 @@ Two columns must never appear in any response DTO: `Job.embedding` (large, inter
 | `search_results` | composite PK `(search_id, job_id)` | a job appears once per search |
 | `searches` | index on `user_id` | list a user's searches |
 | `cvs` | index on `user_id` | list / cascade a user's CVs |
-| FKs | `ondelete=CASCADE` (user→cvs/searches/results), `SET NULL` (search→cv) | clean deletion, no orphan rows |
+| `job_applications` | unique `(user_id, job_id)` | one application record per user-job pair |
+| `job_applications` | index on `user_id` | list / filter a user's applications |
+| `job_applications` | index on `job_id` | look up all applicants for a job |
+| `job_applications` | index on `cv_id` | find applications linked to a CV (SET NULL safe) |
+| FKs | `ondelete=CASCADE` (user→cvs/searches/applications), `SET NULL` (application→cv, search→cv) | clean deletion, no orphan rows |
 
 ## Testing the data layer
  
