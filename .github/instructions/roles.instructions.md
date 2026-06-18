@@ -2,6 +2,12 @@
 applyTo: "**"
 ---
 
+# Developers
+
+- Developer Pukakiii (GH: Pukakiii)
+- Developer Abdul 'Aziz (GH: KapalaBintang)
+- Developer Kyryll (GH: Kyryll)
+- Developer Thịnh Phương (GH: nhoxtin15)
 
 # Team Roles
 

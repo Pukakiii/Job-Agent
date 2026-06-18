@@ -126,9 +126,9 @@ _Per [team roles](ai-agents/roles.md): **Backend Developer**, **QA & Documentati
 
 ### Research & proposals
 
-_Pre-implementation work only — no pipeline or matching code changes. For each task: (1) open a GitHub issue, (2) fill in the linked doc using the required format below. Doc and issue should cover the same content; the doc is the durable project record._
+_Post-MVP only — start these after the MVP release, not during MVP foundation work. Pre-implementation research only — no pipeline or matching code changes. For each task: (1) open a GitHub issue, (2) fill in the linked doc using the required format below. Doc and issue should cover the same content; the doc is the durable project record._
 
-- [ ] **Job embedding & retrieval** — Research how jobs should be embedded at ingest and retrieved at query time in our pgvector matching pipeline. Review `IngestionService`, `MatchingService`, `JobRepository.search_by_vector`, and `Embedder` against [ADR 002](docs/adr/002-ai-layer-stack.md) and [ai-layer.md](ai-agents/ai-layer.md).
+- [ ] **Job embedding & retrieval** _(post-MVP — do not start until after MVP release)_ — Research how jobs should be embedded at ingest and retrieved at query time in our pgvector matching pipeline. Review `IngestionService`, `MatchingService`, `JobRepository.search_by_vector`, and `Embedder` against [ADR 002](docs/adr/002-ai-layer-stack.md) and [ai-layer.md](ai-agents/ai-layer.md).
 
   **Deliverables:**
   1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md).
@@ -145,7 +145,7 @@ _Pre-implementation work only — no pipeline or matching code changes. For each
   - **Evaluation approach** — how to measure retrieval quality before/after changes
   - **References**
 
-- [ ] **Knowledge-graph job recommendation** — Research whether a knowledge-graph–hybrid approach could improve job recommendation (speed, relevance, explainability) compared to the current vector-only pipeline (embed → pgvector cosine search → LLM rerank).
+- [ ] **Knowledge-graph job recommendation** _(post-MVP — do not start until after MVP release)_ — Research whether a knowledge-graph–hybrid approach could improve job recommendation (speed, relevance, explainability) compared to the current vector-only pipeline (embed → pgvector cosine search → LLM rerank).
 
   **Deliverables:**
   1. **GitHub issue** — Open an issue on the repo. Labels: `enhancement`, `research`, `ai-layer`. Link [ADR 002](docs/adr/002-ai-layer-stack.md) and [job-embedding-retrieval.md](docs/research/job-embedding-retrieval.md).
