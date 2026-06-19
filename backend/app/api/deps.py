@@ -13,6 +13,7 @@ from app.integrations.openai_client import OpenAIClient
 from app.repositories.cv_repo import CVRepository
 from app.repositories.job_repo import JobRepository
 from app.repositories.search_repo import SearchRepository
+from app.repositories.application_repo import ApplicationRepository
 from app.services.cv_service import CVService
 from app.services.matching_service import MatchingService
 
@@ -58,3 +59,9 @@ def get_matching_service(db: AsyncSession = Depends(get_db)) -> MatchingService:
         CVRepository(db), JobRepository(db), SearchRepository(db),
         get_embedder(), get_chat_client(),
     )
+
+
+def get_application_repo(
+    db: AsyncSession = Depends(get_db),
+) -> ApplicationRepository:
+    return ApplicationRepository(db)
