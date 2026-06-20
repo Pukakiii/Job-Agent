@@ -9,7 +9,9 @@ Routes mirror the frontend client in frontend/src/lib/api/applications.ts:
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+
+from app.exceptions import ApplicationConflict, ApplicationNotFound
 
 from app.api.deps import get_application_repo
 from app.core.security import current_active_user
@@ -33,7 +35,7 @@ async def _get_own_application(
 
     app = await repo.get_by_id(application_id)
     if app is None or app.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+        raise ApplicationNotFound("Application not found.")
     return app
 
 
@@ -74,10 +76,7 @@ async def create_application(
             notes=body.notes,
         )
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Application for this job already exists",
-        )
+        raise ApplicationConflict("Application for this job already exists.")
     return app
 
 

@@ -54,6 +54,16 @@ class JobNotFound(AppError):
     code = "job_not_found"
 
 
+class ApplicationNotFound(AppError):
+    status_code = 404
+    code = "application_not_found"
+
+
+class ApplicationConflict(AppError):
+    status_code = 409
+    code = "application_conflict"
+
+
 class CorpusEmpty(Exception):
     """Signal: no jobs in the corpus to match against. The search route catches this,
     kicks off ingestion, and returns 202 Accepted. Deliberately NOT an AppError — it is
