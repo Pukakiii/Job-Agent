@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.application import ApplicationStatus, JobApplication
 
@@ -37,7 +38,13 @@ class ApplicationRepository:
         return application
 
     async def get_by_id(self, application_id: UUID) -> JobApplication | None:
-        return await self.db.get(JobApplication, application_id)
+        stmt = (
+            select(JobApplication)
+            .options(selectinload(JobApplication.job))
+            .where(JobApplication.id == application_id)
+        )
+        res = await self.db.execute(stmt)
+        return res.scalar_one_or_none()
 
     async def list_by_user(
         self,
@@ -54,6 +61,7 @@ class ApplicationRepository:
         """
         stmt = (
             select(JobApplication)
+            .options(selectinload(JobApplication.job))
             .where(JobApplication.user_id == user_id)
             .order_by(JobApplication.updated_at.desc())
             .limit(limit)

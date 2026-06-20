@@ -9,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from app.models.application import ApplicationStatus
+from app.schemas.job import JobRead
 
 
 # ── Request bodies ────────────────────────────────────────────────────────────
@@ -40,3 +41,4 @@ class ApplicationRead(BaseModel):
     applied_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    job: JobRead | None = None

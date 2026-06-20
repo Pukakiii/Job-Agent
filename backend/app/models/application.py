@@ -3,9 +3,9 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Text, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
+from app.models.job import Job
 
 
 class ApplicationStatus(str, enum.Enum):
@@ -58,6 +58,12 @@ class JobApplication(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    # Relationships
+    # lazy="raise" prevents accidental implicit loads — always use selectinload explicitly.
+    job: Mapped["Job"] = relationship("Job", lazy="raise")
+
+    
 
     __table_args__ = (
         UniqueConstraint("user_id", "job_id", name="uq_application_user_job"),
