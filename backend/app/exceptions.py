@@ -49,6 +49,16 @@ class JobNotFound(AppError):
     code = "job_not_found"
 
 
+class ApplicationNotFound(AppError):
+    status_code = 404
+    code = "application_not_found"
+
+
+class ApplicationConflict(AppError):
+    status_code = 409
+    code = "application_conflict"
+
+
 class CorpusEmpty(Exception):
     """Signal: nothing to return for a search — either no candidate jobs in the corpus, or
     candidates existed but none were relevant after rerank. Either way the search route
