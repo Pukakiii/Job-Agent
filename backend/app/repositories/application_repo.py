@@ -35,7 +35,9 @@ class ApplicationRepository:
         )
         self.db.add(application)
         await self.db.flush()  # populate id / created_at / updated_at; commit stays with caller
-        return application
+        # Reload through get_by_id so the job relationship is eager-loaded
+        # (lazy="raise" would fire otherwise during response serialisation).
+        return await self.get_by_id(application.id)  # type: ignore[return-value]  # id is set after flush
 
     async def get_by_id(self, application_id: UUID) -> JobApplication | None:
         stmt = (
@@ -90,7 +92,8 @@ class ApplicationRepository:
         if notes is not None:
             application.notes = notes
         await self.db.flush()
-        return application
+        # Reload to ensure the job relationship is present for serialisation.
+        return await self.get_by_id(application.id)  # type: ignore[return-value]
 
     async def delete(self, application: JobApplication) -> None:
         await self.db.delete(application)
