@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Agent — Frontend
 
-## Getting Started
+Next.js 16 app for the Job Agent dashboard. Talks to the FastAPI backend at `/api/v1` (proxied in development).
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20+
+- Backend running at `http://localhost:8000` (see root [README](../README.md))
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd frontend
+cp .env.example .env.local
+npm ci
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend origin for API rewrites |
+| `NEXT_PUBLIC_ENABLE_MSW` | `false` | Set `true` to enable MSW mock API in the browser |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Live backend (recommended):** leave `NEXT_PUBLIC_ENABLE_MSW=false`. Auth uses the `jobagent_auth` HttpOnly cookie set by the backend on login.
 
-## Learn More
+**Offline mocks:** set `NEXT_PUBLIC_ENABLE_MSW=true` in `.env.local`. MSW intercepts `/api/v1/*` and sets a dev cookie so middleware allows dashboard access.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev      # Start dev server (http://localhost:3000)
+npm test         # Vitest unit tests
+npm run lint     # ESLint
+npm run build    # Production build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Manual live E2E checklist
 
-## Deploy on Vercel
+Run with backend + Postgres + Redis up and `NEXT_PUBLIC_ENABLE_MSW=false`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [ ] Register a new account at `/register`
+- [ ] Sign in at `/login` — redirects to `/dashboard`; `jobagent_auth` cookie present
+- [ ] `/dashboard` loads without redirect loop
+- [ ] Upload a CV on `/dashboard/cvs` — file appears in list
+- [ ] Run a semantic search from `/dashboard/jobs` — results or 202 ingest polling
+- [ ] Open a job detail — title, company, match score/explanation visible
+- [ ] Create/move/delete an application on `/dashboard/applications` Kanban
+- [ ] Settings shows email from `GET /users/me`
+- [ ] Sign out — cookie cleared, `/dashboard` redirects to `/login`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project structure
+
+- `src/app/` — Next.js App Router pages
+- `src/lib/api/` — Typed API client modules
+- `src/mocks/` — MSW handlers (enabled via `NEXT_PUBLIC_ENABLE_MSW`)
+- `src/features/auth/` — Auth context and hooks

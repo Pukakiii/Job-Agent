@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { motion } from "motion/react"
 
+import { useIsClient } from "@/hooks/use-is-client"
 import { cn } from "@/lib/utils"
 
 type FadeInProps = {
@@ -11,18 +12,23 @@ type FadeInProps = {
   delay?: number
 }
 
-export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
-  const [mounted, setMounted] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
+function subscribeReducedMotion(onStoreChange: () => void) {
+  const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+  mq.addEventListener("change", onStoreChange)
+  return () => mq.removeEventListener("change", onStoreChange)
+}
 
-  useEffect(() => {
-    setMounted(true)
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    setReduceMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReduceMotion(e.matches)
-    mq.addEventListener("change", handler)
-    return () => mq.removeEventListener("change", handler)
-  }, [])
+function getReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
+export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
+  const mounted = useIsClient()
+  const reduceMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    () => false,
+  )
 
   if (!mounted || reduceMotion) {
     return <div className={className}>{children}</div>

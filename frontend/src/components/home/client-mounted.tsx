@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import type { ReactNode } from "react"
+
+import { useIsClient } from "@/hooks/use-is-client"
 
 type ClientMountedProps = {
   children: ReactNode
@@ -8,11 +10,7 @@ type ClientMountedProps = {
 }
 
 export function ClientMounted({ children, fallback = null }: ClientMountedProps) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useIsClient()
 
   if (!mounted) return fallback
 

@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw"
 import { userMe } from "./data/users"
 import { jobs } from "./data/jobs"
-import { searches, searchResults } from "./data/searches"
+import { searches, searchDetails } from "./data/searches"
 import { cvs } from "./data/cvs"
 import { applications } from "./data/applications"
 
@@ -14,13 +14,13 @@ export const handlers = [
   http.post("/api/v1/auth/jwt/login", async () => {
     return HttpResponse.json(userMe, {
       headers: {
-        "Set-Cookie": "fastapiusersauth=mock-jwt-token; Path=/; HttpOnly",
+        "Set-Cookie": "jobagent_auth=mock-jwt-token; Path=/; HttpOnly",
       },
     })
   }),
 
   http.post("/api/v1/auth/register", async ({ request }) => {
-    const body = await request.json() as { email: string; password: string }
+    const body = (await request.json()) as { email: string; password: string }
     return HttpResponse.json({
       id: "usr_001",
       email: body.email,
@@ -37,30 +37,20 @@ export const handlers = [
   // ── Jobs ─────────────────────────────────────────────────────────
   http.get("/api/v1/jobs", ({ request }) => {
     const url = new URL(request.url)
-    const page = Number(url.searchParams.get("page") ?? 1)
-    const size = Number(url.searchParams.get("size") ?? 20)
-    const offset = (page - 1) * size
-    return HttpResponse.json({
-      items: jobs.slice(offset, offset + size),
-      total: jobs.length,
-      page,
-      size,
-    })
+    const limit = Number(url.searchParams.get("limit") ?? 20)
+    const offset = Number(url.searchParams.get("offset") ?? 0)
+    return HttpResponse.json(jobs.slice(offset, offset + limit))
   }),
 
   http.get("/api/v1/jobs/:id", ({ params }) => {
     const job = jobs.find((j) => j.id === params.id)
     if (!job) return new HttpResponse(null, { status: 404 })
-    return HttpResponse.json(job)
-  }),
-
-  http.get("/api/v1/jobs/:id/score", ({ params }) => {
     return HttpResponse.json({
-      job_id: params.id,
-      score: 0.88,
-      explanation: "Strong match based on your React and TypeScript skills.",
-      is_scam: false,
-      scam_reason: null,
+      ...job,
+      description: "Mock job description for local development.",
+      source: "mock",
+      posted_at: null,
+      ingested_at: new Date().toISOString(),
     })
   }),
 
@@ -70,25 +60,36 @@ export const handlers = [
   }),
 
   http.get("/api/v1/searches/:id", ({ params }) => {
-    const search = searches.find((s) => s.id === params.id)
-    if (!search) return new HttpResponse(null, { status: 404 })
-    return HttpResponse.json(search)
-  }),
-
-  http.get("/api/v1/searches/:id/results", ({ params }) => {
-    const results = searchResults[params.id as string] ?? []
-    return HttpResponse.json(results)
+    const detail = searchDetails[params.id as string]
+    if (!detail) return new HttpResponse(null, { status: 404 })
+    return HttpResponse.json(detail)
   }),
 
   http.post("/api/v1/searches", async ({ request }) => {
-    const body = await request.json() as { cv_id: string; prompt?: string }
+    const body = (await request.json()) as {
+      cv_id: string
+      prompt?: string
+    }
+    const prompt = body.prompt ?? "New search"
+    // Simulate corpus-empty ingest path (202) when prompt contains "ingest"
+    if (prompt.toLowerCase().includes("ingest")) {
+      return HttpResponse.json(
+        {
+          status: "ingesting",
+          job_id: "mock-ingest-job",
+          message: "No jobs yet — ingestion started. Try again shortly.",
+        },
+        { status: 202 },
+      )
+    }
     return HttpResponse.json(
       {
         id: "search_new",
-        prompt: body.prompt ?? "New search",
+        prompt,
         created_at: new Date().toISOString(),
+        results: searchDetails.search_001?.results ?? [],
       },
-      { status: 202 }
+      { status: 201 },
     )
   }),
 
@@ -97,18 +98,15 @@ export const handlers = [
     return HttpResponse.json(cvs)
   }),
 
-  http.post("/api/v1/cvs/upload", async () => {
-    return HttpResponse.json({
-      id: "cv_new",
-      original_filename: "uploaded_cv.pdf",
-      created_at: new Date().toISOString(),
-    })
-  }),
-
-  http.patch("/api/v1/cvs/:id/active", ({ params }) => {
-    const cv = cvs.find((c) => c.id === params.id)
-    if (!cv) return new HttpResponse(null, { status: 404 })
-    return HttpResponse.json(cv)
+  http.post("/api/v1/cvs", async () => {
+    return HttpResponse.json(
+      {
+        id: "cv_new",
+        original_filename: "uploaded_cv.pdf",
+        created_at: new Date().toISOString(),
+      },
+      { status: 201 },
+    )
   }),
 
   http.delete("/api/v1/cvs/:id", () => {
@@ -126,26 +124,36 @@ export const handlers = [
   }),
 
   http.post("/api/v1/applications", async ({ request }) => {
-    const body = await request.json() as { job_id: string; status?: string }
+    const body = (await request.json()) as {
+      job_id: string
+      status?: string
+      notes?: string
+    }
     const job = jobs.find((j) => j.id === body.job_id)
-    return HttpResponse.json({
-      id: "app_new",
-      job_id: body.job_id,
-      status: body.status ?? "saved",
-      notes: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      job: job ?? undefined,
-    })
+    return HttpResponse.json(
+      {
+        id: "app_new",
+        job_id: body.job_id,
+        cv_id: null,
+        status: body.status ?? "saved",
+        notes: body.notes ?? null,
+        applied_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        job: job ?? undefined,
+      },
+      { status: 201 },
+    )
   }),
 
-  http.patch("/api/v1/applications/:id", async ({ params, request }) => {
-    const body = await request.json() as { status: string }
+  http.put("/api/v1/applications/:id", async ({ params, request }) => {
+    const body = (await request.json()) as { status: string; notes?: string }
     const app = applications.find((a) => a.id === params.id)
     if (!app) return new HttpResponse(null, { status: 404 })
     return HttpResponse.json({
       ...app,
       status: body.status,
+      notes: body.notes ?? app.notes,
       updated_at: new Date().toISOString(),
     })
   }),

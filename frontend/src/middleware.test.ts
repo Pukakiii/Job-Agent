@@ -29,7 +29,7 @@ describe("middleware", () => {
 
   it("allows dashboard access when auth cookie is present", () => {
     const response = middleware(
-      createRequest("/dashboard", { fastapiusersauth: "token" }),
+      createRequest("/dashboard", { jobagent_auth: "token" }),
     )
 
     expect(response.status).toBe(200)
