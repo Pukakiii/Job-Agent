@@ -10,6 +10,7 @@ import {
   themeServerOptions,
 } from "@/lib/theme-config"
 import MSWProvider from "@/mocks/MSWProvider"
+import { Toaster } from "sonner"
 import "./globals.css"
 
 const geist = Geist({
@@ -64,7 +65,10 @@ export default async function RootLayout({
           noScript
         >
           <MSWProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              <Toaster richColors closeButton position="top-right" />
+            </AuthProvider>
           </MSWProvider>
         </ThemeProvider>
       </body>
