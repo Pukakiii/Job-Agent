@@ -54,16 +54,7 @@ export async function uploadCV(
   });
 }
 
-export function setActiveCV(cvId: string): Promise<ApiResult<CV>> {
-  return apiRequest<CV>(`/cvs/${cvId}/active`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-  });
-}
-
 export function deleteCV(cvId: string): Promise<ApiResult<void>> {
   return del<void>(`/cvs/${cvId}`);
 }
+
