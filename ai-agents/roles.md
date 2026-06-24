@@ -5,7 +5,6 @@ alwaysApply: true
 # Developers
 
 - Developer Pukakiii (GH: Pukakiii)
-- Developer Abdul 'Aziz (GH: KapalaBintang)
 - Developer Kyryll (GH: Kyryll)
 - Developer Thịnh Phương (GH: nhoxtin15)
 
@@ -24,7 +23,6 @@ Responsibilities:
 ## Frontend Developer
 Assigned Developers:
 - Developer Pukakiii
-- Developer Abdul 'Aziz
 
 Responsibilities:
 - UI development
@@ -65,7 +63,6 @@ Assigned Developers:
 - Developer Pukakiii
 - Developer Kyryll
 - Developer Thịnh Phương
-- Developer Abdul 'Aziz
 
 Responsibilities:
 - Testing

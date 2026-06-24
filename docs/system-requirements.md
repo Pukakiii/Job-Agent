@@ -8,45 +8,45 @@ The application collects jobs from multiple sources (Adzuna, Jooble, Careerjet v
 
 ### Authentication & User Management
 
-* [ ] User can sign up and log in
+* [x] User can sign up and log in
 * [ ] User can manage their account
-* [ ] User authentication is handled through JWT
-* [ ] User sessions remain persistent across visits
+* [x] User authentication is handled through JWT
+* [x] User sessions remain persistent across visits
 
 ### CV Management
 
-* [ ] User can upload one or more CVs
-* [ ] CV files are stored in object storage
+* [x] User can upload one or more CVs
+* [x] CV files are stored in object storage
 * [ ] User can select an active CV
-* [ ] User can update or replace existing CVs
+* [x] User can update or replace existing CVs
 * [ ] User can provide custom instructions for AI-assisted matching and generation
 
 ### Job Collection & Storage
 
-* [ ] System collects jobs from supported external sources
-* [ ] System normalizes jobs into a unified internal format
-* [ ] System deduplicates repeated postings across sources
-* [ ] System caches previously discovered jobs
+* [x] System collects jobs from supported external sources
+* [x] System normalizes jobs into a unified internal format
+* [x] System deduplicates repeated postings across sources
+* [x] System caches previously discovered jobs
 * [ ] System tracks active and inactive jobs
-* [ ] User has persistent access to previously discovered jobs
+* [x] User has persistent access to previously discovered jobs
 
 ### Semantic Matching & Retrieval
 
-* [ ] System generates embeddings for job postings
-* [ ] System generates embeddings for uploaded CVs
-* [ ] System stores embeddings using pgvector
-* [ ] System performs semantic similarity search between CVs and jobs
-* [ ] System retrieves and ranks relevant jobs using vector similarity
-* [ ] User receives a ranked list of relevant jobs
-* [ ] User can access the original application URL for every job
+* [x] System generates embeddings for job postings
+* [x] System generates embeddings for uploaded CVs
+* [x] System stores embeddings using pgvector
+* [x] System performs semantic similarity search between CVs and jobs
+* [x] System retrieves and ranks relevant jobs using vector similarity
+* [x] User receives a ranked list of relevant jobs
+* [x] User can access the original application URL for every job
 
 ### AI Analysis
 
-* [ ] System generates AI-based job relevance scores
-* [ ] System provides AI-generated explanations for job matches
+* [x] System generates AI-based job relevance scores
+* [x] System provides AI-generated explanations for job matches
 * [ ] System identifies strengths and weaknesses of a job match
 * [ ] System categorizes jobs automatically
-* [ ] System stores AI analysis results for future access
+* [x] System stores AI analysis results for future access
 
 ### Scam & Risk Detection
 
@@ -72,9 +72,9 @@ The application collects jobs from multiple sources (Adzuna, Jooble, Careerjet v
 
 ### Application Tracking
 
-* [ ] User can create and manage applications
-* [ ] Applications are linked to jobs
-* [ ] Applications support status transitions
+* [x] User can create and manage applications
+* [x] Applications are linked to jobs
+* [x] Applications support status transitions
 
 Supported statuses:
 
@@ -88,15 +88,15 @@ Supported statuses:
 
 * rejected
 
-* [ ] User can attach notes to applications
+* [x] User can attach notes to applications
 
-* [ ] User can review application history
+* [x] User can review application history
 
 ### Dashboard & Analytics
 
-* [ ] User can view a centralized jobs dashboard
-* [ ] User can view AI analysis results
-* [ ] User can manage applications through a Kanban-style board
+* [x] User can view a centralized jobs dashboard
+* [x] User can view AI analysis results
+* [x] User can manage applications through a Kanban-style board
 * [ ] User can view outreach and email activity
 * [ ] System computes statistics directly from database records
 * [ ] System provides application pipeline metrics
