@@ -1,4 +1,4 @@
-import { ApiResult, get, post } from '@/lib/api/client';
+import { ApiResult, apiRequest, get } from '@/lib/api/client';
 
 import type { Job } from '@/lib/api/jobs';
 
@@ -22,7 +22,19 @@ export type SearchDetail = Search & {
 export type TriggerSearchRequest = {
   cv_id: string;
   prompt: string;
+  location?: string;
+  include_remote?: boolean;
 };
+
+export type IngestAccepted = {
+  status: string;
+  job_id: string;
+  message: string;
+};
+
+export type TriggerSearchResult =
+  | { kind: 'search'; data: SearchDetail }
+  | { kind: 'ingesting'; data: IngestAccepted };
 
 export type ListSearchesParams = {
   limit?: number;
@@ -40,10 +52,23 @@ function buildQuery(params: Record<string, string | number | undefined>): string
   return query ? `?${query}` : '';
 }
 
-export function triggerSearch(
+export async function triggerSearch(
   body: TriggerSearchRequest,
-): Promise<ApiResult<SearchDetail>> {
-  return post<SearchDetail>('/searches', body);
+): Promise<ApiResult<TriggerSearchResult>> {
+  const result = await apiRequest<SearchDetail | IngestAccepted>('/searches', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+  if (!result.ok) {
+    return result;
+  }
+
+  if ('results' in result.data) {
+    return { ok: true, data: { kind: 'search', data: result.data } };
+  }
+
+  return { ok: true, data: { kind: 'ingesting', data: result.data } };
 }
 
 export function getSearch(searchId: string): Promise<ApiResult<SearchDetail>> {
@@ -60,8 +85,9 @@ export function listSearches(
   return get<Search[]>(`/searches${query}`);
 }
 
-export function getSearchResults(
-  searchId: string,
-): Promise<ApiResult<SearchResult[]>> {
-  return get<SearchResult[]>(`/searches/${searchId}/results`);
+export function findJobMatch(
+  search: SearchDetail | null,
+  jobId: string,
+): SearchResult | undefined {
+  return search?.results.find((result) => result.job.id === jobId);
 }

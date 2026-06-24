@@ -8,18 +8,11 @@ export type Job = {
   url: string;
 };
 
-export type JobScore = {
-  job_id: string;
-  rank: number;
-  score: number;
-  explanation: string;
-};
-
-export type PaginatedJobs = {
-  items: Job[];
-  total: number;
-  limit: number;
-  offset: number;
+export type JobDetail = Job & {
+  description: string;
+  source: string;
+  posted_at: string | null;
+  ingested_at: string;
 };
 
 export type ListJobsParams = {
@@ -40,21 +33,14 @@ function buildQuery(params: Record<string, string | number | undefined>): string
 
 export function listJobs(
   params: ListJobsParams = {},
-): Promise<ApiResult<PaginatedJobs>> {
+): Promise<ApiResult<Job[]>> {
   const query = buildQuery({
     limit: params.limit,
     offset: params.offset,
   });
-  return get<PaginatedJobs>(`/jobs${query}`);
+  return get<Job[]>(`/jobs${query}`);
 }
 
-export function getJob(jobId: string): Promise<ApiResult<Job>> {
-  return get<Job>(`/jobs/${jobId}`);
-}
-
-export function getJobScore(
-  searchId: string,
-  jobId: string,
-): Promise<ApiResult<JobScore>> {
-  return get<JobScore>(`/searches/${searchId}/jobs/${jobId}`);
+export function getJob(jobId: string): Promise<ApiResult<JobDetail>> {
+  return get<JobDetail>(`/jobs/${jobId}`);
 }
