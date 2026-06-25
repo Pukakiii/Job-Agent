@@ -19,12 +19,23 @@ npm ci
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend origin for API rewrites |
-| `NEXT_PUBLIC_ENABLE_MSW` | `false` | Set `true` to enable MSW mock API in the browser |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend origin used by Next.js `/api/v1` rewrites in dev |
+| `NEXT_PUBLIC_ENABLE_MSW` | `true` in `.env.example` | Default API mode when no browser override is set |
 
-**Live backend (recommended):** leave `NEXT_PUBLIC_ENABLE_MSW=false`. Auth uses the `jobagent_auth` HttpOnly cookie set by the backend on login.
+### MSW vs live backend
 
-**Offline mocks:** set `NEXT_PUBLIC_ENABLE_MSW=true` in `.env.local`. MSW intercepts `/api/v1/*` and sets a dev cookie so middleware allows dashboard access.
+**Toggle at runtime (dev only):** open **Settings → Developer** and choose **Use mocks** or **Use live API**. The choice is stored in `localStorage` and the page reloads. **Reset to env default** clears the override.
+
+| Mode | When to use | Requirements |
+|------|-------------|--------------|
+| **Mock API (MSW)** | No backend running; quick UI dev | `NEXT_PUBLIC_ENABLE_MSW=true` or Settings toggle |
+| **Live backend** | Real auth, CV upload, search | Docker Compose up; toggle off or `NEXT_PUBLIC_ENABLE_MSW=false` |
+
+In development, API calls always use same-origin `/api/v1/*` so auth cookies work with middleware. MSW intercepts in the browser when enabled; otherwise Next.js rewrites proxy to the backend.
+
+**Offline mocks:** set `NEXT_PUBLIC_ENABLE_MSW=true` in `.env.local`, or use Settings → Developer → **Use mocks**. MSW intercepts `/api/v1/*` and sets a dev cookie so middleware allows dashboard access.
+
+**Live backend:** set `NEXT_PUBLIC_ENABLE_MSW=false` or use **Use live API** in Settings. Auth uses the `jobagent_auth` HttpOnly cookie set by the backend on login.
 
 ## Scripts
 

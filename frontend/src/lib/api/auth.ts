@@ -1,4 +1,5 @@
 import { ApiResult, post, get } from '@/lib/api/client';
+import { isMswEnabled } from '@/lib/msw-config';
 
 export type User = {
   id: string;
@@ -55,11 +56,7 @@ export async function login(
   });
 
   // MSW service worker responses don't persist Set-Cookie; set mock cookie for middleware.
-  if (
-    res.ok &&
-    process.env.NEXT_PUBLIC_ENABLE_MSW === 'true' &&
-    typeof document !== 'undefined'
-  ) {
+  if (res.ok && isMswEnabled() && typeof document !== 'undefined') {
     document.cookie = 'jobagent_auth=mock-jwt-token; path=/; SameSite=Lax';
   }
 
