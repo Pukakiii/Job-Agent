@@ -45,7 +45,7 @@ describe("jobs API", () => {
       expect(result.data[0].title).toBe("Engineer")
     }
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/jobs?limit=10&offset=0",
+      "/api/v1/jobs?limit=10&offset=0",
       expect.any(Object),
     )
   })

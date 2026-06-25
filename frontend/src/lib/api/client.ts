@@ -11,10 +11,13 @@ export type ApiResult<T> =
   | { ok: false; error: ApiError };
 
 function getBaseUrl(): string {
-  // Same-origin in dev: MSW intercepts in the browser, or Next.js rewrites
+  // Same-origin in dev/test: MSW intercepts in the browser, or Next.js rewrites
   // proxy to the backend. Direct calls to localhost:8000 break auth cookies
   // because middleware runs on the Next.js origin (port 3000).
-  if (process.env.NODE_ENV === "development") {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test"
+  ) {
     return "";
   }
   const env =

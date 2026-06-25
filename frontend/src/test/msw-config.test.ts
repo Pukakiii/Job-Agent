@@ -7,7 +7,7 @@ import {
   getMswSource,
   isMswEnabled,
   setMswEnabled,
-} from "./msw-config"
+} from "@/lib/msw-config"
 
 describe("msw-config", () => {
   beforeEach(() => {

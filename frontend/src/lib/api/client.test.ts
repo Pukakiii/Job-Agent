@@ -34,7 +34,7 @@ describe("apiRequest", () => {
 
     expect(result).toEqual({ ok: true, data: { id: "1", name: "Job" } })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/jobs",
+      "/api/v1/jobs",
       expect.objectContaining({
         credentials: "include",
         headers: expect.objectContaining({
