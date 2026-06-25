@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { AlertTriangle } from "lucide-react"
 
 import { ThemeAppearanceSettings } from "@/components/theme/theme-appearance-settings"
@@ -9,18 +12,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { ErrorBanner } from "@/components/ui/error-banner"
 import { Input } from "@/components/ui/input"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { Separator } from "@/components/ui/separator"
+import { getMe } from "@/lib/api/auth"
 
 export default function SettingsPage() {
+  const [email, setEmail] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    async function load() {
+      const result = await getMe()
+      if (!active) return
+
+      if (!result.ok) {
+        setError(result.error.message)
+      } else {
+        setEmail(result.data.email)
+      }
+      setLoading(false)
+    }
+
+    void load()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
-    <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 py-5">
+    <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-5 sm:px-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
           Manage your account and AI matching preferences.
         </p>
       </header>
+
+      {error ? (
+        <ErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
 
       <Card className="border-border">
         <CardHeader>
@@ -30,25 +66,29 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                disabled
-              />
+          {loading ? (
+            <LoadingSkeleton rows={2} />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input id="email" type="email" value={email} disabled />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">
+                  Display name
+                </label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Coming soon"
+                  disabled
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Display name
-              </label>
-              <Input id="name" type="text" placeholder="Your name" disabled />
-            </div>
-          </div>
+          )}
           <Button size="sm" disabled>
             Save account
           </Button>
