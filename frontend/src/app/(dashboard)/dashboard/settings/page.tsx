@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator"
 
 export default function SettingsPage() {
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-[1200px] flex-col gap-6 px-6 py-5">
+    <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-6 py-5">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">

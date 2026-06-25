@@ -28,7 +28,7 @@ export function SidebarFooter() {
   }
 
   return (
-    <div className="mt-auto border-t border-border px-2 py-3">
+    <div className="shrink-0 border-t border-border px-2 py-3">
       <Link
         href={SETTINGS_HREF}
         className={cn(

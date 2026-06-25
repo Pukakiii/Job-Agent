@@ -27,15 +27,22 @@ function getPageTitle(pathname: string): string {
   return match ? PAGE_TITLES[match] : "Dashboard"
 }
 
-export function DashboardHeader() {
+export function DashboardHeader({
+  leading,
+}: {
+  leading?: React.ReactNode
+}) {
   const pathname = usePathname()
   const title = getPageTitle(pathname)
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
-      <h1 className="text-lg font-semibold tracking-tight text-foreground">
-        {title}
-      </h1>
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-2">
+        {leading}
+        <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
+          {title}
+        </h1>
+      </div>
       <ThemeToggle />
     </header>
   )
