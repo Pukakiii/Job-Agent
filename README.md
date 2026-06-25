@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** Early scaffold. Documentation and architectural decisions are in place; application code is minimal (backend health check only; frontend has Next.js initialized with the default App Router shell). Active work is tracked in [docs/TODO.md](docs/TODO.md).
+**Current status:** MVP v1 in progress. Backend APIs (auth, jobs, searches, CVs, applications), ARQ workers, and Docker Compose are implemented. Frontend dashboard pages wire to live APIs when `NEXT_PUBLIC_ENABLE_MSW=false`. Active work is tracked in [TODO.md](TODO.md).
 
 ---
 
@@ -61,7 +61,7 @@ The architecture is intentionally simple enough for an MVP, but structured enoug
 | [Data Layer](docs/data-layer.md)                              | ORM models, pgvector, repositories, migrations     |
 | [Docker Orchestration](docs/docker-orchestration.md)          | Compose topology, healthchecks, volumes            |
 | [Contributing Rules](docs/contributing-rules.md)              | Branch naming, commits, PR workflow                |
-| [TODO](docs/TODO.md)                                          | Active tasks by assignee                           |
+| [TODO](TODO.md)                                               | Active tasks by assignee                           |
 | [ADR 001: Queue Tool](docs/adr/001-queue-tool.md)             | ARQ + Redis for async workers                      |
 | [ADR 002: AI Layer](docs/adr/002-ai-layer-stack.md)           | Embeddings, pgvector, local/API models             |
 | [ADR 003: Apply Automation](docs/adr/003-apply-automation.md) | Direct-apply links instead of browser automation   |
@@ -76,15 +76,15 @@ What exists today versus what the docs describe as the target:
 | Area              | Status                                                                                                                                            |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Documentation     | Complete — requirements, architecture, data layer, Docker plan, ADRs                                                                              |
-| Backend           | `GET /health` only; `pyproject.toml` lists target dependencies                                                                                    |
-| Database / models | Not implemented — schema defined in [data-layer.md](docs/data-layer.md)                                                                           |
-| Auth              | Planned — `fastapi-users` + JWT                                                                                                                   |
-| ARQ workers       | Planned — ingestion, embedding, email tasks                                                                                                       |
-| Frontend          | Next.js 16 initialized (App Router, TypeScript, Tailwind CSS v4, ESLint); domain folders scaffolded; route groups and feature pages not yet built |
-| Docker / infra    | Documented — Compose files not yet added                                                                                                          |
-| Tests             | Not started                                                                                                                                       |
+| Backend           | FastAPI app with auth, jobs, searches, CVs, applications APIs; ARQ workers; pytest in CI                                                        |
+| Database / models | SQLAlchemy models + Alembic migrations (pgvector)                                                                                               |
+| Auth              | `fastapi-users` JWT with `jobagent_auth` cookie                                                                                                   |
+| ARQ workers       | Ingestion, CV parse, embedding task stubs wired                                                                                                   |
+| Frontend          | Next.js 16 dashboard with live API wiring, Vitest + ESLint in CI                                                                                  |
+| Docker / infra    | Compose stack in `infra/docker/`                                                                                                                  |
+| Tests             | Backend pytest (Testcontainers); frontend Vitest                                                                                                  |
 
-Next steps: see [docs/TODO.md](docs/TODO.md).
+Next steps: see [TODO.md](TODO.md).
 
 ---
 
@@ -243,7 +243,7 @@ job-agent/
 │   │   ├── schemas/             # ** Pydantic DTOs **
 │   │   ├── services/            # ** business logic **
 │   │   ├── workers/             # ** ARQ tasks **
-│   │   └── main.py              # FastAPI entry (health check today)
+│   │   └── main.py              # FastAPI entry + /health
 │   ├── tests/                   # ** pytest **
 │   └── pyproject.toml
 ├── docs/
@@ -284,7 +284,7 @@ job-agent/
 
 **Core developers:** Pukakiii, Kyryll
 
-Work is split in [docs/TODO.md](docs/TODO.md):
+Work is split in [TODO.md](TODO.md):
 
 Before opening a PR, read [contributing-rules.md](docs/contributing-rules.md) (branch naming, commit prefixes, rebase with `main`).
 
@@ -431,7 +431,7 @@ Rules: never edit production schema directly; keep migrations small; test locall
 
 ## API Overview
 
-Target REST surface under `/api/v1`. **Implemented today:** `GET /health` only.
+Target REST surface under `/api/v1`. **Implemented:** auth, jobs, searches, CVs, applications (see OpenAPI at `/docs` when the API is running).
 
 | Domain       | Planned endpoints                               |
 | ------------ | ----------------------------------------------- |
