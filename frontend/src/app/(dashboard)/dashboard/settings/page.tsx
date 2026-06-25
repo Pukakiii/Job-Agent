@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AlertTriangle } from "lucide-react"
 
 import { ThemeAppearanceSettings } from "@/components/theme/theme-appearance-settings"
+import { MswToggleSettings } from "@/components/settings/msw-toggle-settings"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -110,6 +111,24 @@ export default function SettingsPage() {
       </Card>
 
       <Separator />
+
+      {process.env.NODE_ENV === "development" ? (
+        <>
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="text-base">Developer</CardTitle>
+              <CardDescription>
+                Switch between mock data and the live FastAPI backend.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MswToggleSettings />
+            </CardContent>
+          </Card>
+
+          <Separator />
+        </>
+      ) : null}
 
       <Card className="border-border">
         <CardHeader>

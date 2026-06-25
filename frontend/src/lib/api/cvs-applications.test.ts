@@ -65,7 +65,7 @@ describe("cvs API", () => {
 
     expect(result.ok).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/cvs",
+      "/api/v1/cvs",
       expect.objectContaining({ method: "POST" }),
     )
   })
@@ -77,7 +77,7 @@ describe("cvs API", () => {
 
     expect(result.ok).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/cvs/cv-1",
+      "/api/v1/cvs/cv-1",
       expect.objectContaining({ method: "DELETE" }),
     )
   })
@@ -116,7 +116,7 @@ describe("applications API", () => {
 
     expect(result.ok).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/applications?status=saved",
+      "/api/v1/applications?status=saved",
       expect.any(Object),
     )
   })
@@ -163,7 +163,7 @@ describe("applications API", () => {
 
     expect(result.ok).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/applications/app-1",
+      "/api/v1/applications/app-1",
       expect.objectContaining({ method: "PUT" }),
     )
   })

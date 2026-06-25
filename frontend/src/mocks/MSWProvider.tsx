@@ -2,13 +2,15 @@
 
 import { useEffect } from "react"
 
+import { isMswEnabled } from "@/lib/msw-config"
+
 export default function MSWProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_ENABLE_MSW !== "true") return
+    if (!isMswEnabled()) return
 
     void import("./browser").then(({ worker }) =>
       worker.start({
