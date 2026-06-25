@@ -42,7 +42,6 @@ export async function login(
   // To adhere to the hard rule (use helpers only and no direct fetch), we'll call the lower-level apiRequest by importing it.
   // However apiRequest is not exported from client via a named export other than default helpers — but it is exported as apiRequest in client.ts. We'll import it.
   // NOTE: we keep type-safety and avoid fetch usage here.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { apiRequest } = await import('@/lib/api/client');
 
   const res = await apiRequest<User>('/auth/jwt/login', {
@@ -56,8 +55,12 @@ export async function login(
   });
 
   // MSW service worker responses don't persist Set-Cookie; set mock cookie for middleware.
-  if (res.ok && process.env.NODE_ENV === 'development' && typeof document !== 'undefined') {
-    document.cookie = 'fastapiusersauth=mock-jwt-token; path=/; SameSite=Lax';
+  if (
+    res.ok &&
+    process.env.NEXT_PUBLIC_ENABLE_MSW === 'true' &&
+    typeof document !== 'undefined'
+  ) {
+    document.cookie = 'jobagent_auth=mock-jwt-token; path=/; SameSite=Lax';
   }
 
   return res;

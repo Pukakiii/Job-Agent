@@ -12,8 +12,10 @@ export type ApplicationStatus =
 export type Application = {
   id: string;
   job_id: string;
+  cv_id: string | null;
   status: ApplicationStatus;
   notes: string | null;
+  applied_at: string | null;
   created_at: string;
   updated_at: string;
   job?: Job;

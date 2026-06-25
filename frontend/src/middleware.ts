@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const PROTECTED = ["/dashboard"]
-const AUTH_COOKIE = "fastapiusersauth"
+const AUTH_COOKIE = "jobagent_auth"
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { useIsClient } from "@/hooks/use-is-client"
 import { register } from "@/lib/api/auth"
 import {
   validateConfirmPassword,
@@ -39,7 +40,7 @@ function showFieldError(
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
+  const mounted = useIsClient()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -56,10 +57,6 @@ export default function RegisterPage() {
     password: validatePassword(password),
     confirmPassword: validateConfirmPassword(password, confirmPassword),
   }
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   function handleBlur(field: Field) {
     setTouched((prev) => ({ ...prev, [field]: true }))

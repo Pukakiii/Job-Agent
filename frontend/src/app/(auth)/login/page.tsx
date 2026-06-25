@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/features/auth/useAuth"
+import { useIsClient } from "@/hooks/use-is-client"
 import {
   validateEmail,
   validatePassword,
@@ -37,11 +38,43 @@ function showFieldError(
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageShell />}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginPageShell() {
+  const mounted = useIsClient()
+
+  return (
+    <div className="relative flex min-h-[100dvh] w-full items-center justify-center overflow-hidden bg-background">
+      {mounted && (
+        <Particles
+          className="absolute inset-0 z-0 h-full w-full"
+          quantity={60}
+          staticity={80}
+          ease={80}
+          size={0.8}
+          color="var(--primary)"
+          vx={0.02}
+          vy={0.01}
+        />
+      )}
+      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4">
+        <BrandLogo className="mb-8" />
+      </div>
+    </div>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
+  const mounted = useIsClient()
   const registered = searchParams.get("registered") === "true"
-  const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [touched, setTouched] = useState<Touched>({
@@ -55,10 +88,6 @@ export default function LoginPage() {
     email: validateEmail(email),
     password: validatePassword(password),
   }
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   function handleBlur(field: Field) {
     setTouched((prev) => ({ ...prev, [field]: true }))

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTheme } from "@teispace/next-themes"
@@ -23,17 +22,12 @@ export function HomeHero() {
   const router = useRouter()
   const { resolvedTheme } = useTheme()
   const mounted = useIsClient()
-  const [particleKey, setParticleKey] = useState(0)
-
-  useEffect(() => {
-    setParticleKey((k) => k + 1)
-  }, [])
 
   return (
     <main className="relative flex min-h-screen min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-background px-6 py-8 text-center">
       {mounted ? (
         <Particles
-          key={`${particleKey}-${resolvedTheme ?? "system"}`}
+          key={resolvedTheme ?? "system"}
           className="absolute inset-0 h-full w-full"
           quantity={60}
           staticity={80}

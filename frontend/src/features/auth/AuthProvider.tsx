@@ -57,8 +57,25 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   useEffect(() => {
-    void refresh()
-  }, [refresh])
+    let active = true
+
+    async function loadUser() {
+      const result = await getMe()
+      if (!active) return
+      if (result.ok) {
+        setUser(result.data)
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    }
+
+    void loadUser()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const login = useCallback(
     async (credentials: LoginRequest): Promise<ApiResult<User>> => {

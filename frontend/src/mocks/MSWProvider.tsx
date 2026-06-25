@@ -8,7 +8,7 @@ export default function MSWProvider({
   children: React.ReactNode
 }) {
   useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return
+    if (process.env.NEXT_PUBLIC_ENABLE_MSW !== "true") return
 
     void import("./browser").then(({ worker }) =>
       worker.start({
