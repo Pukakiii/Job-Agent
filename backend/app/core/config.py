@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote_plus
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Repo-root .env, resolved from this file so it loads regardless of CWD
@@ -90,6 +91,10 @@ class Settings(BaseSettings):
     APIFY_BASE_URL: str = "https://api.apify.com/v2"
     APIFY_TIMEOUT: float = 120.0
 
+    # Email — Postmark
+    POSTMARK_API_TOKEN: str | None = None
+    POSTMARK_SENDER_EMAIL: str | None = None
+
     @property
     def ai_provider(self) -> str:
         """Return ``openai`` when a BYOK key is set, otherwise ``ollama``."""
@@ -122,6 +127,15 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        if self.ENVIRONMENT == "production":
+            if self.SECRET_KEY in ("change-me", "", "changeme"):
+                raise ValueError("SECRET_KEY must be set to a strong value in production")
+            if not self.COOKIE_SECURE:
+                self.COOKIE_SECURE = True
+        return self
 
 
 @lru_cache

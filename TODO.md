@@ -14,9 +14,9 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (MVP v1):** Applications backend (model, repo, routes, tests). Frontend live API wiring (auth cookie, dashboard stats, jobs/search, CVs, applications Kanban, settings). Shared UI polish (LoadingSkeleton, ErrorBanner, EmptyState, toasts, mobile drawer). Frontend CI includes Vitest + ESLint.
 
-**Not started / post-MVP:** AI document generation, outreach/Postmark, scam-risk UI, drag-and-drop Kanban, Playwright E2E, full account profile editing.
+**Not started / post-MVP:** Scam-risk UI, drag-and-drop Kanban, Playwright E2E, full account profile editing.
 
-**Recently completed (backend):** Jobs, searches, CV, and applications API routes; matching/ingestion services; ARQ workers; application integration tests.
+**Recently completed (backend):** Ollama AI provider, Docker Compose stack, S3 bucket bootstrap, active CV, documents API, outreach API + Postmark stub, auth rate limiting.
 
 **Recently completed (frontend):** Live-backend-only dev (browser MSW removed); `jobagent_auth` cookie alignment; dashboard pages wired to live APIs; API module tests.
 
@@ -95,8 +95,8 @@ _Backend jobs, searches, CV, and applications routes are live._
 - [x] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
 - [x] **Wire login flow E2E (live backend)** — `jobagent_auth` cookie, live backend only (MSW removed from dev), manual E2E checklist in `frontend/README.md`
 - [x] **Frontend CI polish** — `npm run lint` in `.github/workflows/frontend-tests.yml`
-- [ ] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
-- [ ] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
+- [x] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
+- [x] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
 - [x] **Applications Kanban interactions** — Status-change controls on Kanban cards
 
 ---
@@ -165,7 +165,7 @@ _Post-MVP only — start these after the MVP release, not during MVP foundation 
 
 - [x] **Application model + migration** — Add `backend/app/models/application.py` with `user_id` (FK), `job_id` (FK), `status` (enum: `saved` | `applied` | `interview` | `offer` | `rejected`), `notes` (nullable text), `created_at` / `updated_at`. Unique constraint on `(user_id, job_id)`. Alembic revision creating `applications` table. Export from `models/__init__.py`. Align status values with [`frontend/src/lib/api/applications.ts`](frontend/src/lib/api/applications.ts).
 
-- [ ] **Postmark client stub** — Add `backend/app/integrations/postmark.py` with a `PostmarkClient` class exposing `send_email(to, subject, html_body, *, tag=None) -> str` (returns a stub message ID). Add `POSTMARK_API_TOKEN` and `POSTMARK_SENDER_EMAIL` to `Settings` in `backend/app/core/config.py` (vars already in `.env.example`). When token is unset, log and no-op instead of calling Postmark. Add `backend/tests/test_postmark_client.py` using `httpx.MockTransport` (pattern: `test_apify_client.py`). Do not wire `send_followup_email` in `workers/tasks.py` yet — that is a follow-up once outreach templates exist.
+- [x] **Postmark client stub** — Add `backend/app/integrations/postmark.py` with a `PostmarkClient` class exposing `send_email(to, subject, html_body, *, tag=None) -> str` (returns a stub message ID). Add `POSTMARK_API_TOKEN` and `POSTMARK_SENDER_EMAIL` to `Settings` in `backend/app/core/config.py` (vars already in `.env.example`). When token is unset, log and no-op instead of calling Postmark. Add `backend/tests/test_postmark_client.py` using `httpx.MockTransport` (pattern: `test_apify_client.py`). Do not wire `send_followup_email` in `workers/tasks.py` yet — that is a follow-up once outreach templates exist.
 
 - [x] **Application repository** — Add `backend/app/repositories/application_repo.py` with `ApplicationRepository(db)` methods: `create(user_id, job_id, status, notes)`, `get_by_id`, `list_by_user(user_id, *, status=None, limit, offset)` ordered by `updated_at desc`, `update_status(application, status, notes)`, `delete(application)`. Flush without commit (pattern: `cv_repo.py`). Add `backend/tests/test_application_repo.py` with Testcontainers `db` fixture. _Depends on Application model + migration._
 

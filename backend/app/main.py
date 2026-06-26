@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.logger import configure_logging, get_logger
 from app.api.errors import register_error_handlers
+from app.middleware.rate_limit import AuthRateLimitMiddleware
 
 logger = get_logger("app.main")
 
@@ -76,6 +77,8 @@ app = FastAPI(
 )
 
 register_error_handlers(app)
+
+app.add_middleware(AuthRateLimitMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

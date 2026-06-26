@@ -17,7 +17,7 @@ The application collects jobs from multiple sources (Adzuna, Jooble, Careerjet v
 
 * [x] User can upload one or more CVs
 * [x] CV files are stored in object storage
-* [ ] User can select an active CV
+* [x] User can select an active CV
 * [x] User can update or replace existing CVs
 * [ ] User can provide custom instructions for AI-assisted matching and generation
 
@@ -57,18 +57,18 @@ The application collects jobs from multiple sources (Adzuna, Jooble, Careerjet v
 
 ### Resume & Cover Letter Generation
 
-* [ ] User can generate a tailored resume for a selected job
-* [ ] User can generate a tailored cover letter for a selected job
-* [ ] Generated documents are based on the selected CV and job description
-* [ ] Generated outputs are stored for future reuse
+* [x] User can generate a tailored resume for a selected job
+* [x] User can generate a tailored cover letter for a selected job
+* [x] Generated documents are based on the selected CV and job description
+* [x] Generated outputs are stored for future reuse
 
 ### Outreach & Email Automation
 
-* [ ] User can generate AI-assisted outreach emails
-* [ ] System can send emails through configured email providers
-* [ ] System stores all generated emails
+* [x] User can generate AI-assisted outreach emails
+* [x] System can send emails through configured email providers
+* [x] System stores all generated emails
 * [ ] System tracks email delivery status
-* [ ] User can review previously generated and sent emails
+* [x] User can review previously generated and sent emails
 
 ### Application Tracking
 

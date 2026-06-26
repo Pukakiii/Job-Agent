@@ -1,4 +1,4 @@
-import { ApiResult, apiRequest, del, get } from '@/lib/api/client';
+import { ApiResult, apiRequest, del, get, put } from '@/lib/api/client';
 
 export type CV = {
   id: string;

@@ -8,13 +8,18 @@ from arq.connections import ArqRedis
 from app.core.db import async_session_factory
 from app.core.config import settings
 from app.integrations.ai_factory import get_chat_client, get_embedder
+from app.integrations.postmark import PostmarkClient
 from app.integrations.s3 import S3
 from app.repositories.cv_repo import CVRepository
+from app.repositories.document_repo import DocumentRepository
 from app.repositories.job_repo import JobRepository
+from app.repositories.outreach_repo import OutreachRepository
 from app.repositories.search_repo import SearchRepository
 from app.repositories.application_repo import ApplicationRepository
 from app.services.cv_service import CVService
+from app.services.document_service import DocumentService
 from app.services.matching_service import MatchingService
+from app.services.outreach_service import OutreachService
 
 async def get_db() -> AsyncIterator[AsyncSession]:
     """Request/task-scoped unit of work: commit on success, roll back on error."""
@@ -53,3 +58,29 @@ def get_application_repo(
     db: AsyncSession = Depends(get_db),
 ) -> ApplicationRepository:
     return ApplicationRepository(db)
+
+
+def get_document_service(
+    db: AsyncSession = Depends(get_db),
+) -> DocumentService:
+    return DocumentService(
+        DocumentRepository(db),
+        JobRepository(db),
+        CVRepository(db),
+    )
+
+
+@lru_cache
+def get_postmark_client() -> PostmarkClient:
+    return PostmarkClient(settings)
+
+
+def get_outreach_service(
+    db: AsyncSession = Depends(get_db),
+) -> OutreachService:
+    return OutreachService(
+        OutreachRepository(db),
+        JobRepository(db),
+        get_postmark_client(),
+        settings,
+    )
