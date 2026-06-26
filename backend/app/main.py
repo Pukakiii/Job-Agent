@@ -78,7 +78,8 @@ app = FastAPI(
 
 register_error_handlers(app)
 
-app.add_middleware(AuthRateLimitMiddleware)
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(AuthRateLimitMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
