@@ -40,6 +40,21 @@ class S3:
             else boto3.client("s3", endpoint_url=public, **client_kwargs)
         )
 
+    async def ensure_bucket(self) -> None:
+        """Create the CV bucket if it does not exist (MinIO on fresh setup)."""
+
+        def _ensure() -> None:
+            try:
+                self.s3.head_bucket(Bucket=self.bucket_name)
+            except ClientError as exc:
+                code = exc.response.get("Error", {}).get("Code", "")
+                if code not in ("404", "NoSuchBucket", "403", "NotFound"):
+                    raise
+                self.s3.create_bucket(Bucket=self.bucket_name)
+                logger.info("Created S3 bucket: %s", self.bucket_name)
+
+        await anyio.to_thread.run_sync(_ensure)
+
     async def upload_cv(self, s3_key: str, file_bytes: bytes, content_type: str) -> None:
         """Put the CV bytes under the given key (encrypted at rest when S3_SSE is set)."""
         extra = {"ServerSideEncryption": self.sse} if self.sse else {}

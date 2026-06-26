@@ -6,6 +6,7 @@ from arq import create_pool
 from arq.connections import RedisSettings
 
 from app.api.v1.router import api_router
+from app.api.deps import get_s3
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.logger import configure_logging, get_logger
@@ -18,6 +19,7 @@ logger = get_logger("app.main")
 async def lifespan(app: FastAPI):
     configure_logging()
     await init_db()
+    await get_s3().ensure_bucket()
     app.state.redis = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
     logger.info("API startup complete.")
     yield

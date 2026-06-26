@@ -1,0 +1,6 @@
+# Local development overrides — hot reload for the API.
+services:
+  api:
+    volumes:
+      - ../../backend/app:/app/app:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

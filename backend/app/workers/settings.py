@@ -25,7 +25,9 @@ async def startup(ctx) -> None:
     ctx["sources"] = build_sources(client, settings)
     ctx["embedder"] = OpenAIEmbedder(OpenAIClient(), dimensions=settings.EMBED_DIM)
     ctx["openai"] = OpenAIClient()
-    ctx["s3"] = S3(settings.S3_BUCKET_NAME, settings)
+    s3 = S3(settings.S3_BUCKET_NAME, settings)
+    await s3.ensure_bucket()
+    ctx["s3"] = s3
     logger.info("Worker started with sources: %s", list(ctx["sources"]))
 
 
