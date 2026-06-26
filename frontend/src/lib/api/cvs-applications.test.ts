@@ -35,6 +35,7 @@ describe("cvs API", () => {
           id: "cv-1",
           original_filename: "resume.pdf",
           content_type: "application/pdf",
+          is_active: true,
           created_at: "2026-06-01T00:00:00Z",
         },
       ]),

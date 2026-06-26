@@ -113,6 +113,15 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   }),
 
+  http.put("/api/v1/cvs/:id/active", ({ params }) => {
+    const cv = cvs.find((item) => item.id === params.id)
+    if (!cv) return new HttpResponse(null, { status: 404 })
+    for (const item of cvs) {
+      item.is_active = item.id === params.id
+    }
+    return HttpResponse.json({ ...cv, is_active: true })
+  }),
+
   // ── Applications ─────────────────────────────────────────────────
   http.get("/api/v1/applications", ({ request }) => {
     const url = new URL(request.url)

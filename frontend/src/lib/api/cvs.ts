@@ -4,6 +4,7 @@ export type CV = {
   id: string;
   original_filename: string;
   content_type: string;
+  is_active: boolean;
   created_at: string;
 };
 
@@ -56,5 +57,9 @@ export async function uploadCV(
 
 export function deleteCV(cvId: string): Promise<ApiResult<void>> {
   return del<void>(`/cvs/${cvId}`);
+}
+
+export function setActiveCV(cvId: string): Promise<ApiResult<CV>> {
+  return put<CV>(`/cvs/${cvId}/active`, {});
 }
 

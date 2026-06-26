@@ -29,6 +29,9 @@ class CVRepository:
             original_filename=original_filename,
             content_type=content_type,
         )
+        existing = await self.list_by_user(user_id, limit=1)
+        if not existing:
+            cv.is_active = True
         self.db.add(cv)
         await self.db.flush()  # populate cv.id / created_at; commit stays with the caller
         return cv
@@ -47,7 +50,30 @@ class CVRepository:
         )
         return list(res.scalars())
 
-    async def delete(self, cv: CV) -> None: 
+    async def get_active_or_latest(self, user_id: UUID) -> CV | None:
+        res = await self.db.execute(
+            select(CV).where(CV.user_id == user_id, CV.is_active.is_(True))
+        )
+        active = res.scalar_one_or_none()
+        if active is not None:
+            return active
+        cvs = await self.list_by_user(user_id, limit=1)
+        return cvs[0] if cvs else None
+
+    async def set_active(self, user_id: UUID, cv_id: UUID) -> CV | None:
+        cv = await self.get_by_id(cv_id)
+        if cv is None or cv.user_id != user_id:
+            return None
+        await self.db.execute(
+            update(CV).where(CV.user_id == user_id).values(is_active=False)
+        )
+        await self.db.execute(
+            update(CV).where(CV.id == cv_id).values(is_active=True)
+        )
+        await self.db.flush()
+        return await self.get_by_id(cv_id)
+
+    async def delete(self, cv: CV) -> None:
         await self.db.delete(cv)
 
     async def set_parsing_result(

@@ -144,7 +144,7 @@ export default function JobsPage() {
     setSearching(true)
     setError(null)
 
-    const cvsRes = await listCVs({ limit: 1 })
+    const cvsRes = await listCVs({ limit: 100 })
     if (!cvsRes.ok) {
       setError(cvsRes.error.message)
       setSearching(false)
@@ -156,7 +156,9 @@ export default function JobsPage() {
       return
     }
 
-    const cvId = cvsRes.data[0].id
+    const activeCv =
+      cvsRes.data.find((cv) => cv.is_active) ?? cvsRes.data[0]
+    const cvId = activeCv.id
 
     const pollSearch = async (attempt = 0): Promise<void> => {
       const result = await triggerSearch({ cv_id: cvId, prompt })
