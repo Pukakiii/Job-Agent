@@ -4,8 +4,7 @@ from arq.connections import RedisSettings
 
 from app.core.config import settings
 from app.core.logger import configure_logging, get_logger
-from app.integrations.embeddings import OpenAIEmbedder
-from app.integrations.openai_client import OpenAIClient
+from app.integrations.ai_factory import get_chat_client, get_embedder
 from app.integrations.s3 import S3
 from app.workers.registry import build_sources
 from app.workers.tasks import nightly_refresh, parse_cv, scrape_board
@@ -15,17 +14,18 @@ logger = get_logger("app.workers.settings")
 
 async def startup(ctx) -> None:
     configure_logging()
-    if not settings.OPENAI_API_KEY:
-        raise RuntimeError(
-            "OPENAI_API_KEY is not set — worker cannot embed jobs. "
-            "Add it to infra/secret/.env.backend."
-        )
+    if settings.OPENAI_API_KEY:
+        logger.info("AI provider: OpenAI (%s)", settings.OPENAI_CHAT_MODEL)
+    else:
+        logger.info("AI provider: Ollama at %s", settings.OLLAMA_BASE_URL)
     client = httpx.AsyncClient()
     ctx["http_client"] = client
     ctx["sources"] = build_sources(client, settings)
-    ctx["embedder"] = OpenAIEmbedder(OpenAIClient(), dimensions=settings.EMBED_DIM)
-    ctx["openai"] = OpenAIClient()
-    ctx["s3"] = S3(settings.S3_BUCKET_NAME, settings)
+    ctx["embedder"] = get_embedder()
+    ctx["openai"] = get_chat_client()
+    s3 = S3(settings.S3_BUCKET_NAME, settings)
+    await s3.ensure_bucket()
+    ctx["s3"] = s3
     logger.info("Worker started with sources: %s", list(ctx["sources"]))
 
 

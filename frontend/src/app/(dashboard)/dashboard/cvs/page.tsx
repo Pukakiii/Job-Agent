@@ -14,7 +14,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state"
 import { ErrorBanner } from "@/components/ui/error-banner"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
-import { deleteCV, listCVs, uploadCV, type CV } from "@/lib/api/cvs"
+import { deleteCV, listCVs, setActiveCV, uploadCV, type CV } from "@/lib/api/cvs"
 import { toast } from "@/lib/toast"
 
 export default function CVsPage() {
@@ -76,6 +76,22 @@ export default function CVsPage() {
     toast.success("CV deleted")
   }
 
+  async function handleSetActive(cvId: string) {
+    const result = await setActiveCV(cvId)
+    if (!result.ok) {
+      setError(result.error.message)
+      return
+    }
+
+    setCvs((current) =>
+      current.map((cv) => ({
+        ...cv,
+        is_active: cv.id === cvId,
+      })),
+    )
+    toast.success("Active CV updated")
+  }
+
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-5 sm:px-6">
       <header className="space-y-1">
@@ -126,7 +142,7 @@ export default function CVsPage() {
         <CardHeader>
           <CardTitle className="text-base">Your CVs</CardTitle>
           <CardDescription>
-            The most recent upload is used for new searches.
+            Select which CV is used for semantic job searches.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,7 +156,7 @@ export default function CVsPage() {
             />
           ) : (
             <ul className="divide-y divide-border">
-              {cvs.map((cv, index) => (
+              {cvs.map((cv) => (
                 <li
                   key={cv.id}
                   className="flex items-center justify-between gap-4 py-3 text-sm"
@@ -149,17 +165,28 @@ export default function CVsPage() {
                     <p className="truncate font-medium">{cv.original_filename}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(cv.created_at).toLocaleString()}
-                      {index === 0 ? " · latest" : ""}
+                      {cv.is_active ? " · active" : ""}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Delete ${cv.original_filename}`}
-                    onClick={() => void handleDelete(cv.id)}
-                  >
+                  <div className="flex shrink-0 items-center gap-1">
+                    {!cv.is_active ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void handleSetActive(cv.id)}
+                      >
+                        Set active
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Delete ${cv.original_filename}`}
+                      onClick={() => void handleDelete(cv.id)}
+                    >
                     <Trash2 className="size-4" />
                   </Button>
+                  </div>
                 </li>
               ))}
             </ul>

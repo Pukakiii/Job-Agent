@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** MVP v1 in progress. Backend APIs (auth, jobs, searches, CVs, applications), ARQ workers, and Docker Compose are implemented. Frontend dashboard pages wire to live APIs when `NEXT_PUBLIC_ENABLE_MSW=false`. Active work is tracked in [TODO.md](TODO.md).
+**Current status:** MVP v1 remediation complete on [PR #36](https://github.com/Pukakiii/Job-Agent/pull/36) (CI green). Live-backend frontend, Docker Compose, Ollama AI, active CV, documents, outreach, and hardening. Merge PR then run `alembic upgrade head`. See [TODO.md](TODO.md).
 
 ---
 
@@ -360,18 +360,32 @@ Application statuses: `saved`, `applied`, `interview`, `offer`, `rejected`.
 
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL 15+ with pgvector (or use Docker Compose once added)
+- PostgreSQL 15+ with pgvector (or Docker Compose — recommended)
 - Redis
-- Docker (recommended)
+- Docker (recommended for full stack)
 - Git
 
-### Backend (today)
+### Docker Compose (recommended)
+
+```bash
+cp .env.example .env
+cp infra/secret/.env.backend.example infra/secret/.env.backend
+docker compose -f infra/docker/docker-compose.yml up -d
+docker compose -f infra/docker/docker-compose.yml run --rm api alembic upgrade head
+```
+
+Services: Postgres (pgvector), Redis, MinIO, Ollama, API (`:8000`), worker.
+
+See [docker-orchestration.md](docs/docker-orchestration.md).
+
+### Backend (local Python, without Docker)
 
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
+# Ensure root .env exists (copy from .env.example) and Postgres/Redis/MinIO are reachable
 uvicorn app.main:app --reload
 ```
 
@@ -381,37 +395,48 @@ Health check: `GET http://localhost:8000/health`
 
 ```bash
 cd frontend
-npm install   # already done after create-next-app; re-run after pulling dep changes
+cp .env.example .env.local
+npm ci
 npm run dev
 ```
 
-Dev server: `http://localhost:3000`
-
-### Docker (planned)
-
-Once `infra/docker/` is in place:
-
-```bash
-docker compose -f infra/docker/docker-compose.yml up -d
-docker compose -f infra/docker/docker-compose.yml run --rm api alembic upgrade head
-```
-
-See [docker-orchestration.md](docs/docker-orchestration.md).
+Dev server: `http://localhost:3000` — requires the backend at `http://localhost:8000`.
 
 ---
 
 ## Environment Variables
 
-Copy `.env.example` to `backend/.env` and adjust values.
+Two env files serve different contexts:
+
+| File | Used by | Purpose |
+|------|---------|---------|
+| [`.env.example`](.env.example) → `.env` at repo root | Local `uvicorn` / `pytest` via [config.py](backend/app/core/config.py) | Pydantic `Settings` — DB, Redis, S3, AI keys |
+| [`infra/secret/.env.backend.example`](infra/secret/.env.backend.example) → `infra/secret/.env.backend` | Docker Compose `api` and `worker` services | Injected into containers; overrides hostnames (`postgres`, `minio`, `ollama`) |
+
+OS environment variables take precedence over file values. Compose `environment:` block overrides `env_file` for service-specific hostnames.
+
+Copy and adjust:
+
+```bash
+cp .env.example .env
+cp infra/secret/.env.backend.example infra/secret/.env.backend
+```
+
+Key variables (see `.env.example` for the full list):
 
 ```env
-DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/job_agent
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_DB=job_agent
 SECRET_KEY=change-me
-ENVIRONMENT=development
 REDIS_URL=redis://localhost:6379
 OLLAMA_BASE_URL=http://localhost:11434
-# ... see .env.example for scraping, S3, email, and API keys
+OPENAI_API_KEY=          # optional BYOK fallback
+S3_ENDPOINT_URL=http://localhost:9000
+FRONTEND_URL=http://localhost:3000
 ```
+
+Frontend: copy `frontend/.env.example` to `frontend/.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8000`.
 
 ---
 

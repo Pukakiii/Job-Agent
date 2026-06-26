@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote_plus
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Repo-root .env, resolved from this file so it loads regardless of CWD
@@ -55,10 +56,15 @@ class Settings(BaseSettings):
     }
     CV_DOWNLOAD_URL_TTL_SECONDS: int = 300  # presigned GET lifetime
 
-    # AI — OpenAI (optional; leave OPENAI_API_KEY unset to disable)
+    # AI — OpenAI BYOK (optional; when set, takes precedence over Ollama)
     OPENAI_API_KEY: str | None = None
     OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
     OPENAI_EMBED_MODEL: str = "text-embedding-3-small"
+
+    # AI — local Ollama (default when OPENAI_API_KEY is unset)
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_CHAT_MODEL: str = "gemma3:4b"
+    OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
 
     # Ingestion / scraping
     REDIS_URL: str = "redis://localhost:6379"
@@ -85,6 +91,27 @@ class Settings(BaseSettings):
     APIFY_BASE_URL: str = "https://api.apify.com/v2"
     APIFY_TIMEOUT: float = 120.0
 
+    # Email — Postmark
+    POSTMARK_API_TOKEN: str | None = None
+    POSTMARK_SENDER_EMAIL: str | None = None
+
+    @property
+    def ai_provider(self) -> str:
+        """Return ``openai`` when a BYOK key is set, otherwise ``ollama``."""
+        return "openai" if self.OPENAI_API_KEY else "ollama"
+
+    @property
+    def chat_model(self) -> str:
+        if self.ai_provider == "openai":
+            return self.OPENAI_CHAT_MODEL
+        return self.OLLAMA_CHAT_MODEL
+
+    @property
+    def embed_model(self) -> str:
+        if self.ai_provider == "openai":
+            return self.OPENAI_EMBED_MODEL
+        return self.OLLAMA_EMBED_MODEL
+
     @property
     def database_url(self) -> str:
         """Async SQLAlchemy URL, assembled from the POSTGRES_* parts."""
@@ -100,6 +127,15 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        if self.ENVIRONMENT == "production":
+            if self.SECRET_KEY in ("change-me", "", "changeme"):
+                raise ValueError("SECRET_KEY must be set to a strong value in production")
+            if not self.COOKIE_SECURE:
+                self.COOKIE_SECURE = True
+        return self
 
 
 @lru_cache

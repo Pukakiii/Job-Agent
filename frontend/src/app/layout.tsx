@@ -9,7 +9,6 @@ import {
   themeConfig,
   themeServerOptions,
 } from "@/lib/theme-config"
-import MSWProvider from "@/mocks/MSWProvider"
 import { Toaster } from "sonner"
 import "./globals.css"
 
@@ -64,12 +63,10 @@ export default async function RootLayout({
           initialTheme={initialTheme ?? undefined}
           noScript
         >
-          <MSWProvider>
-            <AuthProvider>
-              {children}
-              <Toaster richColors closeButton position="top-right" />
-            </AuthProvider>
-          </MSWProvider>
+          <AuthProvider>
+            {children}
+            <Toaster richColors closeButton position="top-right" />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

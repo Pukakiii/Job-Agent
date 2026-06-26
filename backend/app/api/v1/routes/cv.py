@@ -53,3 +53,12 @@ async def delete_cv(
     service: CVService = Depends(get_cv_service),
 ):
     await service.delete(user.id, cv_id)
+
+
+@router.put("/{cv_id}/active", response_model=CVRead)
+async def set_active_cv(
+    cv_id: UUID,
+    user: User = Depends(current_active_user),
+    service: CVService = Depends(get_cv_service),
+):
+    return await service.set_active(user.id, cv_id)

@@ -37,3 +37,27 @@ class OpenAIEmbedder:
         if not vectors:
             raise RuntimeError("Embedding failed (OpenAI returned no vectors)")
         return vectors[0]
+
+
+class OllamaEmbedder:
+    """nomic-embed-text via Ollama — uses task prefixes for document vs query."""
+
+    DOCUMENT_PREFIX = "search_document: "
+    QUERY_PREFIX = "search_query: "
+
+    def __init__(self, client: "OpenAIClient") -> None:
+        self._client = client
+
+    async def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        prefixed = [f"{self.DOCUMENT_PREFIX}{t}" for t in texts]
+        vectors = await self._client.embed_batch(prefixed)
+        if vectors is None:
+            raise RuntimeError("Embedding failed (Ollama returned no vectors)")
+        return vectors
+
+    async def embed_query(self, text: str) -> list[float]:
+        prefixed = f"{self.QUERY_PREFIX}{text}"
+        vector = await self._client.embed(prefixed)
+        if vector is None:
+            raise RuntimeError("Embedding failed (Ollama returned no vector)")
+        return vector

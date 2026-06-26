@@ -59,6 +59,16 @@ class ApplicationConflict(AppError):
     code = "application_conflict"
 
 
+class DocumentNotFound(AppError):
+    status_code = 404
+    code = "document_not_found"
+
+
+class OutreachNotFound(AppError):
+    status_code = 404
+    code = "outreach_not_found"
+
+
 class CorpusEmpty(Exception):
     """Signal: nothing to return for a search — either no candidate jobs in the corpus, or
     candidates existed but none were relevant after rerank. Either way the search route

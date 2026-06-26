@@ -24,7 +24,8 @@ class CVRead(BaseModel):                  # list item - never exposes s3_key
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     original_filename: str
-    content_type: str 
+    content_type: str
+    is_active: bool
     created_at: datetime
 
 class CVDownloadResponse(BaseModel): 

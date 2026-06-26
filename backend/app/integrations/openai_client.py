@@ -29,16 +29,21 @@ def _get_client() -> AsyncOpenAI:
     """Return a cached AsyncOpenAI client (initialised once per process)."""
     global _openai_client
     if _openai_client is None:
-        if not settings.OPENAI_API_KEY:
-            raise ValueError(
-                "OPENAI_API_KEY is not set. "
-                "Add it to infra/secret/.env.backend or the environment."
+        if settings.OPENAI_API_KEY:
+            _openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+            provider = "openai"
+        else:
+            base = settings.OLLAMA_BASE_URL.rstrip("/")
+            _openai_client = AsyncOpenAI(
+                base_url=f"{base}/v1",
+                api_key="ollama",
             )
-        _openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+            provider = "ollama"
         logger.info(
-            "[OPENAI] Client initialised (chat=%s, embed=%s)",
-            settings.OPENAI_CHAT_MODEL,
-            settings.OPENAI_EMBED_MODEL,
+            "[%s] Client initialised (chat=%s, embed=%s)",
+            provider.upper(),
+            settings.chat_model,
+            settings.embed_model,
         )
     return _openai_client
 
@@ -99,7 +104,7 @@ class OpenAIClient:
             The model's reply as a plain string, or None on failure.
         """
         kwargs: dict = {
-            "model": model or settings.OPENAI_CHAT_MODEL,
+            "model": model or settings.chat_model,
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_prompt},
@@ -137,7 +142,7 @@ class OpenAIClient:
                 print(chunk, end="", flush=True)
         """
         stream = await self._client.chat.completions.create(
-            model=model or settings.OPENAI_CHAT_MODEL,
+            model=model or settings.chat_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_prompt},
@@ -172,11 +177,11 @@ class OpenAIClient:
         """
         try:
             kwargs: dict = {
-                "model": model or settings.OPENAI_EMBED_MODEL,
+                "model": model or settings.embed_model,
                 "input": text,
                 "encoding_format": "float",
             }
-            if dimensions is not None:
+            if dimensions is not None and settings.ai_provider == "openai":
                 kwargs["dimensions"] = dimensions
             response = await self._client.embeddings.create(**kwargs)
             return response.data[0].embedding
@@ -208,12 +213,12 @@ class OpenAIClient:
             return []
         try:
             kwargs: dict = {
-                "model": model or settings.OPENAI_EMBED_MODEL,
+                "model": model or settings.embed_model,
                 "input": texts,
                 "encoding_format": "float",
             }
-            if dimensions is not None:
-                kwargs["dimensions"] = dimensions  # Matryoshka: text-embedding-3-* support reduced dims
+            if dimensions is not None and settings.ai_provider == "openai":
+                kwargs["dimensions"] = dimensions  # Matryoshka: text-embedding-3-* only
             response = await self._client.embeddings.create(**kwargs)
             # Sort by index to guarantee order matches the input list
             return [d.embedding for d in sorted(response.data, key=lambda d: d.index)]

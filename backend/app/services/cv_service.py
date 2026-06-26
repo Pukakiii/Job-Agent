@@ -58,3 +58,9 @@ class CVService:
         await self.s3.delete_objects([cv.s3_key])
         await self.repo.delete(cv)
 
+    async def set_active(self, user_id: UUID, cv_id: UUID) -> CV:
+        cv = await self.repo.set_active(user_id, cv_id)
+        if cv is None:
+            raise CVNotFound("CV not found.")
+        return cv
+
