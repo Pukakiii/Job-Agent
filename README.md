@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** MVP v1 in progress. Backend APIs (auth, jobs, searches, CVs, applications), ARQ workers, and Docker Compose are implemented. Frontend dashboard pages wire to live APIs when `NEXT_PUBLIC_ENABLE_MSW=false`. Active work is tracked in [TODO.md](TODO.md).
+**Current status:** MVP v1 in progress. Backend APIs (auth, jobs, searches, CVs, applications), ARQ workers, and Docker Compose are implemented. Frontend dashboard pages wire to the live backend via Next.js API rewrites. Active work is tracked in [TODO.md](TODO.md).
 
 ---
 

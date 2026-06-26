@@ -1,6 +1,6 @@
 # MVP v1 Smoke Test Checklist
 
-Run with backend, Postgres, Redis, and MinIO up. Set `NEXT_PUBLIC_ENABLE_MSW=false` in `frontend/.env.local`.
+Run with backend, Postgres, Redis, and MinIO up.
 
 ## Infrastructure
 

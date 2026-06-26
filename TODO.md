@@ -18,7 +18,7 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Recently completed (backend):** Jobs, searches, CV, and applications API routes; matching/ingestion services; ARQ workers; application integration tests.
 
-**Recently completed (frontend):** MSW gated behind `NEXT_PUBLIC_ENABLE_MSW`; `jobagent_auth` cookie alignment; dashboard pages wired to live APIs; API module tests.
+**Recently completed (frontend):** Live-backend-only dev (browser MSW removed); `jobagent_auth` cookie alignment; dashboard pages wired to live APIs; API module tests.
 
 ---
 
@@ -93,7 +93,7 @@ _Backend jobs, searches, CV, and applications routes are live._
 - [x] **Wire applications page to API** — Connect Kanban to `listApplications` and status updates
 - [x] **Jobs list filtering** — Wire the jobs page search input to client-side filter (title, company) over fetched results
 - [x] **Responsive sidebar** — Collapsible sidebar or mobile drawer so dashboard nav works on small screens
-- [x] **Wire login flow E2E (live backend)** — `jobagent_auth` cookie, MSW gated, manual E2E checklist in `frontend/README.md`
+- [x] **Wire login flow E2E (live backend)** — `jobagent_auth` cookie, live backend only (MSW removed from dev), manual E2E checklist in `frontend/README.md`
 - [x] **Frontend CI polish** — `npm run lint` in `.github/workflows/frontend-tests.yml`
 - [ ] **Documents job picker** — Add job-selection step before "Generate resume" / "Generate cover letter" buttons on documents page
 - [ ] **Outreach compose panel** — Build compose form (recipient, subject, body) in the outreach preview pane; stub send until Postmark lands
