@@ -7,9 +7,8 @@ from arq.connections import ArqRedis
 
 from app.core.db import async_session_factory
 from app.core.config import settings
+from app.integrations.ai_factory import get_chat_client, get_embedder
 from app.integrations.s3 import S3
-from app.integrations.embeddings import Embedder, OpenAIEmbedder
-from app.integrations.openai_client import OpenAIClient
 from app.repositories.cv_repo import CVRepository
 from app.repositories.job_repo import JobRepository
 from app.repositories.search_repo import SearchRepository
@@ -41,17 +40,6 @@ def get_cv_service(
 def get_arq_redis(request: Request) -> ArqRedis:
     """The ARQ Redis pool opened in the app lifespan (used to enqueue background jobs)."""
     return request.app.state.redis
-
-
-@lru_cache
-def get_chat_client() -> OpenAIClient:
-    # Cached: the underlying AsyncOpenAI is a process singleton anyway.
-    return OpenAIClient()
-
-
-@lru_cache
-def get_embedder() -> Embedder:
-    return OpenAIEmbedder(get_chat_client(), settings.EMBED_DIM)
 
 
 def get_matching_service(db: AsyncSession = Depends(get_db)) -> MatchingService:
