@@ -12,13 +12,9 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Done (MVP v1):** Applications backend (model, repo, routes, tests). Frontend live API wiring (auth cookie, dashboard stats, jobs/search, CVs, applications Kanban, settings). Shared UI polish (LoadingSkeleton, ErrorBanner, EmptyState, toasts, mobile drawer). Frontend CI includes Vitest + ESLint.
+**Done (MVP v1 remediation — PR #36, CI green):** Live-backend-only frontend (MSW removed). Docker Compose stack + S3 bucket bootstrap. Ollama AI provider (OpenAI BYOK fallback). Active CV selection. Documents + outreach APIs and UI. Postmark stub. Auth rate limiting (production only).
 
-**Not started / post-MVP:** Scam-risk UI, drag-and-drop Kanban, Playwright E2E, full account profile editing.
-
-**Recently completed (backend):** Ollama AI provider, Docker Compose stack, S3 bucket bootstrap, active CV, documents API, outreach API + Postmark stub, auth rate limiting.
-
-**Recently completed (frontend):** Live-backend-only dev (browser MSW removed); `jobagent_auth` cookie alignment; dashboard pages wired to live APIs; API module tests.
+**Not started / post-MVP:** Scam-risk UI, drag-and-drop Kanban, Playwright E2E, full account profile editing, ARQ `send_followup_email` task.
 
 ---
 

@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** MVP v1 in progress. Backend APIs (auth, jobs, searches, CVs, applications), ARQ workers, and Docker Compose are implemented. Frontend dashboard pages wire to the live backend via Next.js API rewrites. Active work is tracked in [TODO.md](TODO.md).
+**Current status:** MVP v1 remediation complete on [PR #36](https://github.com/Pukakiii/Job-Agent/pull/36) (CI green). Live-backend frontend, Docker Compose, Ollama AI, active CV, documents, outreach, and hardening. Merge PR then run `alembic upgrade head`. See [TODO.md](TODO.md).
 
 ---
 
