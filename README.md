@@ -2,7 +2,7 @@
 
 An AI-first job search platform that collects jobs from multiple sources, deduplicates and caches postings, performs semantic matching with embeddings, scores opportunities with AI, generates tailored resumes and cover letters, sends outreach emails, and tracks applications end-to-end.
 
-**Current status:** MVP v1 remediation complete on [PR #36](https://github.com/Pukakiii/Job-Agent/pull/36) (CI green). Live-backend frontend, Docker Compose, Ollama AI, active CV, documents, outreach, and hardening. Merge PR then run `alembic upgrade head`. See [TODO.md](TODO.md).
+**Current status:** MVP v1 is implemented and merged to `main` — live-backend frontend (no mock layer), Docker Compose stack, a configurable AI provider (local Ollama / Ollama Cloud / OpenAI, chosen independently for chat and embeddings), active-CV selection, documents + outreach, and basic hardening. After pulling, run `alembic upgrade head` to apply migrations. See [TODO.md](TODO.md).
 
 ---
 
@@ -217,7 +217,7 @@ If you use git commit --no-verify, the sync will not run. The CI check will catc
 | Queue / cache   | ARQ, Redis                                                                      |
 | Scraping        | Apify (Indeed, LinkedIn) + official APIs (Adzuna, Jooble, Careerjet, regional)  |
 | AI (local)      | Ollama — `nomic-embed-text`, `gemma3:4b`                                        |
-| AI (API / BYOK) | `text-embedding-3-small` + provider LLM (OpenAI, Anthropic, Google, OpenRouter) |
+| AI (cloud/BYOK) | Ollama Cloud (chat) and/or OpenAI (`text-embedding-3-small`, `gpt-4o-mini`) — chat and embeddings configured independently |
 | Email           | Postmark or Gmail API                                                           |
 | CV storage      | S3                                                                              |
 | Infra           | Docker                                                                          |
@@ -228,52 +228,37 @@ Full details: [tech-stack.md](docs/tech-stack.md).
 
 ## Project Structure
 
-Monorepo layout. Target structure from [code-architecture.md](docs/code-architecture.md); **bold** = not yet created.
+Monorepo layout (backend, frontend, and infra are all implemented):
 
 ```text
 job-agent/
 ├── backend/
-│   ├── alembic/                 # migrations (scaffold)
+│   ├── alembic/versions/        # migrations
 │   ├── app/
-│   │   ├── api/                 # ** route handlers + v1 router **
-│   │   ├── core/                # ** config, db, security **
-│   │   ├── integrations/        # ** S3, Apify, AI clients, job sources **
-│   │   ├── models/              # ** SQLAlchemy ORM **
-│   │   ├── repositories/        # ** data access layer **
-│   │   ├── schemas/             # ** Pydantic DTOs **
-│   │   ├── services/            # ** business logic **
-│   │   ├── workers/             # ** ARQ tasks **
+│   │   ├── api/v1/routes/       # auth, cvs, jobs, searches, applications, documents, outreach
+│   │   ├── core/                # config, db, security, logger
+│   │   ├── integrations/        # S3, Apify, AI clients, Postmark, job sources
+│   │   ├── middleware/          # auth rate limiting
+│   │   ├── models/              # SQLAlchemy ORM
+│   │   ├── repositories/        # data access layer
+│   │   ├── schemas/             # Pydantic DTOs
+│   │   ├── services/            # business logic (matching, ingestion, documents, outreach)
+│   │   ├── workers/             # ARQ tasks
 │   │   └── main.py              # FastAPI entry + /health
-│   ├── tests/                   # ** pytest **
+│   ├── tests/                   # pytest (Testcontainers + moto)
 │   └── pyproject.toml
-├── docs/
-│   ├── adr/                     # architectural decision records
-│   ├── code-architecture.md
-│   ├── contributing-rules.md
-│   ├── data-layer.md
-│   ├── docker-orchestration.md
-│   ├── system-requirements.md
-│   ├── tech-stack.md
-│   └── TODO.md                  # active tasks
-├── frontend/                    # Next.js 16 App Router (initialized)
-│   ├── public/
-│   ├── src/
-│   │   ├── app/                 # layout.tsx, page.tsx, globals.css (starter shell)
-│   │   ├── components/          # shared UI, layout, forms (scaffolded)
-│   │   ├── features/            # domain modules (auth, jobs, cvs, …) (scaffolded)
-│   │   ├── hooks/
-│   │   ├── lib/                 # api client stubs, utils, constants
-│   │   ├── types/
-│   │   ├── mocks/
-│   │   └── styles/
-│   ├── next.config.ts
-│   ├── tsconfig.json
-│   ├── eslint.config.mjs
-│   ├── postcss.config.mjs       # Tailwind v4
-│   └── package.json
+├── docs/                        # requirements, architecture, data layer, ADRs
+├── frontend/                    # Next.js 16 App Router (TypeScript, Tailwind v4)
+│   └── src/
+│       ├── app/(auth)/          # login, register
+│       ├── app/(dashboard)/     # dashboard, jobs, cvs, applications, documents, outreach, settings
+│       ├── components/          # shared UI, layout, brand
+│       ├── features/auth/       # auth context + hooks
+│       ├── lib/api/             # typed API client (one module per resource)
+│       └── test/                # Vitest setup
 ├── infra/
-│   └── docker/                  # ** Compose + Dockerfile (planned) **
-├── .cursor/rules/               # agent rules for collaborators
+│   └── docker/                  # Compose stack (Postgres, Redis, MinIO, Ollama, API, worker)
+├── ai-agents/                   # single-source AI rules (synced to .github/instructions/)
 ├── .env.example
 └── README.md
 ```
@@ -314,7 +299,7 @@ Questions before you start? Open an issue or note your intent on the task you pl
 
 ## Data Model
 
-Five core tables: `users`, `cvs`, `jobs`, `searches`, `search_results`. Jobs are shared corpus entities; per-user relevance lives on the search-result join. Full ERD, indexes, and repository patterns: [data-layer.md](docs/data-layer.md).
+Core tables: `users`, `cvs`, `jobs`, `searches`, `search_results`, `job_applications`, `generated_documents`, `outreach_emails`. Jobs are shared corpus entities; per-user relevance lives on the search-result join. Full ERD, indexes, and repository patterns: [data-layer.md](docs/data-layer.md).
 
 ---
 
@@ -359,7 +344,7 @@ Application statuses: `saved`, `applied`, `interview`, `offer`, `rejected`.
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL 15+ with pgvector (or Docker Compose — recommended)
 - Redis
 - Docker (recommended for full stack)
@@ -368,13 +353,19 @@ Application statuses: `saved`, `applied`, `interview`, `offer`, `rejected`.
 ### Docker Compose (recommended)
 
 ```bash
-cp .env.example .env
-cp infra/secret/.env.backend.example infra/secret/.env.backend
-docker compose -f infra/docker/docker-compose.yml up -d
-docker compose -f infra/docker/docker-compose.yml run --rm api alembic upgrade head
+cp infra/secret/.env.backend.example infra/secret/.env.backend   # set SECRET_KEY; choose AI provider
+cd infra/docker
+
+# Fully-local AI (also runs Ollama and pulls models):
+docker compose --profile local-ai up -d
+# ...or cloud AI (Ollama Cloud / OpenAI) — lighter, no local model container:
+#   docker compose up -d
+
+# Create the tables once (after first boot):
+docker compose run --rm api alembic upgrade head
 ```
 
-Services: Postgres (pgvector), Redis, MinIO, Ollama, API (`:8000`), worker.
+Services: Postgres (pgvector), Redis, MinIO, API (`:8000`), worker — plus Ollama when `--profile local-ai` is used.
 
 See [docker-orchestration.md](docs/docker-orchestration.md).
 
@@ -430,8 +421,11 @@ POSTGRES_PASSWORD=password
 POSTGRES_DB=job_agent
 SECRET_KEY=change-me
 REDIS_URL=redis://localhost:6379
-OLLAMA_BASE_URL=http://localhost:11434
-OPENAI_API_KEY=          # optional BYOK fallback
+CHAT_PROVIDER=ollama      # ollama | openai
+EMBED_PROVIDER=ollama     # ollama | openai
+OLLAMA_BASE_URL=http://localhost:11434   # https://ollama.com for Ollama Cloud
+OLLAMA_API_KEY=           # required for Ollama Cloud
+OPENAI_API_KEY=           # required if CHAT_PROVIDER/EMBED_PROVIDER = openai
 S3_ENDPOINT_URL=http://localhost:9000
 FRONTEND_URL=http://localhost:3000
 ```
@@ -456,18 +450,19 @@ Rules: never edit production schema directly; keep migrations small; test locall
 
 ## API Overview
 
-Target REST surface under `/api/v1`. **Implemented:** auth, jobs, searches, CVs, applications (see OpenAPI at `/docs` when the API is running).
+REST surface under `/api/v1`. **Implemented:** auth, CVs (incl. active-CV), jobs, searches, applications, documents, outreach (see OpenAPI at `/docs` when the API is running).
 
-| Domain       | Planned endpoints                               |
-| ------------ | ----------------------------------------------- |
-| Auth         | register, login, JWT refresh (`fastapi-users`)  |
-| CVs          | upload, list, presigned download                |
-| Searches     | trigger match, list past searches               |
-| Jobs         | list, detail (with direct apply URL)            |
-| Applications | CRUD + status transitions                       |
-| AI           | score, generate resume/cover letter, scam check |
-| Email        | send, list                                      |
-| Ingestion    | trigger scrape (returns `202`, work via ARQ)    |
+| Domain       | Endpoints                                        |
+| ------------ | ------------------------------------------------ |
+| Auth         | register, login, logout (`fastapi-users` JWT)    |
+| CVs          | upload, list, presigned download, set active     |
+| Searches     | trigger match, list, detail (embedded results)   |
+| Jobs         | list, detail (with direct apply URL), ingest     |
+| Applications | CRUD + status transitions                        |
+| Documents    | generate resume / cover letter, list             |
+| Outreach     | draft, send, list                                |
+
+Scam/risk scoring is on the roadmap and not yet exposed as an endpoint.
 
 Conventions: plural resource nouns, paginated lists, consistent error envelope — [code-architecture.md](docs/code-architecture.md).
 
@@ -481,7 +476,7 @@ Two phases per [ADR 002](docs/adr/002-ai-layer-stack.md):
 
 **Query** — parse CV → embed with `search_query:` prefix → cosine similarity → LLM re-rank → fit explanations.
 
-Local default: Ollama (`gemma3:4b` + `nomic-embed-text`, 768-dim vectors). BYOK API providers optional.
+Chat and embeddings are configured independently (`CHAT_PROVIDER` / `EMBED_PROVIDER`): fully-local Ollama by default, or mix Ollama Cloud chat with local/OpenAI embeddings, or OpenAI for both. 768-dim vectors throughout (Ollama Cloud has no embedding models, so cloud chat pairs with local or OpenAI embeddings). See [`infra/secret/.env.backend.example`](infra/secret/.env.backend.example).
 
 ---
 
@@ -499,11 +494,11 @@ AI-assisted drafting via Postmark or Gmail API. Emails are separate from applica
 
 ## Frontend Overview
 
-Next.js 16 App Router (`src/` directory) is initialized with TypeScript, Tailwind CSS v4, and ESLint. The starter shell (`layout.tsx`, `page.tsx`, `globals.css`) runs today; route groups for unauthenticated (`(auth)`) and authenticated (`(dashboard)`) areas are planned next. Domain logic lives in `src/features/`; shared primitives in `src/components/`; API calls in `src/lib/api/` (one module per backend resource). Pages are thin — they compose feature components and call typed API helpers.
+Next.js 16 App Router (`src/` directory), TypeScript, Tailwind CSS v4. The dashboard is built and wired to the live backend, with route groups for unauthenticated (`(auth)`) and authenticated (`(dashboard)`) areas. API calls go through `src/lib/api/` (one typed module per backend resource) and hit `/api/v1/*` same-origin via a Next.js rewrite — there is no mock layer at runtime. Pages are thin: they compose feature components and call typed API helpers.
 
-**Routes (planned):** login, register, dashboard, jobs, CVs, applications, documents, outreach, settings.
+**Routes:** login, register, dashboard, jobs, CVs, applications, documents, outreach, settings.
 
-**Conventions:** job matches with scores and scam flags, CV management, document generation, applications Kanban, statistics. Fetches from FastAPI only — no direct DB access. Surfaces direct apply links; no server-side browser automation — [ADR 003](docs/adr/003-apply-automation.md).
+**Conventions:** job matches with scores and explanations, CV management, document generation, applications Kanban, outreach. Fetches from FastAPI only — no direct DB access. Surfaces direct apply links; no server-side browser automation — [ADR 003](docs/adr/003-apply-automation.md).
 
 Full folder layout: [code-architecture.md](docs/code-architecture.md#frontend-folder-structure).
 
@@ -519,7 +514,7 @@ Recommended order: database + Redis → migrations → API → workers → front
 
 ## Roadmap
 
-### Phase 1: Foundation _(in progress)_
+### Phase 1: Foundation _(done)_
 
 - Backend skeleton, config, layered structure
 - Core tables and Alembic migrations
@@ -527,29 +522,29 @@ Recommended order: database + Redis → migrations → API → workers → front
 - User authentication (JWT)
 - ~~Next.js init~~ — done; app shell (route groups, layouts, auth pages)
 
-### Phase 2: Ingestion and embeddings
+### Phase 2: Ingestion and embeddings _(done)_
 
 - Pluggable job sources
 - ARQ workers for async ingestion
 - pgvector index and embedding pipeline
 
-### Phase 3: AI matching and analysis
+### Phase 3: AI matching and analysis _(matching + explanations done; scam checks pending)_
 
 - CV upload and S3 storage
 - Semantic search and LLM re-ranking
 - Scoring, explanations, scam checks
 
-### Phase 4: Generation and outreach
+### Phase 4: Generation and outreach _(done)_
 
 - Resume and cover letter generation
 - Email generation and sending
 
-### Phase 5: UI and tracking
+### Phase 5: UI and tracking _(done)_
 
 - Dashboard, job detail, Kanban board
 - Application pipeline and statistics
 
-### Phase 6: Hardening
+### Phase 6: Hardening _(in progress)_
 
 - Validation, logging, rate limiting, test coverage, production deploy polish
 

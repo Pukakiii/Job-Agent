@@ -27,7 +27,7 @@ In development, API calls use same-origin `/api/v1/*` so the `jobagent_auth` Htt
 
 ```bash
 npm run dev      # Start dev server (http://localhost:3000)
-npm test         # Vitest unit tests (uses MSW node server in test setup only)
+npm test         # Vitest unit tests (mock `fetch` directly; no MSW)
 npm run lint     # ESLint
 npm run build    # Production build
 ```
@@ -50,5 +50,5 @@ Run with backend + Postgres + Redis + MinIO up:
 
 - `src/app/` — Next.js App Router pages
 - `src/lib/api/` — Typed API client modules
-- `src/mocks/handlers.ts` — MSW handlers for Vitest only (not used at runtime)
 - `src/features/auth/` — Auth context and hooks
+- `src/test/` — Vitest setup (jsdom, cleanup). Tests stub `fetch` directly; MSW was removed.

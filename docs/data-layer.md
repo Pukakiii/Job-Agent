@@ -15,7 +15,7 @@ The data layer itself is three kinds of code: `models/` (SQLAlchemy ORM table de
 
 ## The data model
  
-Six tables. The key design decision (corrected from the first draft) is the split between a **job posting** — a shared, scraped entity — and a **match result** — a job's relevance *to one particular search*. The posting lives in `jobs`; the result lives in the `search_results` join. A job's score is a fact about a `(search, job)` pair, not about the job, so it belongs on the join. The sixth table, `job_applications`, tracks a user's own application lifecycle for a discovered job — distinct from the system's match results.
+Eight tables. The key design decision (corrected from the first draft) is the split between a **job posting** — a shared, scraped entity — and a **match result** — a job's relevance *to one particular search*. The posting lives in `jobs`; the result lives in the `search_results` join. A job's score is a fact about a `(search, job)` pair, not about the job, so it belongs on the join. The sixth table, `job_applications`, tracks a user's own application lifecycle for a discovered job — distinct from the system's match results. Two further tables — `generated_documents` and `outreach_emails` — back the document-generation and outreach features (added later; not drawn in the ERD below); see `app/models/`.
  
 ```mermaid
 erDiagram
