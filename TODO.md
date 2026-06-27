@@ -12,7 +12,9 @@ Each item is scoped to **one commit** — small, reviewable, and modular. See [c
 
 **Done (frontend foundation):** Next.js 16 (App Router, TypeScript, Tailwind v4), design tokens, API client, auth API module, shared UI primitives + `FormField`, login/register pages, `AuthProvider` + `useAuth`, route-protection middleware, dashboard shell + all scaffold pages, typed API modules (`jobs`, `cvs`, `searches`, `applications`), Safari compatibility fixes.
 
-**Done (MVP v1 remediation — PR #36, CI green):** Live-backend-only frontend (MSW removed). Docker Compose stack + S3 bucket bootstrap. Ollama AI provider (OpenAI BYOK fallback). Active CV selection. Documents + outreach APIs and UI. Postmark stub. Auth rate limiting (production only).
+**Done (MVP v1 remediation — PR #36, CI green):** Live-backend-only frontend. Docker Compose stack + S3 bucket bootstrap. Active CV selection. Documents + outreach APIs and UI. Postmark stub. Auth rate limiting (production only).
+
+**Done (AI provider + cleanup — PR #39 and follow-up):** Configurable AI provider — chat and embeddings chosen independently (local Ollama / Ollama Cloud / OpenAI); local Ollama container is opt-in via `--profile local-ai`. MSW fully removed (runtime **and** tests — tests stub `fetch` directly). README/docs synced to current state.
 
 **Not started / post-MVP:** Scam-risk UI, drag-and-drop Kanban, Playwright E2E, full account profile editing, ARQ `send_followup_email` task.
 

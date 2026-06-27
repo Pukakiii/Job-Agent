@@ -67,8 +67,9 @@ app = FastAPI(
     description=(
         "Backend for an automated job-discovery assistant. "
         "Ingests listings from Adzuna, Jooble, and Apify (Indeed/LinkedIn), "
-        "embeds them with `text-embedding-3-small`, and matches them against "
-        "uploaded CVs via pgvector similarity search + GPT-4o-mini reranking. "
+        "embeds them into pgvector, and matches them against uploaded CVs via "
+        "similarity search + LLM reranking. The AI provider is configurable "
+        "(local Ollama, Ollama Cloud, or OpenAI) for chat and embeddings. "
         "Users supply the CV and a prompt; the API returns ranked apply-links."
     ),
     version="0.1.0",

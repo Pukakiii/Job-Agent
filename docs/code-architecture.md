@@ -128,7 +128,7 @@ frontend/
 │   │   ├── **outreach.ts**
 │   │   └── **dashboard.ts**
 │   │
-│   ├── mocks/                   # MSW handlers / fixture data for local dev
+│   ├── test/                   # Vitest setup (MSW removed — tests stub fetch directly)
 │   │
 │   └── styles/
 │
