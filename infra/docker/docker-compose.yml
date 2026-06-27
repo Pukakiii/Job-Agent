@@ -1,3 +1,10 @@
+# Job Agent backend stack. AI is configured in infra/secret/.env.backend.
+#
+# Run modes:
+#   Fully-local AI:          docker compose --profile local-ai up -d
+#   Cloud (Ollama/OpenAI):   docker compose up -d        # no local model container
+# Create tables once after first boot:
+#   docker compose run --rm api alembic upgrade head
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -42,8 +49,15 @@ services:
       timeout: 5s
       retries: 10
 
+  # Local Ollama for on-machine models. Opt-in — only starts with `--profile local-ai`.
+  # Cloud setups (Ollama Cloud / OpenAI) leave this off and set AI in .env.backend.
   ollama:
     image: ollama/ollama:latest
+    profiles: ["local-ai"]
+    environment:
+      # Space-separated models pulled on first boot. Setup A (cloud chat + local
+      # embeddings) can slim this to just:  nomic-embed-text
+      OLLAMA_PULL_MODELS: ${OLLAMA_PULL_MODELS:-nomic-embed-text gemma3:4b}
     ports:
       - "11434:11434"
     volumes:
@@ -51,11 +65,7 @@ services:
       - ./ollama/entrypoint.sh:/entrypoint.sh:ro
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -sf http://localhost:11434/api/tags | grep -q nomic-embed-text && curl -sf http://localhost:11434/api/tags | grep -q gemma3",
-        ]
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags >/dev/null"]
       interval: 15s
       timeout: 10s
       retries: 40
@@ -74,7 +84,8 @@ services:
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT_URL: http://minio:9000
       S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-      OLLAMA_BASE_URL: http://ollama:11434
+      # AI host/keys come from .env.backend (OLLAMA_BASE_URL etc.) so the same image
+      # serves local or cloud. No ollama dependency — AI is called lazily, not at boot.
     ports:
       - "8000:8000"
     depends_on:
@@ -83,8 +94,6 @@ services:
       redis:
         condition: service_healthy
       minio:
-        condition: service_healthy
-      ollama:
         condition: service_healthy
 
   worker:
@@ -100,15 +109,13 @@ services:
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT_URL: http://minio:9000
       S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-      OLLAMA_BASE_URL: http://ollama:11434
+      # AI host/keys come from .env.backend (see api service above).
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
       minio:
-        condition: service_healthy
-      ollama:
         condition: service_healthy
 
 volumes:
