@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from urllib.parse import quote_plus
 
 from pydantic import model_validator
@@ -9,6 +11,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # (config.py -> core -> app -> backend -> repo root). OS env vars still take
 # precedence, so containers that inject env are unaffected.
 _ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
+
+
+@dataclass(frozen=True)
+class AIEndpoint:
+    """Resolved connection settings for one AI role (chat or embeddings)."""
+
+    base_url: str | None  # None targets api.openai.com; ".../v1" for Ollama
+    api_key: str
+    model: str
+    send_dimensions: bool = False  # OpenAI text-embedding-3-* only (Matryoshka)
 
 
 class Settings(BaseSettings):
@@ -56,15 +68,32 @@ class Settings(BaseSettings):
     }
     CV_DOWNLOAD_URL_TTL_SECONDS: int = 300  # presigned GET lifetime
 
-    # AI — OpenAI BYOK (optional; when set, takes precedence over Ollama)
-    OPENAI_API_KEY: str | None = None
-    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
-    OPENAI_EMBED_MODEL: str = "text-embedding-3-small"
+    # ── AI providers ──────────────────────────────────────────────────────────
+    # Chat and embeddings are chosen independently, so you can mix providers.
+    # Common setups (chat is Ollama Cloud in both A and B):
+    #   A) CHAT_PROVIDER=ollama (cloud) + EMBED_PROVIDER=ollama (local)  — fully free
+    #   B) CHAT_PROVIDER=ollama (cloud) + EMBED_PROVIDER=openai          — no local models
+    # Ollama Cloud serves chat models only (no embeddings), so when chat targets the
+    # cloud, embeddings must come from a local Ollama (OLLAMA_EMBED_BASE_URL) or OpenAI.
+    CHAT_PROVIDER: Literal["ollama", "openai"] = "ollama"
+    EMBED_PROVIDER: Literal["ollama", "openai"] = "ollama"
 
-    # AI — local Ollama (default when OPENAI_API_KEY is unset)
+    # Ollama — local by default. For Ollama Cloud set OLLAMA_BASE_URL=https://ollama.com
+    # and OLLAMA_API_KEY=<key from ollama.com/settings/keys>.
     OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_API_KEY: str | None = None  # required for Ollama Cloud; ignored by local Ollama
     OLLAMA_CHAT_MODEL: str = "gemma3:4b"
     OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
+    # Optional separate Ollama host/key for embeddings — lets chat hit the cloud while
+    # embeddings stay on a local Ollama. Default: reuse OLLAMA_BASE_URL / OLLAMA_API_KEY.
+    OLLAMA_EMBED_BASE_URL: str | None = None
+    OLLAMA_EMBED_API_KEY: str | None = None
+
+    # OpenAI (BYOK). OPENAI_BASE_URL optionally points at an OpenAI-compatible gateway.
+    OPENAI_API_KEY: str | None = None
+    OPENAI_BASE_URL: str | None = None
+    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
+    OPENAI_EMBED_MODEL: str = "text-embedding-3-small"
 
     # Ingestion / scraping
     REDIS_URL: str = "redis://localhost:6379"
@@ -95,22 +124,24 @@ class Settings(BaseSettings):
     POSTMARK_API_TOKEN: str | None = None
     POSTMARK_SENDER_EMAIL: str | None = None
 
-    @property
-    def ai_provider(self) -> str:
-        """Return ``openai`` when a BYOK key is set, otherwise ``ollama``."""
-        return "openai" if self.OPENAI_API_KEY else "ollama"
+    def chat_endpoint(self) -> AIEndpoint:
+        """Where chat/completion calls go, based on CHAT_PROVIDER."""
+        if self.CHAT_PROVIDER == "openai":
+            return AIEndpoint(self.OPENAI_BASE_URL, self.OPENAI_API_KEY or "", self.OPENAI_CHAT_MODEL)
+        base = self.OLLAMA_BASE_URL.rstrip("/")
+        return AIEndpoint(f"{base}/v1", self.OLLAMA_API_KEY or "ollama", self.OLLAMA_CHAT_MODEL)
 
-    @property
-    def chat_model(self) -> str:
-        if self.ai_provider == "openai":
-            return self.OPENAI_CHAT_MODEL
-        return self.OLLAMA_CHAT_MODEL
-
-    @property
-    def embed_model(self) -> str:
-        if self.ai_provider == "openai":
-            return self.OPENAI_EMBED_MODEL
-        return self.OLLAMA_EMBED_MODEL
+    def embed_endpoint(self) -> AIEndpoint:
+        """Where embedding calls go, based on EMBED_PROVIDER. Independent of chat so chat
+        can hit Ollama Cloud while embeddings stay on a local Ollama or OpenAI."""
+        if self.EMBED_PROVIDER == "openai":
+            return AIEndpoint(
+                self.OPENAI_BASE_URL, self.OPENAI_API_KEY or "", self.OPENAI_EMBED_MODEL,
+                send_dimensions=True,
+            )
+        base = (self.OLLAMA_EMBED_BASE_URL or self.OLLAMA_BASE_URL).rstrip("/")
+        key = self.OLLAMA_EMBED_API_KEY or self.OLLAMA_API_KEY or "ollama"
+        return AIEndpoint(f"{base}/v1", key, self.OLLAMA_EMBED_MODEL)
 
     @property
     def database_url(self) -> str:
@@ -129,7 +160,12 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def validate_production_secrets(self) -> "Settings":
+    def validate_settings(self) -> "Settings":
+        # An OpenAI key is required whenever either role targets OpenAI.
+        if (self.CHAT_PROVIDER == "openai" or self.EMBED_PROVIDER == "openai") and not self.OPENAI_API_KEY:
+            raise ValueError(
+                "OPENAI_API_KEY must be set when CHAT_PROVIDER or EMBED_PROVIDER is 'openai'."
+            )
         if self.ENVIRONMENT == "production":
             if self.SECRET_KEY in ("change-me", "", "changeme"):
                 raise ValueError("SECRET_KEY must be set to a strong value in production")

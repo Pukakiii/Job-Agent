@@ -14,10 +14,13 @@ logger = get_logger("app.workers.settings")
 
 async def startup(ctx) -> None:
     configure_logging()
-    if settings.OPENAI_API_KEY:
-        logger.info("AI provider: OpenAI (%s)", settings.OPENAI_CHAT_MODEL)
-    else:
-        logger.info("AI provider: Ollama at %s", settings.OLLAMA_BASE_URL)
+    chat = settings.chat_endpoint()
+    embed = settings.embed_endpoint()
+    logger.info(
+        "AI — chat: %s (%s @ %s), embed: %s (%s @ %s)",
+        settings.CHAT_PROVIDER, chat.model, chat.base_url or "openai",
+        settings.EMBED_PROVIDER, embed.model, embed.base_url or "openai",
+    )
     client = httpx.AsyncClient()
     ctx["http_client"] = client
     ctx["sources"] = build_sources(client, settings)
