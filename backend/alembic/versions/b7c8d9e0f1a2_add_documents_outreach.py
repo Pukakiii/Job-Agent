@@ -21,9 +21,6 @@ _outreachstatus = sa.Enum("draft", "sent", "failed", name="outreachstatus")
 
 
 def upgrade() -> None:
-    _documenttype.create(op.get_bind(), checkfirst=True)
-    _outreachstatus.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         "generated_documents",
         sa.Column("id", sa.Uuid(), nullable=False),
